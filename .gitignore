@@ -1,0 +1,12 @@
+__pycache__/
+runs/
+test-inputs/
+local.json
+*-source.zip
+verification/
+.build-venv/
+.build-tools/
+build/
+dist/
+release/
+*.spec
