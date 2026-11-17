@@ -4,7 +4,7 @@ Windows 本地接收机调试工作台。浏览器负责交互，Python 管理�
 
 ## 下载即用（推荐）
 
-Windows 10/11 x64 用户请在本仓库 **Releases** 下载 `GNSS-SDR-Workbench-v0.3.1-win-x64.zip`，完整解压后双击 `Start-Workbench.cmd`。它包含 Python、前端、接收机及运行 DLL，无需安装开发环境。接收机路径自动定位；只需选择自己的 IQ 文件。使用方式见 [PORTABLE.md](PORTABLE.md)。
+Windows 10/11 x64 用户请在 [Releases](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/latest) 下载 [GNSS-SDR-Workbench-v0.3.1-win-x64.zip](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/download/v0.3.1/GNSS-SDR-Workbench-v0.3.1-win-x64.zip)，完整解压后双击 `Start-Workbench.cmd`。它包含 Python、前端、接收机及运行 DLL，无需安装开发环境。接收机路径自动定位；只需选择自己的 IQ 文件。使用方式见 [PORTABLE.md](PORTABLE.md)。
 
 Code → Download ZIP 仅为源码，适用于开发者。便携包不包含 IQ、开发者本机设置或历史运行结果。
 
@@ -77,17 +77,15 @@ POST /api/restart
 
 已验证当前 Windows 便携 EXE、GPS L1 C/A、18 MS/s signed int8 I/Q、+20 kHz IF、抽取至 3 MS/s。当前文件输入为 File_Signal_Source/ibyte；样本数按 2 × 采样率 × 时长配置。捕获网格使用内核已有 dump_channel，每次实验选择一个通道；成功捕获消息覆盖各通道。跟踪二进制解析适配当前构建的 112 字节记录。
 
-天空图当前展示最近 GSV，不随历史游标改变；日志时钟精度以接收机输出为准，跟踪启动优先关联捕获样本时刻。定位轨迹以首个定位解为相对原点。GDB 面板展示连接信息，还没有内置源码调试器。输入面板尚未接入抽取后的基带流。后续将继续做各阶段流式抽样接口、多通道捕获网格轮换、事件磁盘索引与历史天空图、参数模板和独立 Windows 启动包。
+天空图当前展示最近 GSV，不随历史游标改变；日志时钟精度以接收机输出为准，跟踪启动优先关联捕获样本时刻。定位轨迹以首个定位解为相对原点。GDB 面板展示连接信息，还没有内置源码调试器。输入面板尚未接入抽取后的基带流。后续将继续做各阶段流式抽样接口、多通道捕获网格轮换、历史天空图、参数模板和干净 Windows 系统验收。
 
-本轮没有修改接收机内核。后续需要扩展的内核接口单独维护和提交上游。没有创建远程仓库或发布；正式开源前确定项目许可证及接收机再分发材料。local.json、runs 与截图不进入源码包。
+接收机内核与工作台分开维护，后续内核接口扩展单独提交上游。项目采用 GPL-3.0-or-later；便携版附接收机对应源码和第三方许可信息。local.json、runs、测试 IQ 与私人验收记录不进入公开源码。
 
 ## 验证
 
-### M1 B3I 60 秒独立接收验证（2026-11-12）
+### 支持与回归检查
 
-已使用 M1 V3.0 用户自有 B3I 核心生成的 24 MS/s、signed ci8、60 s 静态数据完成接收测试。模板为 `templates/bds-b3i-m1-24m.conf`；实验 `20261112-165527-22387b`。14 星捕获、跟踪和导航星历解码，0 次失锁；完整 GPX 有 156 个解（44.0–59.5 s），与固定真值比较的水平/高程/三维 RMSE 为 5.39/8.75/10.27 cm。场景与接收机均采用真空传播模型，本次结果限静态离线数字验证。
-
-工作台配置、捕获监测和前端卫星标识现支持 `Channel.signal=1C` 或 `B3`，按对应的 `Channels_*`、`Tracking_*`、`Acquisition_*` 参数处理；GPS 流程保留。正常文件结束显示“结束”，文件尾保护提示显示“文件边界”，不当作失锁事件。15 项 Python 检查、JS 语法和回放状态检查通过。变更前代码及原 GPS `local.json` 保存在 `verification/m1-b3i60-before`。本轮接收机 EXE 和生成核心未修改。结构化测试指标见 `verification/m1-b3i60-summary.json`，完整结果在 M1 工程的 `build/receiver-validation-v30/b3i60-static-01`。
+工作台配置、捕获监测和前端卫星标识支持 `Channel.signal=1C` 或 `B3`，按对应的 `Channels_*`、`Tracking_*`、`Acquisition_*` 参数处理。B3I 配置示例为 `templates/bds-b3i-m1-24m.conf`，需用户自行提供匹配 IQ。正常文件结束显示“结束”，文件尾保护提示显示“文件边界”，不当作失锁事件。15 项 Python 检查、JS 语法和回放状态检查通过。
 
 ```powershell
 python -m unittest discover -s tests -v
