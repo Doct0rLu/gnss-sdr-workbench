@@ -16,7 +16,7 @@ def main():
     if not all(p.is_file() for p in files):raise SystemExit('Build and verify all release assets first')
     if run(['git','status','--porcelain'],True).stdout.strip():raise SystemExit('Commit reviewed source changes before publishing')
     # Credentials stay in gh's credential store. Configure only this repository.
-    run(['git','config','--local','credential.helper',''])
+    run(['git','config','--local','--replace-all','credential.helper',''])
     run(['git','config','--local','--add','credential.helper','!"'+str(Path(gh).resolve()).replace('\\','/')+'" auth git-credential'])
     remotes=run(['git','remote'],True).stdout.split()
     if 'origin' not in remotes:run([gh,'repo','create',repo,'--public','--description','Local GNSS-SDR debugging workbench for Windows: live channel/loop monitoring and linked event replay.','--source','.','--remote','origin','--push'])
