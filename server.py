@@ -2,6 +2,8 @@
 from __future__ import annotations
 import argparse, collections, hashlib, json, math, os, re, socket, struct, subprocess, threading, time, uuid, sys
 import diagnostics
+import signal_input
+import picker
 from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -148,14 +150,14 @@ class Workbench:
     def validate(self, data):
         exe = Path(data.get('executable','')); iq = Path(data.get('iq',''))
         if not exe.is_file() or exe.suffix.lower() != '.exe': raise ValueError('请选择存在的接收机 .exe 文件')
-        if not iq.is_file(): raise ValueError('IQ 文件不存在')
+        if not iq.is_file(): raise ValueError('信号文件不存在')
         duration = float(data.get('duration',20))
         if not math.isfinite(duration) or duration <= 0 or duration > 3600: raise ValueError('信号时长需在 0 到 3600 秒之间')
         config = data.get('config','')
         if '[GNSS-SDR]' not in config: raise ValueError('配置缺少 [GNSS-SDR] 段')
         options = dict(re.findall(r'^\s*([^#;\s=]+)\s*=\s*([^\r\n;#]+)',config,re.M))
-        # v0.1 has a deliberately explicit input contract; other formats need adapters.
-        if options.get('SignalSource.item_type','').strip() != 'ibyte': raise ValueError('本版仅支持 signed int8 I/Q（ibyte）')
+        fmt=signal_input.layout(options)
+        signal_input.validate_chain(options,fmt)
         if options.get('SignalSource.implementation','').strip() != 'File_Signal_Source': raise ValueError('本版仅支持 File_Signal_Source')
         signal,count=signal_contract(options)
         if not 1<=count<=128 or not 0<=int(data.get('capture_channel',0))<count:raise ValueError('捕获通道编号超出配置范围')
@@ -168,7 +170,7 @@ class Workbench:
         if not math.isfinite(fs) or fs <= 0: raise ValueError('输入采样率无效')
         if float(options.get('SignalSource.seconds_to_skip',0)) != 0 or float(options.get('SignalSource.header_size',0)) != 0:
             raise ValueError('本版时间轴从文件起点计算，请移除跳过时长和文件头设置')
-        if iq.stat().st_size < int(duration*fs)*2: raise ValueError('IQ 文件长度不足以覆盖请求的信号时长')
+        if iq.stat().st_size < int(duration*fs)*fmt['sample_bytes']: raise ValueError('信号文件长度不足以覆盖请求的信号时长')
         for key,value in options.items():
             if key.endswith(('dump_filename','output_path')) and value.strip() not in ('.','./') and (Path(value.strip()).is_absolute() or '..' in Path(value.strip()).parts):
                 raise ValueError('输出路径必须位于本次实验目录内：'+key)
@@ -181,6 +183,7 @@ class Workbench:
             capture_channel=int(data.get('capture_channel',0))
             options=dict(re.findall(r'^\s*([^#;\s=]+)\s*=\s*([^\r\n;#]+)',data['config'],re.M))
             signal,configured_channels=signal_contract(options)
+            fmt=signal_input.layout(options)
             if not 0<=capture_channel<configured_channels:raise ValueError('捕获通道编号超出配置范围')
             sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM); sock.bind(('127.0.0.1',0)); sock.settimeout(.3)
             acq_sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM);acq_sock.bind(('127.0.0.1',0));acq_sock.settimeout(.3)
@@ -188,7 +191,7 @@ class Workbench:
             run_id = time.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:6]
             path = RUNS/run_id; path.mkdir(parents=True)
             config = data['config']
-            overrides = {'SignalSource.filename':iq.as_posix(),'SignalSource.samples':str(int(duration*fs)*2),
+            overrides = {'SignalSource.filename':iq.as_posix(),'SignalSource.samples':str(signal_input.source_count(fmt,duration,fs,iq.stat().st_size)),
                          'SignalSource.repeat':'false','TrackingMonitor.enable_monitor':'true',
                          'TrackingMonitor.enable_protobuf':'true','TrackingMonitor.client_addresses':'127.0.0.1',
                          'TrackingMonitor.udp_port':str(sock.getsockname()[1]),'TrackingMonitor.decimation_factor':'10',
@@ -209,8 +212,8 @@ class Workbench:
             meta = dict(id=run_id,status='starting',started=time.time(),exe=str(exe),iq=str(iq),duration=duration,fs=fs,
                         exe_sha256=executable_hash,
                         config_sha256=hashlib.sha256((path/'receiver.conf').read_bytes()).hexdigest(),iq_bytes=iq.stat().st_size,
-                        iq_mtime_ns=iq.stat().st_mtime_ns,output=str(path),command=command,source=str(data.get('source_label','真实 IQ / 独立接收机进程'))[:120],
-                        monitor='TrackingMonitor / UDP Protobuf',version='0.3.1',tracking_port=sock.getsockname()[1],acquisition_port=acq_sock.getsockname()[1],capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label='BDS · B3I' if signal=='B3' else 'GPS · L1 C/A')
+                        iq_mtime_ns=iq.stat().st_mtime_ns,output=str(path),command=command,input_format=fmt['item_type'],input_label=fmt['label'],source=str(data.get('source_label','本地信号 / 独立接收机进程'))[:120],
+                        monitor='TrackingMonitor / UDP Protobuf',version='0.3.2',tracking_port=sock.getsockname()[1],acquisition_port=acq_sock.getsockname()[1],capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label='BDS · B3I' if signal=='B3' else 'GPS · L1 C/A')
             run = Run(path,meta); run.sock = sock; self.active = run
             try:
                 if getattr(sys,'frozen',False):
@@ -326,11 +329,12 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if u.path=='/api/defaults': return self.send(APP.defaults())
             if u.path=='/api/history': return self.send(APP.history())
-            if u.path=='/api/raw-iq':
+            if u.path in ('/api/raw-iq','/api/raw-input'):
                 rid=q.get('run',[''])[0];t=float(q.get('t',['0'])[0]);count=int(q.get('count',['8192'])[0])
-                if not re.fullmatch(r'[0-9-]+[a-f0-9]{6}',rid) or not math.isfinite(t) or not 0<=t<=3600 or not 1<=count<=1000000:raise ValueError('IQ 切片范围无效')
+                if not re.fullmatch(r'[0-9-]+[a-f0-9]{6}',rid) or not math.isfinite(t) or not 0<=t<=3600 or not 1<=count<=1000000:raise ValueError('信号切片范围无效')
                 meta=json.loads((RUNS/rid/'manifest.json').read_text(encoding='utf-8'))
-                with Path(meta['iq']).open('rb') as f:f.seek(int(t*meta['fs'])*2);payload=f.read(count*2)
+                fmt=signal_input.layout(diagnostics.settings(RUNS/rid));width=fmt['sample_bytes']
+                with Path(meta['iq']).open('rb') as f:f.seek(int(t*meta['fs'])*width);payload=f.read(count*width)
                 return self.send(payload,ctype='application/octet-stream')
             if u.path=='/api/inspect':
                 rid=q.get('run',[''])[0]
@@ -402,7 +406,10 @@ class Handler(BaseHTTPRequestHandler):
                 if kind not in ('exe','iq','config'):raise ValueError('文件类型无效')
                 command=[sys.executable,'--pick-file',kind] if getattr(sys,'frozen',False) else [sys.executable,str(RESOURCES/'picker.py'),kind]
                 r=subprocess.run(command,capture_output=True,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0),timeout=180)
-                if r.returncode:raise ValueError('文件选择器未能打开')
+                if r.returncode:
+                    log=HERE/'logs/file-picker.log';log.parent.mkdir(exist_ok=True)
+                    with log.open('ab') as out:out.write(r.stderr[-16384:]+b'\n')
+                    raise ValueError('文件选择器启动失败，详细信息见 logs/file-picker.log')
                 value=json.loads(r.stdout)
                 if kind=='config' and value['path']:
                     p=Path(value['path'])
@@ -417,13 +424,12 @@ class Handler(BaseHTTPRequestHandler):
                 APP.validate(data); return self.send({'valid':True})
             if self.path=='/api/stop': return self.send(APP.stop())
             self.send({'error':'not found'},404)
+        except subprocess.TimeoutExpired:self.send({'error':'文件选择超时，请重试'},400)
         except (ValueError,OSError,KeyError,TypeError) as exc: self.send({'error':str(exc)},400)
 
 def main():
     if len(sys.argv)==3 and sys.argv[1]=='--pick-file':
-        import runpy
-        sys.argv=[str(RESOURCES/'picker.py'),sys.argv[2]]
-        runpy.run_path(str(RESOURCES/'picker.py'),run_name='__main__');return
+        print(json.dumps(picker.choose_file(sys.argv[2]),ensure_ascii=True));return
     parser=argparse.ArgumentParser(); parser.add_argument('--port',type=int,default=8765); parser.add_argument('--open',action='store_true'); args=parser.parse_args()
     RUNS.mkdir(exist_ok=True)
     server=LocalServer(('127.0.0.1',args.port),Handler)

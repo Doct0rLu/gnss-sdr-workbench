@@ -1,10 +1,10 @@
-# GNSS-SDR Workbench v0.3.1
+# GNSS-SDR Workbench v0.3.2
 
 Windows 本地接收机调试工作台。浏览器负责交互，Python 管理独立 GNSS-SDR 进程、监测接口和数据访问。前端与内核分开维护。
 
 ## 下载即用（推荐）
 
-Windows 10/11 x64 用户请在 [Releases](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/latest) 下载 [GNSS-SDR-Workbench-v0.3.1-win-x64.zip](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/download/v0.3.1/GNSS-SDR-Workbench-v0.3.1-win-x64.zip)，完整解压后双击 `Start-Workbench.cmd`。它包含 Python、前端、接收机及运行 DLL，无需安装开发环境。接收机路径自动定位；只需选择自己的 IQ 文件。使用方式见 [PORTABLE.md](PORTABLE.md)。
+Windows 10/11 x64 用户请在 [Releases](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/latest) 下载 [GNSS-SDR-Workbench-v0.3.2-win-x64.zip](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/download/v0.3.2/GNSS-SDR-Workbench-v0.3.2-win-x64.zip)，完整解压后双击 `Start-Workbench.cmd`。它包含 Python、前端、接收机及运行 DLL，无需安装开发环境。接收机路径自动定位；只需选择自己的信号文件。使用方式见 [PORTABLE.md](PORTABLE.md)。
 
 Code → Download ZIP 仅为源码，适用于开发者。便携包不包含 IQ、开发者本机设置或历史运行结果。
 
@@ -14,9 +14,13 @@ Code → Download ZIP 仅为源码，适用于开发者。便携包不包含 IQ�
 
 当前工作区的 `local.json` 已配置接收机和真实 IQ 路径。独立复制时可用 `local.example.json` 建立自己的配置，也可以直接在界面选择文件。接收机 EXE 需要完整 DLL 环境，建议使用已收集依赖、支持 UTF-8 中文路径的便携构建；额外 DLL 目录可在 local.json 的 dll_dirs 设置。
 
+## 输入格式
+
+配置实验中选择“采样格式”，会同步更新适配器与滤波器输入类型；采样率、中频沿用录制参数。原始信号预览、实时跟随、时间轴回放与切片下载均使用同一格式。实数显示单路波形和双边频谱；IQ 显示 I/Q 波形、散点和频谱。浮点输入以录制幅值显示，整数输入显示原始计数值。
+
 ## 操作顺序
 
-1. 配置实验：浏览选择 EXE、IQ 或 .conf 文件，也可输入路径。设置时长、捕获快照通道、采样率、中频、通道数、环路带宽与搜索参数。高级配置文本可展开编辑。
+1. 配置实验：浏览选择 EXE、信号或 .conf 文件，也可输入路径。设置时长、捕获快照通道、采样率、中频、通道数、环路带宽与搜索参数。高级配置文本可展开编辑。
 2. 检查输入，保存配置。配置存储在本机 local.json，刷新后仍保留。
 3. 启动实验，或使用“重启接收机”。配置窗口也可以“保存并重启”。重启先向当前进程发送 q，等待正常保存，再创建独立实验，不覆盖原来的输出。30 秒仍未结束时保留停止状态，界面给出提示。
 4. 进入单通道或捕获工作区，使用统一时间轴查看和回放。实时跟随、暂停与回放只控制显示，接收机继续计算。
@@ -66,7 +70,7 @@ GET /api/state?run=<id>
 GET /api/inspect?run=<id>&kind=tracking&channel=0&start=10&end=12
 GET /api/inspect?run=<id>&kind=acquisition&file=<name.mat>
 GET /api/inspect?run=<id>&kind=iq&t=10
-GET /api/raw-iq?run=<id>&t=10&count=8192
+GET /api/raw-input?run=<id>&t=10&count=8192
 GET /api/inspect?run=<id>&kind=sky
 GET /api/inspect?run=<id>&kind=files
 GET /api/file?run=<id>&name=<filename>
@@ -75,7 +79,7 @@ POST /api/restart
 
 ## 当前适配与后续方向
 
-已验证当前 Windows 便携 EXE、GPS L1 C/A、18 MS/s signed int8 I/Q、+20 kHz IF、抽取至 3 MS/s。当前文件输入为 File_Signal_Source/ibyte；样本数按 2 × 采样率 × 时长配置。捕获网格使用内核已有 dump_channel，每次实验选择一个通道；成功捕获消息覆盖各通道。跟踪二进制解析适配当前构建的 112 字节记录。
+已验证当前 Windows 便携 EXE、GPS L1 C/A、18 MS/s signed int8 I/Q、+20 kHz IF、抽取至 3 MS/s。文件输入支持实数 int8/byte、int16/short、float32/float，以及 IQ int8/ibyte、int16/ishort、float32/gr_complex；多字节格式为小端序。工作台按格式计算文件长度、接收机样本数与切片字节偏移；处理接近文件尾部时预留 100 ms 供滤波和跟踪结束。实数输入使用 Pass_Through 适配器与 Freq_Xlating_Fir_Filter 完成滤波、下变频和抽取，填写实际录制中频；IQ 整数输入使用对应的 Ibyte/Ishort_To_Complex。捕获网格使用内核已有 dump_channel，每次实验选择一个通道；成功捕获消息覆盖各通道。跟踪二进制解析适配当前构建的 112 字节记录。
 
 天空图当前展示最近 GSV，不随历史游标改变；日志时钟精度以接收机输出为准，跟踪启动优先关联捕获样本时刻。定位轨迹以首个定位解为相对原点。GDB 面板展示连接信息，还没有内置源码调试器。输入面板尚未接入抽取后的基带流。后续将继续做各阶段流式抽样接口、多通道捕获网格轮换、历史天空图、参数模板和干净 Windows 系统验收。
 
@@ -85,7 +89,7 @@ POST /api/restart
 
 ### 支持与回归检查
 
-工作台配置、捕获监测和前端卫星标识支持 `Channel.signal=1C` 或 `B3`，按对应的 `Channels_*`、`Tracking_*`、`Acquisition_*` 参数处理。B3I 配置示例为 `templates/bds-b3i-m1-24m.conf`，需用户自行提供匹配 IQ。正常文件结束显示“结束”，文件尾保护提示显示“文件边界”，不当作失锁事件。15 项 Python 检查、JS 语法和回放状态检查通过。
+工作台配置、捕获监测和前端卫星标识支持 `Channel.signal=1C` 或 `B3`，按对应的 `Channels_*`、`Tracking_*`、`Acquisition_*` 参数处理。B3I 配置示例为 `templates/bds-b3i-m1-24m.conf`，需用户自行提供匹配 IQ。正常文件结束显示“结束”，文件尾保护提示显示“文件边界”，不当作失锁事件。20 项 Python 检查、JS 语法和回放状态检查通过。
 
 ```powershell
 python -m unittest discover -s tests -v

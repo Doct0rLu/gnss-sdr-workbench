@@ -1,5 +1,6 @@
 __pycache__/
 runs/
+logs/
 test-inputs/
 local.json
 *-source.zip

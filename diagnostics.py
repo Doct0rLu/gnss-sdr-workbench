@@ -1,5 +1,6 @@
 """Read-only adapters for native receiver artifacts and bounded input slices."""
 import json, math, re, struct, threading
+import signal_input
 from pathlib import Path
 
 RECORD=struct.Struct('<7fQd11fdIQI')
@@ -154,13 +155,28 @@ def time_rows(path,name,start,end,limit=600,tail=False,channel=None):
 def iq(path,t):
     import numpy as np
     cfg=settings(path);meta=json.loads((path/'manifest.json').read_text(encoding='utf-8'));fs=meta['fs']
-    source=Path(meta['iq']);offset=min(max(0,source.stat().st_size-8192*2),max(0,int(t*fs))*2);offset-=offset%2
-    with source.open('rb') as f:f.seek(offset);raw=f.read(8192*2)
-    a=np.frombuffer(raw,dtype=np.int8);a=a[:len(a)//2*2].reshape(-1,2).astype(float)
-    if len(a)<16:raise ValueError('该时间位置没有足够的 IQ 数据')
-    z=a[:,0]+1j*a[:,1];spec=20*np.log10(np.maximum(np.abs(np.fft.fftshift(np.fft.fft(z*np.hanning(len(z)))))/len(z),1e-10))
+    fmt=signal_input.layout(cfg);width=fmt['sample_bytes'];source=Path(meta['iq'])
+    if not math.isfinite(t) or t<0:raise ValueError('信号时间无效')
+    # Clamp to the last complete analysis window; all offsets are in logical samples.
+    total=source.stat().st_size//width
+    offset=min(max(0,total-8192),int(t*fs))
+    with source.open('rb') as f:f.seek(offset*width);raw=f.read(8192*width)
+    raw=raw[:len(raw)//width*width]
+    a=np.frombuffer(raw,dtype=fmt['dtype']).reshape(-1,fmt['components']).astype(float)
+    if len(a)<16:raise ValueError('该时间位置没有足够的信号数据')
+    finite=np.isfinite(a);invalid=int(np.size(a)-finite.sum());a=np.where(finite,a,0)
+    z=a[:,0] if fmt['real'] else a[:,0]+1j*a[:,1]
+    # Two-sided FFT preserves the mirror spectrum of real recordings.
+    spec=20*np.log10(np.maximum(np.abs(np.fft.fftshift(np.fft.fft(z*np.hanning(len(z)))))/len(z),1e-10))
     groups=np.array_split(np.arange(len(z)),min(512,len(z)))
-    return dict(t=offset/2/fs,fs=fs,samples=len(z),i=a[:256,0].tolist(),q=a[:256,1].tolist(),spectrum=[float(spec[g].max()) for g in groups],mhz=[float((g.mean()/len(z)-.5)*fs/1e6) for g in groups],rms=float(np.sqrt(np.mean(np.abs(z)**2))),dc_i=float(a[:,0].mean()),dc_q=float(a[:,1].mean()),clipped=float(np.mean(np.abs(a)>=127)*100))
+    clipped=None
+    if fmt['dtype'] in ('i1','<i2'):
+        low,high=(-128,127) if fmt['dtype']=='i1' else (-32768,32767)
+        clipped=float(np.mean((a<=low)|(a>=high))*100)
+    return dict(t=offset/fs,fs=fs,samples=len(z),format=fmt['item_type'],label=fmt['label'],real=fmt['real'],sample_bytes=width,
+                i=a[:256,0].tolist(),q=[] if fmt['real'] else a[:256,1].tolist(),
+                spectrum=[float(spec[g].max()) for g in groups],mhz=[float((g.mean()/len(z)-.5)*fs/1e6) for g in groups],
+                rms=float(np.sqrt(np.mean(np.abs(z)**2))),dc_i=float(a[:,0].mean()),dc_q=None if fmt['real'] else float(a[:,1].mean()),clipped=clipped,invalid=invalid)
 
 def sky(path):
     p=path/'solution.nmea'

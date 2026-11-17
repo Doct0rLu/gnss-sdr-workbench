@@ -6,9 +6,13 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--receiver',type=Path,required=True);p.add_argument('--receiver-source',type=Path,required=True);a=p.parse_args()
     if not (a.receiver/'bin/gnss-sdr.exe').is_file() or not a.receiver_source.is_file():raise SystemExit('Receiver runtime and matching source ZIP are required')
     subprocess.run([sys.executable,'-m','PyInstaller','--noconfirm','--name','GNSS-SDR-Workbench','--distpath',str(ROOT/'dist'),'--workpath',str(ROOT/'build/work'),'--specpath',str(ROOT/'build'),
-                    '--add-data',str(ROOT/'web')+';web','--add-data',str(ROOT/'templates')+';templates','--add-data',str(ROOT/'picker.py')+';.',str(ROOT/'server.py')],check=True)
+                    '--add-data',str(ROOT/'web')+';web','--add-data',str(ROOT/'templates')+';templates',str(ROOT/'server.py')],check=True)
+    from PyInstaller.archive.readers import CArchiveReader
+    archive=CArchiveReader(str(ROOT/'dist/GNSS-SDR-Workbench/GNSS-SDR-Workbench.exe')).open_embedded_archive('PYZ.pyz')
+    for module in ('picker','ctypes.wintypes','signal_input'):
+        if module not in archive.toc:raise SystemExit('Missing frozen module: '+module)
     # Build a new staging directory, excluding runtime test outputs and local.json.
-    stage=ROOT/'release/GNSS-SDR-Workbench-v0.3.1-win-x64'
+    stage=ROOT/'release/GNSS-SDR-Workbench-v0.3.2-win-x64'
     if stage.exists():raise SystemExit('Release staging already exists; keep it for review or choose a new release version')
     stage.mkdir(parents=True)
     frozen=ROOT/'dist/GNSS-SDR-Workbench'
@@ -28,7 +32,7 @@ def main():
                 target=licenses/package/str(f).replace('..','_');target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(distribution.locate_file(f),target)
     for name,url in {'python-LICENSE.txt':'https://raw.githubusercontent.com/python/cpython/v3.12.7/LICENSE','hdf5-LICENSE.txt':'https://raw.githubusercontent.com/HDFGroup/hdf5/hdf5_1_14_2/COPYING'}.items():
         (licenses/name).write_bytes(urllib.request.urlopen(url,timeout=30).read())
-    manifest={'version':'0.3.1','python':sys.version,'components':{n:importlib.metadata.version(n) for n in ('numpy','h5py','pyinstaller')},'files':{str(f.relative_to(stage)).replace('\\','/'):hashlib.sha256(f.read_bytes()).hexdigest() for f in stage.rglob('*') if f.is_file()}}
+    manifest={'version':'0.3.2','python':sys.version,'components':{n:importlib.metadata.version(n) for n in ('numpy','h5py','pyinstaller')},'files':{str(f.relative_to(stage)).replace('\\','/'):hashlib.sha256(f.read_bytes()).hexdigest() for f in stage.rglob('*') if f.is_file()}}
     (stage/'MANIFEST.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
     output=stage.parent/(stage.name+'.zip')
     with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED) as z:
