@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse, collections, hashlib, json, math, os, re, socket, struct, subprocess, threading, time, uuid, sys
 import diagnostics
 import signal_input
+import signals
 import picker
 from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -130,10 +131,9 @@ class Run:
                         decode_errors=self.decode_errors, last_packet=self.last_packet, positions=list(self.positions),acquisitions=list(self.acquisitions))
 
 def signal_contract(options):
-    signal=options.get('Channel.signal','1C').strip()
-    if signal not in ('1C','B3'):raise ValueError('工作台当前开放 GPS 1C 与 BDS B3 的监测适配')
-    count=int(options.get(f'Channels_{signal}.count','12'))
-    return signal,count
+    rows=signals.channels(options)
+    return rows[0]['signal'],len(rows)
+
 
 
 class Workbench:
@@ -145,32 +145,36 @@ class Workbench:
         bundled=HERE/'receiver/bin/gnss-sdr.exe'
         exe=self.settings.get('executable','')
         if not Path(exe).is_file() and bundled.is_file():exe=str(bundled)
-        return dict(executable=exe, iq=self.settings.get('iq',''), duration=self.settings.get('duration',20),capture_channel=self.settings.get('capture_channel',0),
+        return dict(executable=exe, iq=self.settings.get('iq',''), duration=self.settings.get('duration',20),inputs=self.settings.get('inputs',[]),capture_channel=self.settings.get('capture_channel',0),
                     config=self.settings.get('config',(RESOURCES/'templates/gps-l1.conf').read_text(encoding='utf-8')))
     def validate(self, data):
         exe = Path(data.get('executable','')); iq = Path(data.get('iq',''))
         if not exe.is_file() or exe.suffix.lower() != '.exe': raise ValueError('请选择存在的接收机 .exe 文件')
-        if not iq.is_file(): raise ValueError('信号文件不存在')
         duration = float(data.get('duration',20))
         if not math.isfinite(duration) or duration <= 0 or duration > 3600: raise ValueError('信号时长需在 0 到 3600 秒之间')
         config = data.get('config','')
         if '[GNSS-SDR]' not in config: raise ValueError('配置缺少 [GNSS-SDR] 段')
         options = dict(re.findall(r'^\s*([^#;\s=]+)\s*=\s*([^\r\n;#]+)',config,re.M))
-        fmt=signal_input.layout(options)
-        signal_input.validate_chain(options,fmt)
-        if options.get('SignalSource.implementation','').strip() != 'File_Signal_Source': raise ValueError('本版仅支持 File_Signal_Source')
-        signal,count=signal_contract(options)
+        inputs=signal_input.sources(options,data)
+        for item in inputs:
+            cfg=item['options'];fmt=item['layout'];source=Path(item['path']);fs=item['fs']
+            if not source.is_file():raise ValueError(f"RF {item['index']} 信号文件不存在")
+            signal_input.validate_chain(cfg,fmt)
+            if cfg.get('SignalSource.implementation','').strip()!='File_Signal_Source':raise ValueError('文件实验请选择 File_Signal_Source')
+            if not math.isfinite(fs) or fs<=0:raise ValueError('输入采样率无效')
+            if float(cfg.get('SignalSource.seconds_to_skip',0))!=0 or float(cfg.get('SignalSource.header_size',0))!=0:raise ValueError('时间轴从文件起点计算，请移除文件头和跳过设置')
+            output_fs=fs/float(cfg.get('InputFilter.decimation_factor',1)) if cfg.get('InputFilter.implementation')=='Freq_Xlating_Fir_Filter' else fs
+            if cfg.get('Resampler.implementation','Pass_Through')=='Pass_Through' and 'GNSS-SDR.internal_fs_sps' in options and not math.isclose(output_fs,float(options['GNSS-SDR.internal_fs_sps']),rel_tol=1e-6):raise ValueError(f"RF {item['index']} 输出采样率与内部采样率不一致，请设置抽取或重采样")
+            if source.stat().st_size<int(duration*fs)*fmt['sample_bytes']:raise ValueError(f"RF {item['index']} 信号文件长度不足")
+        rows=signals.channels(options);count=len(rows)
         if not 1<=count<=128 or not 0<=int(data.get('capture_channel',0))<count:raise ValueError('捕获通道编号超出配置范围')
+        if any(not 0<=r['rf_channel']<len(inputs) for r in rows):raise ValueError('通道的 RF_channel_ID 没有对应输入文件')
         if not 1<=int(options.get('Channels.in_acquisition','1'))<=count:raise ValueError('并行捕获通道数应在 1 到总通道数之间')
-        for key in (f'Tracking_{signal}.pll_bw_hz',f'Tracking_{signal}.dll_bw_hz',f'Acquisition_{signal}.doppler_step',f'Acquisition_{signal}.doppler_max'):
-            if key in options:
-                value=float(options[key])
+        for key,value in options.items():
+            if re.match(r'(Tracking|Acquisition)_',key) and key.endswith(('.pll_bw_hz','.dll_bw_hz','.doppler_step','.doppler_max')):
+                value=float(value)
                 if not math.isfinite(value) or value<=0:raise ValueError(key+' 应为正数')
-        fs = float(options.get('SignalSource.sampling_frequency',0))
-        if not math.isfinite(fs) or fs <= 0: raise ValueError('输入采样率无效')
-        if float(options.get('SignalSource.seconds_to_skip',0)) != 0 or float(options.get('SignalSource.header_size',0)) != 0:
-            raise ValueError('本版时间轴从文件起点计算，请移除跳过时长和文件头设置')
-        if iq.stat().st_size < int(duration*fs)*fmt['sample_bytes']: raise ValueError('信号文件长度不足以覆盖请求的信号时长')
+        iq=Path(inputs[0]['path']);fs=inputs[0]['fs']
         for key,value in options.items():
             if key.endswith(('dump_filename','output_path')) and value.strip() not in ('.','./') and (Path(value.strip()).is_absolute() or '..' in Path(value.strip()).parts):
                 raise ValueError('输出路径必须位于本次实验目录内：'+key)
@@ -183,7 +187,8 @@ class Workbench:
             capture_channel=int(data.get('capture_channel',0))
             options=dict(re.findall(r'^\s*([^#;\s=]+)\s*=\s*([^\r\n;#]+)',data['config'],re.M))
             signal,configured_channels=signal_contract(options)
-            fmt=signal_input.layout(options)
+            inputs=signal_input.sources(options,data);channel_map=signals.channels(options)
+            fmt=inputs[0]['layout']
             if not 0<=capture_channel<configured_channels:raise ValueError('捕获通道编号超出配置范围')
             sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM); sock.bind(('127.0.0.1',0)); sock.settimeout(.3)
             acq_sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM);acq_sock.bind(('127.0.0.1',0));acq_sock.settimeout(.3)
@@ -198,6 +203,19 @@ class Workbench:
                          'AcquisitionMonitor.enable_monitor':'true','AcquisitionMonitor.enable_protobuf':'true','AcquisitionMonitor.client_addresses':'127.0.0.1','AcquisitionMonitor.udp_port':str(acq_sock.getsockname()[1]),
                          f'Acquisition_{signal}.dump':'true' if data.get('capture_enabled',True) else 'false',f'Acquisition_{signal}.dump_channel':str(capture_channel),f'Acquisition_{signal}.dump_filename':'./acquisition',
                          'PVT.output_path':'.','PVT.nmea_dump_filename':'./solution.nmea'}
+            for item in inputs:
+                src=Path(item['path']);role=item['role']
+                overrides.update({role+'.filename':src.as_posix(),role+'.samples':str(signal_input.source_count(item['layout'],duration,item['fs'],src.stat().st_size)),role+'.repeat':'false'})
+            if len(inputs)>1:
+                for key in ('SignalSource.filename','SignalSource.samples','SignalSource.repeat'):overrides.pop(key,None)
+            for row in channel_map:
+                sid=row['signal'];ch=row['channel']
+                acq=signals.role(options,'Acquisition',sid,ch);trk=signals.role(options,'Tracking',sid,ch)
+                overrides.update({acq+'.dump':'true' if data.get('capture_enabled',True) and ch==capture_channel else 'false',acq+'.dump_channel':str(capture_channel),acq+'.dump_filename':'./acquisition_'+sid,
+                    trk+'.dump':'true',trk+'.dump_mat':'false',trk+'.dump_filename':options.get(trk+'.dump_filename','./tracking_'+sid+'_ch_')})
+            # Signal-wide acquisition role may be shared: apply selected channel last.
+            chosen=channel_map[capture_channel];acq=signals.role(options,'Acquisition',chosen['signal'],capture_channel)
+            overrides[acq+'.dump']='true' if data.get('capture_enabled',True) else 'false'
             for k,v in overrides.items():
                 config = re.sub(r'^\s*'+re.escape(k)+r'\s*=.*(?:\n|$)','',config,flags=re.M)
                 config += '\n'+k+'='+v
@@ -213,7 +231,7 @@ class Workbench:
                         exe_sha256=executable_hash,
                         config_sha256=hashlib.sha256((path/'receiver.conf').read_bytes()).hexdigest(),iq_bytes=iq.stat().st_size,
                         iq_mtime_ns=iq.stat().st_mtime_ns,output=str(path),command=command,input_format=fmt['item_type'],input_label=fmt['label'],source=str(data.get('source_label','本地信号 / 独立接收机进程'))[:120],
-                        monitor='TrackingMonitor / UDP Protobuf',version='0.3.2',tracking_port=sock.getsockname()[1],acquisition_port=acq_sock.getsockname()[1],capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label='BDS · B3I' if signal=='B3' else 'GPS · L1 C/A')
+                        monitor='TrackingMonitor / UDP Protobuf',version='0.4.0',tracking_port=sock.getsockname()[1],acquisition_port=acq_sock.getsockname()[1],capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label=' + '.join(dict.fromkeys(r['label'] for r in channel_map)),signals=list(dict.fromkeys(r['signal'] for r in channel_map)),channel_map=channel_map,inputs=[{k:v for k,v in item.items() if k not in ('layout','options')} for item in inputs])
             run = Run(path,meta); run.sock = sock; self.active = run
             try:
                 if getattr(sys,'frozen',False):
@@ -327,14 +345,15 @@ class Handler(BaseHTTPRequestHandler):
         if not self.valid_host(): return self.send({'error':'invalid host'},403)
         u=urlparse(self.path); q=parse_qs(u.query)
         try:
+            if u.path=='/api/signals':return self.send(list(signals.CATALOG.values()))
             if u.path=='/api/defaults': return self.send(APP.defaults())
             if u.path=='/api/history': return self.send(APP.history())
             if u.path in ('/api/raw-iq','/api/raw-input'):
                 rid=q.get('run',[''])[0];t=float(q.get('t',['0'])[0]);count=int(q.get('count',['8192'])[0])
                 if not re.fullmatch(r'[0-9-]+[a-f0-9]{6}',rid) or not math.isfinite(t) or not 0<=t<=3600 or not 1<=count<=1000000:raise ValueError('信号切片范围无效')
                 meta=json.loads((RUNS/rid/'manifest.json').read_text(encoding='utf-8'))
-                fmt=signal_input.layout(diagnostics.settings(RUNS/rid));width=fmt['sample_bytes']
-                with Path(meta['iq']).open('rb') as f:f.seek(int(t*meta['fs'])*width);payload=f.read(count*width)
+                rf=int(q.get('rf',['0'])[0]);item,fmt=diagnostics.input_source(RUNS/rid,rf);width=fmt['sample_bytes']
+                with Path(item['path']).open('rb') as f:f.seek(int(t*item['fs'])*width);payload=f.read(count*width)
                 return self.send(payload,ctype='application/octet-stream')
             if u.path=='/api/inspect':
                 rid=q.get('run',[''])[0]
@@ -363,7 +382,7 @@ class Handler(BaseHTTPRequestHandler):
                 if kind=='iq':
                     t=float(q.get('t',['0'])[0])
                     if not math.isfinite(t) or not 0<=t<=3600:raise ValueError('时间无效')
-                    return self.send(diagnostics.iq(path,t))
+                    return self.send(diagnostics.iq(path,t,int(q.get('rf',['0'])[0])))
                 if kind=='sky':return self.send(diagnostics.sky(path))
                 raise ValueError('未知数据类型')
             if u.path=='/api/state':
@@ -401,6 +420,7 @@ class Handler(BaseHTTPRequestHandler):
             size=int(self.headers.get('Content-Length',0))
             if size>100000: raise ValueError('请求过大')
             data=json.loads(self.rfile.read(size) or b'{}')
+            if self.path=='/api/template':return self.send({'config':signals.template(data.get('signals',[]),int(data.get('count',8)),data.get('fs'))})
             if self.path=='/api/browse':
                 kind=data.get('kind')
                 if kind not in ('exe','iq','config'):raise ValueError('文件类型无效')

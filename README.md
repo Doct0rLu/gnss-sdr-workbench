@@ -1,10 +1,10 @@
-# GNSS-SDR Workbench v0.3.2
+# GNSS-SDR Workbench v0.4.0
 
 Windows 本地接收机调试工作台。浏览器负责交互，Python 管理独立 GNSS-SDR 进程、监测接口和数据访问。前端与内核分开维护。
 
 ## 下载即用（推荐）
 
-Windows 10/11 x64 用户请在 [Releases](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/latest) 下载 [GNSS-SDR-Workbench-v0.3.2-win-x64.zip](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/download/v0.3.2/GNSS-SDR-Workbench-v0.3.2-win-x64.zip)，完整解压后双击 `Start-Workbench.cmd`。它包含 Python、前端、接收机及运行 DLL，无需安装开发环境。接收机路径自动定位；只需选择自己的信号文件。使用方式见 [PORTABLE.md](PORTABLE.md)。
+Windows 10/11 x64 用户请在 [Releases](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/latest) 下载 [GNSS-SDR-Workbench-v0.4.0-win-x64.zip](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/download/v0.4.0/GNSS-SDR-Workbench-v0.4.0-win-x64.zip)，完整解压后双击 `Start-Workbench.cmd`。它包含 Python、前端、接收机及运行 DLL，无需安装开发环境。接收机路径自动定位；只需选择自己的信号文件。使用方式见 [PORTABLE.md](PORTABLE.md)。
 
 Code → Download ZIP 仅为源码，适用于开发者。便携包不包含 IQ、开发者本机设置或历史运行结果。
 
@@ -20,7 +20,7 @@ Code → Download ZIP 仅为源码，适用于开发者。便携包不包含 IQ�
 
 ## 操作顺序
 
-1. 配置实验：浏览选择 EXE、信号或 .conf 文件，也可输入路径。设置时长、捕获快照通道、采样率、中频、通道数、环路带宽与搜索参数。高级配置文本可展开编辑。
+1. 配置实验：展开“信号与频点配置”，勾选信号并生成单频或组合配置；不同频点会出现独立 RF 文件栏。浏览选择 EXE、信号或 .conf 文件，也可输入路径。设置时长、捕获快照通道、采样率、中频、通道数、环路带宽与搜索参数。高级配置文本可展开编辑。
 2. 检查输入，保存配置。配置存储在本机 local.json，刷新后仍保留。
 3. 启动实验，或使用“重启接收机”。配置窗口也可以“保存并重启”。重启先向当前进程发送 q，等待正常保存，再创建独立实验，不覆盖原来的输出。30 秒仍未结束时保留停止状态，界面给出提示。
 4. 进入单通道或捕获工作区，使用统一时间轴查看和回放。实时跟随、暂停与回放只控制显示，接收机继续计算。
@@ -79,7 +79,7 @@ POST /api/restart
 
 ## 当前适配与后续方向
 
-已验证当前 Windows 便携 EXE、GPS L1 C/A、18 MS/s signed int8 I/Q、+20 kHz IF、抽取至 3 MS/s。文件输入支持实数 int8/byte、int16/short、float32/float，以及 IQ int8/ibyte、int16/ishort、float32/gr_complex；多字节格式为小端序。工作台按格式计算文件长度、接收机样本数与切片字节偏移；处理接近文件尾部时预留 100 ms 供滤波和跟踪结束。实数输入使用 Pass_Through 适配器与 Freq_Xlating_Fir_Filter 完成滤波、下变频和抽取，填写实际录制中频；IQ 整数输入使用对应的 Ibyte/Ishort_To_Complex。捕获网格使用内核已有 dump_channel，每次实验选择一个通道；成功捕获消息覆盖各通道。跟踪二进制解析适配当前构建的 112 字节记录。
+已验证当前 Windows 便携 EXE、17 类信号处理链运行、同频混合与双 RF 链路；实际定位回归包括 GPS L1 C/A 和北斗 B3I。GPS L1 C/A 录制使用 18 MS/s signed int8 I/Q、+20 kHz IF、抽取至 3 MS/s。文件输入支持实数 int8/byte、int16/short、float32/float，以及 IQ int8/ibyte、int16/ishort、float32/gr_complex；多字节格式为小端序。工作台按格式计算文件长度、接收机样本数与切片字节偏移；处理接近文件尾部时预留 100 ms 供滤波和跟踪结束。实数输入使用 Pass_Through 适配器与 Freq_Xlating_Fir_Filter 完成滤波、下变频和抽取，填写实际录制中频；IQ 整数输入使用对应的 Ibyte/Ishort_To_Complex。捕获网格使用内核已有 dump_channel，每次实验选择一个通道；成功捕获消息覆盖各通道。跟踪二进制解析适配当前构建的 112 字节记录。
 
 天空图当前展示最近 GSV，不随历史游标改变；日志时钟精度以接收机输出为准，跟踪启动优先关联捕获样本时刻。定位轨迹以首个定位解为相对原点。GDB 面板展示连接信息，还没有内置源码调试器。输入面板尚未接入抽取后的基带流。后续将继续做各阶段流式抽样接口、多通道捕获网格轮换、历史天空图、参数模板和干净 Windows 系统验收。
 
@@ -89,7 +89,7 @@ POST /api/restart
 
 ### 支持与回归检查
 
-工作台配置、捕获监测和前端卫星标识支持 `Channel.signal=1C` 或 `B3`，按对应的 `Channels_*`、`Tracking_*`、`Acquisition_*` 参数处理。B3I 配置示例为 `templates/bds-b3i-m1-24m.conf`，需用户自行提供匹配 IQ。正常文件结束显示“结束”，文件尾保护提示显示“文件边界”，不当作失锁事件。20 项 Python 检查、JS 语法和回放状态检查通过。
+工作台信号目录与随附 GNSS-SDR 的 17 类处理链一致，支持同频多系统及多 RF 文件组合。配置、捕获监测、逐通道跟踪文件与前端卫星标识按原生绝对通道顺序处理。完整清单与验证层级见 [SIGNALS.md](SIGNALS.md)。B3I 配置示例为 `templates/bds-b3i-m1-24m.conf`，需用户自行提供匹配 IQ。正常文件结束显示“结束”，文件尾保护提示显示“文件边界”，不当作失锁事件。24 项 Python 检查、JS 语法和回放状态检查通过。
 
 ```powershell
 python -m unittest discover -s tests -v

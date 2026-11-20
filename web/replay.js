@@ -78,7 +78,7 @@ function timePlot(rows,series,unit,range){
  const html=rows.length?plot(rows,series,unit,'t',range):'<div class="empty">此窗口无跟踪记录</div>';
  return '<div class="linked-time-plot" data-start="'+range[0]+'" data-end="'+range[1]+'">'+html+'</div>';
 }
-function satelliteSystem(){return state?.meta.signal==='B3'?'C':state?.meta.signal==='1C'?'G':state?.channels[0]?.system||'?';}
+function satelliteSystem(){return state?.meta.channel_map?.find(r=>r.channel===selected)?.system||state?.channels.find(r=>r.channel===selected)?.system||({'B3':'C','1C':'G'}[state?.meta.signal])||'?';}
 function captureCard(d,compact=false){const f=d.frame;if(!f)return card('捕获快照','<div class="empty">当前通道在此时刻没有捕获快照</div>');return card(`捕获帧 · ${satelliteSystem()}${String(f.prn).padStart(2,'0')} · ${fmt(f.t,3)} s`,plot(f.delay.map((t,n)=>({t,value:f.profile[n]})),[['value','码延迟峰形']],'归一化功率 / sample'),`${f.positive?'成功':'未过门限'} · 统计量 ${fmt(f.statistic,2)} / ${fmt(f.threshold,2)} · ${fmt(f.doppler_hz,0)} Hz`);}
 function renderLinkedFrame(d,capture,range,at){
  const expanded=$('loopAdvanced')?.open||false,rows=d.rows,last=rows.at(-1),ch=selected;

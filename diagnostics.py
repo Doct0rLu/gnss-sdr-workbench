@@ -1,6 +1,7 @@
 """Read-only adapters for native receiver artifacts and bounded input slices."""
 import json, math, re, struct, threading
 import signal_input
+import signals
 from pathlib import Path
 
 RECORD=struct.Struct('<7fQd11fdIQI')
@@ -39,7 +40,8 @@ def files(path):
 
 def tracking(path,ch,start,end):
     cfg=settings(path);fs=float(cfg['GNSS-SDR.internal_fs_sps'])
-    prefix=cfg.get('Tracking_'+cfg.get('Channel.signal','1C').strip()+'.dump_filename','./tracking_ch_')
+    sid=signals.channel(cfg,ch)['signal'];role=signals.role(cfg,'Tracking',sid,ch)
+    prefix=cfg.get(role+'.dump_filename','./tracking_ch_')
     p=path/(prefix+str(ch)+'.dat')
     if not p.is_file(): return dict(rows=[],record_bytes=RECORD.size)
     safe_file(path,p.name)
@@ -63,7 +65,7 @@ def tracking(path,ch,start,end):
             if r is None:break
             row=dict(t=r[7]/fs,ve=r[0],early=r[1],prompt=r[2],late=r[3],vl=r[4],i=r[5],q=r[6],phase=r[8],doppler=r[9],code_freq=r[11],pll=r[13],pll_nco=r[14],dll=r[15],dll_nco=r[16],cn0=r[17],lock=r[18],prn=r[21])
             rows.append({k:v if not isinstance(v,float) or math.isfinite(v) else None for k,v in row.items()})
-    return dict(rows=rows,records=count,record_bytes=RECORD.size,file=p.name,fs=fs)
+    return dict(rows=rows,records=count,record_bytes=RECORD.size,file=p.name,fs=fs,**signals.channel(cfg,ch))
 
 def acquisition(path,name='',channel=None,at=None):
     listing=acquisition_index(path)
@@ -93,14 +95,17 @@ def acquisition(path,name='',channel=None,at=None):
 
 def timeline(path):
     fs=float(settings(path)['GNSS-SDR.internal_fs_sps']);available=0;channels=[]
-    for p in path.glob('tracking_ch_*.dat'):
+    cfg=settings(path)
+    for identity in signals.channels(cfg):
+        ch=identity['channel'];sid=identity['signal'];role=signals.role(cfg,'Tracking',sid,ch)
+        p=path/(cfg.get(role+'.dump_filename','./tracking_ch_')+str(ch)+'.dat')
+        if not p.is_file():continue
         count=p.stat().st_size//RECORD.size
         if not count:continue
-        with p.open('rb') as f:
-            f.seek((count-1)*RECORD.size);raw=f.read(RECORD.size)
+        with p.open('rb') as f:f.seek((count-1)*RECORD.size);raw=f.read(RECORD.size)
         if len(raw)!=RECORD.size:continue
         last=RECORD.unpack(raw);t=last[7]/fs
-        if math.isfinite(t):available=max(available,t);channels.append(dict(channel=int(re.search(r'(\d+)\.dat$',p.name)[1]),end=t,records=count))
+        if math.isfinite(t):available=max(available,t);channels.append(dict(identity,end=t,records=count))
     captures=acquisition_index(path)
     available=max([available]+[r['t'] for r in captures])
     log=path/'logs.jsonl'
@@ -152,10 +157,16 @@ def time_rows(path,name,start,end,limit=600,tail=False,channel=None):
         if len(_JSON_INDEX)>100:_JSON_INDEX.clear()
         return list(reversed(rows)) if tail else rows
 
-def iq(path,t):
+def input_source(path,rf=0):
+    cfg=settings(path);meta=json.loads((path/'manifest.json').read_text(encoding='utf-8'))
+    items=meta.get('inputs') or [dict(path=meta['iq'],fs=meta['fs'],format=cfg.get('SignalSource.item_type','ibyte'))]
+    if not 0<=rf<len(items):raise ValueError('RF 输入编号无效')
+    item=items[rf];return item,signal_input.layout({'SignalSource.item_type':item['format']})
+
+def iq(path,t,rf=0):
     import numpy as np
-    cfg=settings(path);meta=json.loads((path/'manifest.json').read_text(encoding='utf-8'));fs=meta['fs']
-    fmt=signal_input.layout(cfg);width=fmt['sample_bytes'];source=Path(meta['iq'])
+    item,fmt=input_source(path,rf);fs=item['fs']
+    width=fmt['sample_bytes'];source=Path(item['path'])
     if not math.isfinite(t) or t<0:raise ValueError('信号时间无效')
     # Clamp to the last complete analysis window; all offsets are in logical samples.
     total=source.stat().st_size//width
@@ -173,7 +184,7 @@ def iq(path,t):
     if fmt['dtype'] in ('i1','<i2'):
         low,high=(-128,127) if fmt['dtype']=='i1' else (-32768,32767)
         clipped=float(np.mean((a<=low)|(a>=high))*100)
-    return dict(t=offset/fs,fs=fs,samples=len(z),format=fmt['item_type'],label=fmt['label'],real=fmt['real'],sample_bytes=width,
+    return dict(rf_channel=rf,t=offset/fs,fs=fs,samples=len(z),format=fmt['item_type'],label=fmt['label'],real=fmt['real'],sample_bytes=width,
                 i=a[:256,0].tolist(),q=[] if fmt['real'] else a[:256,1].tolist(),
                 spectrum=[float(spec[g].max()) for g in groups],mhz=[float((g.mean()/len(z)-.5)*fs/1e6) for g in groups],
                 rms=float(np.sqrt(np.mean(np.abs(z)**2))),dc_i=float(a[:,0].mean()),dc_q=None if fmt['real'] else float(a[:,1].mean()),clipped=clipped,invalid=invalid)
@@ -193,6 +204,6 @@ def sky(path):
         if v[2]=='1':sats={}
         for n in range(4,len(v)-3,4):
             if all(v[n:n+3]):
-                try:sats[v[n]]=dict(system={'GP':'G','BD':'C','GB':'C','GA':'E','GL':'R'}.get(v[0][:2],'?'),prn=int(v[n]),elevation=float(v[n+1]),azimuth=float(v[n+2]),cn0=float(v[n+3]) if v[n+3] else None)
+                try:sats[v[n]]=dict(system={'GP':'G','BD':'C','GB':'C','GA':'E','GL':'R','GQ':'J','QZ':'J'}.get(v[0][:2],'?'),prn=int(v[n]),elevation=float(v[n+1]),azimuth=float(v[n+2]),cn0=float(v[n+3]) if v[n+3] else None)
                 except ValueError:pass
     return list(sats.values())

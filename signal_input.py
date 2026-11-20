@@ -1,5 +1,6 @@
 """File sample layout shared by validation, receiver configuration and inspection."""
 import math
+from pathlib import Path
 FORMATS = {
     'byte': dict(label='实数 · int8', dtype='i1', components=1, scalar_bytes=1, source_items=1, adapter='Pass_Through', filter_type='byte'),
     'short': dict(label='实数 · int16 LE', dtype='<i2', components=1, scalar_bytes=2, source_items=1, adapter='Pass_Through', filter_type='short'),
@@ -32,3 +33,21 @@ def source_count(fmt, duration, fs, file_bytes):
     available=file_bytes//fmt['sample_bytes']
     samples=min(int(duration*fs),max(1,available-math.ceil(.1*fs)))
     return samples*fmt['source_items']
+
+def sources(options, data=None):
+    data=data or {}
+    count=int(options.get('GNSS-SDR.num_sources',options.get('Receiver.sources_count',1)))
+    if not 1<=count<=32:raise ValueError('RF 输入数需在 1–32 之间')
+    result=[]
+    for n in range(count):
+        suffix=str(n) if count>1 else '';role='SignalSource'+suffix
+        flat={}
+        for base in ('SignalSource','SignalConditioner','DataTypeAdapter','InputFilter','Resampler'):
+            for k,v in options.items():
+                if k.startswith(base+suffix+'.'):flat[base+k[len(base+suffix):]]=v
+        supplied=data.get('inputs',[])
+        filename=supplied[n].get('path','') if n<len(supplied) else ''
+        filename=filename or (data.get('iq','') if n==0 else '') or flat.get('SignalSource.filename','')
+        fmt=layout(flat);fs=float(flat.get('SignalSource.sampling_frequency',0))
+        result.append(dict(index=n,role=role,path=str(Path(filename).resolve()),fs=fs,format=fmt['item_type'],label=fmt['label'],options=flat,layout=fmt))
+    return result
