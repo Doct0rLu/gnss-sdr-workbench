@@ -158,3 +158,46 @@ def template(ids, count=8, fs=None, shared=None, b1c_profile='narrow'):
             cfg.update({f'Tracking_1D.{key}': value for key, value in loops.items()})
     cfg.update({'Channels.in_acquisition':min(6 if '1D' in ids else 2,len(ids)*int(count)),'Channel.signal':ids[0],'Observables.implementation':'Hybrid_Observables','PVT.implementation':'RTKLIB_PVT','PVT.positioning_mode':'Single','PVT.output_rate_ms':100,'PVT.display_rate_ms':1000,'PVT.output_enabled':'true','PVT.output_path':'.','PVT.nmea_dump_filename':'./solution.nmea','PVT.flag_nmea_tty_port':'false','PVT.flag_rtcm_tty_port':'false','PVT.flag_rtcm_server':'false'})
     return '[GNSS-SDR]\n'+'\n'.join(f'{k}={v}' for k,v in cfg.items())+'\n'
+
+def m1_template(sid, count=9, prns=''):
+    """Single-band M1 replay at the recorded 24 MS/s, with optional satellite assignments."""
+    if sid not in ('1D', '2S', 'L5'):
+        raise ValueError('M1 单频预设支持 B1C、L2C 和 L5')
+    if not isinstance(prns, str):
+        raise ValueError('PRN 请用空格或逗号分隔')
+    tokens = prns.strip()
+    satellites = []
+    if tokens:
+        maximum = 63 if sid == '1D' else 32
+        for token in re.split(r'[，,\s]+', tokens):
+            if not token.isascii() or not token.isdecimal() or not 1 <= int(token) <= maximum:
+                raise ValueError(f'PRN 应为 1–{maximum} 的整数')
+            satellites.append(int(token))
+        if len(set(satellites)) != len(satellites):
+            raise ValueError('PRN 列表中有重复卫星')
+        count = len(satellites)
+
+    rate = 24_000_000
+    internal = {'1D':8_000_000, '2S':4_000_000, 'L5':rate}[sid]
+    cfg = parse(template([sid], count, internal))
+    cfg['Workbench.replay_profile'] = 'm1'
+    cfg['SignalSource.sampling_frequency'] = rate
+    if sid == '1D':
+        lowpass(cfg, '', rate, 0, 3_000_000, 750_000, 3)
+        cfg.update({'Tracking_1D.b1c_data_prompt_scale':4.0, 'Tracking_1D.b1c_pilot_prompt_scale':1.0,
+                    'Channels.in_acquisition':min(9, count)})
+    elif sid == '2S':
+        lowpass(cfg, '', rate, 0, 1_500_000, 500_000, 6)
+        cfg.update({'Acquisition_2S.doppler_max':5000, 'Acquisition_2S.doppler_step':25,
+                    'Acquisition_2S.pfa':0.001, 'Tracking_2S.pll_bw_hz':6, 'Tracking_2S.dll_bw_hz':0.2,
+                    'Tracking_2S.pll_bw_narrow_hz':3, 'Tracking_2S.dll_bw_narrow_hz':0.15})
+    else:
+        cfg.update({'Acquisition_L5.doppler_max':6500, 'Acquisition_L5.doppler_step':250,
+                    'Acquisition_L5.pfa':0.01, 'Acquisition_L5.max_dwells':4, 'Acquisition_L5.acquire_pilot':'false',
+                    'Tracking_L5.track_pilot':'false', 'Tracking_L5.pll_bw_hz':12, 'Tracking_L5.dll_bw_hz':0.5,
+                    'Tracking_L5.pll_bw_narrow_hz':5, 'Tracking_L5.dll_bw_narrow_hz':0.2})
+    if sid in ('2S','L5'):
+        cfg.update({'PVT.elevation_mask':5, 'PVT.iono_model':'OFF', 'PVT.trop_model':'OFF'})
+    for channel_id, prn in enumerate(satellites):
+        cfg[f'Channel{channel_id}.satellite'] = prn
+    return '[GNSS-SDR]\n' + '\n'.join(f'{k}={v}' for k,v in cfg.items()) + '\n'

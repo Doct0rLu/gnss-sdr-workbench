@@ -79,6 +79,7 @@ class Run:
         self.log_signal_time=0
         self.log_sink=None
         self.identities = {r['channel']: r for r in meta.get('channel_map', [])}
+        self.native_log_offsets = {}
         self.progress = {}
         for row in self.identities.values():
             stats = self.progress.setdefault(row['signal'], dict(label=row['label'], channels=0,
@@ -90,7 +91,27 @@ class Run:
         if row and prn > 0:
             self.progress[row['signal']][stage].add(f"{row['system']}{prn:02d}")
 
+    def read_b1c_ephemeris_events(self):
+        # Native log records are serialized even when simultaneous stdout messages interleave.
+        for path in self.path.glob('gnss-sdr.*.log'):
+            try:
+                with path.open('rb') as stream:
+                    stream.seek(self.native_log_offsets.get(path,0))
+                    for line in stream:
+                        if not line.endswith(b'\n'):
+                            break
+                        self.native_log_offsets[path]=stream.tell()
+                        if b'B-CNAV1 ephemeris from PRN' not in line:
+                            continue
+                        event=re.search(rb'New BeiDou B-CNAV1 ephemeris from PRN (\d+) in channel (\d+)\b',line)
+                        if event:
+                            self.record_stage(int(event[2]),int(event[1]),'decoded')
+            except (FileNotFoundError, PermissionError):
+                continue
+
     def stage_summary(self):
+        if '1D' in self.progress:
+            self.read_b1c_ephemeris_events()
         rows = [dict(signal=sid, **{k:sorted(v) if isinstance(v,set) else v for k,v in stats.items()})
                 for sid,stats in self.progress.items()]
         return dict(signals=rows, pvt=diagnostics.pvt_satellites(self.path))
@@ -275,8 +296,12 @@ class Workbench:
                         exe_sha256=executable_hash,
                         config_sha256=hashlib.sha256((path/'receiver.conf').read_bytes()).hexdigest(),iq_bytes=iq.stat().st_size,
                         iq_mtime_ns=iq.stat().st_mtime_ns,output=str(path),command=command,input_format=fmt['item_type'],input_label=fmt['label'],source=str(data.get('source_label','本地信号 / 独立接收机进程'))[:120],
-                        monitor='TrackingMonitor / UDP Protobuf',version='0.4.1',tracking_port=sock.getsockname()[1],acquisition_port=acq_sock.getsockname()[1],capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label=' + '.join(dict.fromkeys(r['label'] for r in channel_map)),signals=list(dict.fromkeys(r['signal'] for r in channel_map)),channel_map=channel_map,inputs=[{k:v for k,v in item.items() if k not in ('layout','options')} for item in inputs])
+                        monitor='TrackingMonitor / UDP Protobuf',version='0.4.2',tracking_port=sock.getsockname()[1],acquisition_port=acq_sock.getsockname()[1],capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label=' + '.join(dict.fromkeys(r['label'] for r in channel_map)),signals=list(dict.fromkeys(r['signal'] for r in channel_map)),channel_map=channel_map,inputs=[{k:v for k,v in item.items() if k not in ('layout','options')} for item in inputs])
             run = Run(path,meta); run.sock = sock; self.active = run
+            if options.get('Workbench.replay_profile') == 'm1':
+                satellites = [options.get(f"Channel{row['channel']}.satellite",'').strip() for row in channel_map]
+                assigned = sum(value.isdecimal() and value.strip('0') != '' for value in satellites)
+                meta['profile_label'] = 'M1 实验 · ' + (f'{assigned} 个指定 PRN 通道' if assigned else '盲搜')
             try:
                 if getattr(sys,'frozen',False):
                     import ctypes
@@ -465,7 +490,18 @@ class Handler(BaseHTTPRequestHandler):
             size=int(self.headers.get('Content-Length',0))
             if size>100000: raise ValueError('请求过大')
             data=json.loads(self.rfile.read(size) or b'{}')
-            if self.path=='/api/template':return self.send({'config':signals.template(data.get('signals',[]),int(data.get('count',8)),data.get('fs'),data.get('shared'),data.get('b1c_profile','narrow'))})
+            if self.path=='/api/template':
+                profile = data.get('profile','standard')
+                ids = data.get('signals', [])
+                if profile == 'm1':
+                    if len(ids) != 1 or data.get('shared') is not None or data.get('b1c_profile','narrow') != 'narrow':
+                        raise ValueError('M1 单频预设使用一份以载频为中心的 24 MS/s IQ 录制')
+                    config = signals.m1_template(ids[0], int(data.get('count',9)), data.get('prns',''))
+                elif profile == 'standard':
+                    config = signals.template(ids,int(data.get('count',8)),data.get('fs'),data.get('shared'),data.get('b1c_profile','narrow'))
+                else:
+                    raise ValueError('未知接收参数预设')
+                return self.send({'config':config})
             if self.path=='/api/browse':
                 kind=data.get('kind')
                 if kind not in ('exe','iq','config'):raise ValueError('文件类型无效')

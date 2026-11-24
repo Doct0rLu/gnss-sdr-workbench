@@ -10,3 +10,5 @@
 
 .signal-progress{padding:10px 16px;border-bottom:1px solid #d9e5e8}.signal-progress summary{cursor:pointer}.signal-progress p{font-size:12px}.signal-progress th,.signal-progress td{white-space:nowrap}
 #b1cChoice[hidden],#sharedRecording[hidden]{display:none}
+
+#standardPresetFields[hidden],#m1PrnFields[hidden]{display:none}

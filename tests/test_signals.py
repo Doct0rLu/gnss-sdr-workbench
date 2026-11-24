@@ -84,6 +84,43 @@ class SignalTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             signals.template(['1D'],fs=8_000_000,b1c_profile='wide')
 
+    def test_m1_replay_profiles_and_blind_search(self):
+        bands = [('1D', 8_000_000, 3, 50, 10, 0.5), ('2S', 4_000_000, 6, 25, 6, 0.2),
+                 ('L5', 24_000_000, 1, 250, 12, 0.5)]
+        for sid, internal, decimation, step, pll, dll in bands:
+            with self.subTest(signal=sid):
+                text = signals.m1_template(sid)
+                shipped = Path(signals.__file__).parent / 'templates/signals' / f'm1-{sid}.conf'
+                self.assertEqual(text, shipped.read_text(encoding='utf8'))
+                cfg = signals.parse(text)
+                self.assertFalse(any(k.endswith('.satellite') for k in cfg))
+                self.assertEqual(int(cfg['GNSS-SDR.internal_fs_sps']), internal)
+                self.assertEqual(int(cfg['SignalSource.sampling_frequency']), 24_000_000)
+                self.assertEqual(int(cfg.get('InputFilter.decimation_factor', 1)), decimation)
+                self.assertEqual(int(cfg[f'Acquisition_{sid}.doppler_step']), step)
+                self.assertEqual(float(cfg[f'Tracking_{sid}.pll_bw_hz']), pll)
+                self.assertEqual(float(cfg[f'Tracking_{sid}.dll_bw_hz']), dll)
+                if sid in ('2S','L5'):
+                    self.assertEqual(cfg['PVT.iono_model'], 'OFF')
+                    self.assertEqual(cfg['PVT.trop_model'], 'OFF')
+                    self.assertEqual(cfg['PVT.elevation_mask'], '5')
+                self.assertEqual(len(signals.channels(cfg)), 9)
+                known = signals.parse(signals.m1_template(sid, prns='7，2  6'))
+                self.assertEqual(len(signals.channels(known)), 3)
+                self.assertEqual([known[f'Channel{n}.satellite'] for n in range(3)], ['7','2','6'])
+        self.assertNotIn('Tracking_1D.b1c_data_prompt_scale', signals.parse(signals.template(['1D'])))
+        self.assertEqual(signals.parse(signals.template(['2S']))['Tracking_2S.pll_bw_hz'], '35')
+        self.assertEqual(signals.parse(signals.template(['L5']))['Acquisition_L5.pfa'], '0.0001')
+
+    def test_m1_assignment_validation(self):
+        for text in ('0', '1 33', '1,1', '1,2a', '-1', '2.5'):
+            with self.subTest(text=text), self.assertRaises(ValueError):
+                signals.m1_template('2S', prns=text)
+        with self.assertRaises(ValueError):
+            signals.m1_template('1D', prns='64')
+        with self.assertRaises(ValueError):
+            signals.m1_template('1C')
+
     def test_signal_stages_and_pvt_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp)
@@ -98,6 +135,11 @@ class SignalTests(unittest.TestCase):
             self.assertIsNone(stage['pvt'])
             run.log('New BeiDou B-CNAV1 ephemeris in channel 2 from satellite Beidou PRN 25')
             self.assertEqual(run.stage_summary()['signals'][1]['decoded'],['C25'])
+            native=path/'gnss-sdr.test.log'
+            native.write_bytes(b'New BeiDou B-CNAV1 ephemeris from PRN 26 in channel 3')
+            self.assertEqual(run.stage_summary()['signals'][1]['decoded'],['C25'])
+            with native.open('ab') as output: output.write(b' with CN0=41 dB-Hz\n')
+            self.assertEqual(run.stage_summary()['signals'][1]['decoded'],['C25','C26'])
             def sentence(body):
                 checksum=0
                 for c in body: checksum ^= ord(c)

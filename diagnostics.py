@@ -81,17 +81,30 @@ def acquisition(path,name='',channel=None,at=None):
     with h5py.File(p,'r') as f:
         def scalar(k,default=0):return float(np.asarray(f[k]).flat[0]) if k in f else default
         grid=f['acq_grid'];nr,nc=grid.shape
-        if nr*nc>20000000:raise ValueError('捕获网格超过本版读取上限')
-        a=np.asarray(grid,dtype=float) # MAT73 dimensions reversed: Doppler rows, delay columns.
-        n=int(scalar('doppler_num_candidates',nr));a=a[:n]
-        a=np.nan_to_num(a,nan=0,posinf=0,neginf=0)
-        row,col=np.unravel_index(np.argmax(a),a.shape);peak=float(a[row,col]);scale=peak or 1
-        # Preserve peak shape around the actual maximum, and a max-pooled overview.
-        radius=80;indices=np.arange(max(0,col-radius),min(nc,col+radius+1))
-        bins=np.array_split(np.arange(nc),min(128,nc))
-        pooled=np.stack([a[:,b].max(axis=1) for b in bins],axis=1)
+        n=min(nr,int(scalar('doppler_num_candidates',nr)))
+        if n<1 or nc<1 or nc>1_000_000 or n>4096 or n*nc>128_000_000:
+            raise ValueError('捕获网格尺寸超出读取范围')
+        # MAT73 stores Doppler rows by delay columns. Keep at most 1M cells in memory.
+        edges=np.array_split(np.arange(nc),min(128,nc))
+        starts=[part[0] for part in edges]
+        pooled=np.empty((n,len(starts)))
+        height=max(1,1_000_000//nc)
+        peak=-math.inf
+        for first in range(0,n,height):
+            last=min(n,first+height)
+            block=np.nan_to_num(grid[first:last,:],nan=0,posinf=0,neginf=0)
+            local_row,local_col=np.unravel_index(block.argmax(),block.shape)
+            candidate=float(block[local_row,local_col])
+            if candidate>peak:
+                peak=candidate
+                row,col=first+local_row,local_col
+            pooled[first:last]=np.maximum.reduceat(block,starts,axis=1)
+        scale=peak or 1
+        indices=np.arange(max(0,col-80),min(nc,col+81))
+        profile=np.nan_to_num(grid[row,indices[0]:indices[-1]+1],nan=0,posinf=0,neginf=0)
+        doppler_profile=np.nan_to_num(grid[:n,col],nan=0,posinf=0,neginf=0)
         step=scalar('doppler_step');center=scalar('doppler_center');dmax=scalar('doppler_max')
-        return dict(files=listing,frame=dict(t=chosen['t'],name=p.name,channel=int(re.search(r'_ch_(\d+)',p.name)[1]),prn=scalar('PRN'),sample_counter=scalar('sample_counter'),positive=bool(scalar('positive_acq')),statistic=scalar('test_statistic'),threshold=scalar('threshold'),peak=peak,delay_samples=scalar('acq_delay_samples'),doppler_hz=scalar('acq_doppler_hz'),delay=indices.tolist(),profile=(a[row,indices]/scale).tolist(),dopplers=(center-dmax+np.arange(n)*step).tolist(),doppler_profile=(a[:,col]/scale).tolist(),heat=(pooled/scale).tolist(),code_samples=nc))
+        return dict(files=listing,frame=dict(t=chosen['t'],name=p.name,channel=int(re.search(r'_ch_(\d+)',p.name)[1]),prn=scalar('PRN'),sample_counter=scalar('sample_counter'),positive=bool(scalar('positive_acq')),statistic=scalar('test_statistic'),threshold=scalar('threshold'),peak=peak,delay_samples=scalar('acq_delay_samples'),doppler_hz=scalar('acq_doppler_hz'),delay=indices.tolist(),profile=(profile/scale).tolist(),dopplers=(center-dmax+np.arange(n)*step).tolist(),doppler_profile=(doppler_profile/scale).tolist(),heat=(pooled/scale).tolist(),code_samples=nc))
 
 def timeline(path):
     fs=float(settings(path)['GNSS-SDR.internal_fs_sps']);available=0;channels=[]

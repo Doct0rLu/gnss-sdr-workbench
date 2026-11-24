@@ -83,10 +83,19 @@ $('parameterSignal').onchange=loadCommonFields;$('parameterRF').onchange=loadCom
 let presetDirty=false;
 function isSharedConfig(){return textConfigValue('Workbench.capture_center_hz')!=='';}
 function showPresetFields(){
+ const m1=Boolean($('receptionProfile').value);
+ $('standardPresetFields').hidden=m1;
+ $('m1PrnFields').hidden=!m1;
+ $('presetCount').disabled=m1 && Boolean($('assignedPrns').value.trim());
  $('sharedRecording').hidden=$('rfMode').value!=='shared';
  $('b1cChoice').hidden=!$('signalCatalog').querySelector('input[value="1D"]:checked');
 }
 function restorePreset(enabled){
+ const m1=textConfigValue('Workbench.replay_profile')==='m1' && enabled.length===1;
+ $('receptionProfile').value=m1?enabled[0].id:'';
+ const count=m1?configValue('Channels_'+enabled[0].id+'.count'):0;
+ $('assignedPrns').value=Array.from({length:count},(_,n)=>textConfigValue('Channel'+n+'.satellite')).filter(Boolean).join(' ');
+
  for(const c of $('signalCatalog').querySelectorAll('input'))c.checked=enabled.some(s=>s.id===c.value);
  const shared=isSharedConfig(),suffix=rfCount()>1?'0':'';
  $('rfMode').value=shared?'shared':'separate';
@@ -102,15 +111,18 @@ function restorePreset(enabled){
    const prefix='InputFilter'+(rfCount()>1?n:'')+'.',offset=configValue(prefix+'IF')/1e6;
    const names=enabled.filter(s=>Number(textConfigValue('Channels_'+s.id+'.RF_channel_ID'))===n).map(s=>s.label).join(' / ');
    return names+'：IF '+(offset>0?'+':'')+offset+' MHz，低通 '+configValue(prefix+'bw')/1e6+' MHz，抽取 ×'+configValue(prefix+'decimation_factor');
- }).join('　·　'):'各频点分别选择同步录制文件。';
+ }).join('　·　'):m1?'M1 单频实验 · 内部 '+configValue('GNSS-SDR.internal_fs_sps')/1e6+' MS/s · '+($('assignedPrns').value?'指定 PRN':'盲搜'):'各频点分别选择同步录制文件。';
 }
 function editPreset(){presetDirty=true;showPresetFields();$('branchPlan').textContent='生成配置后显示支路参数。';}
-for(const id of ['signalCatalog','rfMode','b1cProfile','captureCenter','captureRate','captureFormat','presetCount'])$(id).oninput=editPreset;
+$('receptionProfile').oninput=()=>{if($('receptionProfile').value)$('presetCount').value=9;$('assignedPrns').value='';editPreset();};
+for(const id of ['assignedPrns','signalCatalog','rfMode','b1cProfile','captureCenter','captureRate','captureFormat','presetCount'])$(id).oninput=editPreset;
 $('generateSignals').onclick=async()=>{
  try{
    const ids=[...$('signalCatalog').querySelectorAll('input:checked')].map(c=>c.value);
    const request={signals:ids,count:Number($('presetCount').value),b1c_profile:$('b1cProfile').value};
-   if($('rfMode').value==='shared')request.shared={center_mhz:Number($('captureCenter').value),rate_hz:Math.round(Number($('captureRate').value)*1e6),format:$('captureFormat').value};
+   const m1=$('receptionProfile').value;
+   if(m1)Object.assign(request,{signals:[m1],profile:'m1',b1c_profile:'narrow',prns:$('assignedPrns').value});
+   else if($('rfMode').value==='shared')request.shared={center_mhz:Number($('captureCenter').value),rate_hz:Math.round(Number($('captureRate').value)*1e6),format:$('captureFormat').value};
    const v=await api('/api/template',request);
    presetDirty=false;$('config').value=v.config;loadCommonFields();$('validation').textContent='配置已生成。';
  }catch(e){$('validation').textContent=e.message;}

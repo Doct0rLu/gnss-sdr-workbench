@@ -3,6 +3,25 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import diagnostics as d
 class DiagnosticsTests(unittest.TestCase):
+    def test_full_l2c_search_grid_preview(self):
+        import h5py
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp)
+            (p/'receiver.conf').write_text('[GNSS-SDR]\nGNSS-SDR.internal_fs_sps=4000000\n')
+            with h5py.File(p/'acquisition_G_2S_ch_0_1_sat_3.mat','w') as f:
+                f['sample_counter']=[80000]
+                f['PRN']=[3]
+                f['positive_acq']=[1]
+                grid=f.create_dataset('acq_grid',(400,80000),dtype='f4',chunks=(1,1024))
+                grid[321,73456]=12
+                grid[320,73456]=3
+            frame=d.acquisition(p,channel=0)['frame']
+            self.assertEqual(frame['peak'],12)
+            self.assertEqual(frame['delay'][80],73456)
+            self.assertEqual(frame['profile'][80],1)
+            self.assertEqual(frame['doppler_profile'][320],0.25)
+            self.assertEqual(frame['heat'][321][73456//625],1)
+
     def test_dump_slice_search_and_bound(self):
         with tempfile.TemporaryDirectory() as tmp:
             p=Path(tmp);(p/'receiver.conf').write_text('[GNSS-SDR]\nGNSS-SDR.internal_fs_sps=1000\n')
