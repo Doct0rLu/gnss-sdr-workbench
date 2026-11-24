@@ -207,3 +207,42 @@ def sky(path):
                 try:sats[v[n]]=dict(system={'GP':'G','BD':'C','GB':'C','GA':'E','GL':'R','GQ':'J','QZ':'J'}.get(v[0][:2],'?'),prn=int(v[n]),elevation=float(v[n+1]),azimuth=float(v[n+2]),cn0=float(v[n+3]) if v[n+3] else None)
                 except ValueError:pass
     return list(sats.values())
+
+def pvt_satellites(path):
+    """Satellites reported by the receiver's GSA writers for its latest GGA epoch."""
+    try:
+        with (path / 'solution.nmea').open('rb') as stream:
+            stream.seek(max(0, stream.seek(0, 2) - 8192))
+            lines = stream.read().split(b'\n')[:-1]
+    except (FileNotFoundError, PermissionError):
+        return None
+    satellites = None
+    systems = {'GP':'G', 'GL':'R', 'QZ':'J', 'GA':'E', 'GB':'C', 'BD':'C'}
+    for line in lines:
+        body, mark, checksum = line.strip().partition(b'*')
+        if not mark or not body.startswith(b'$'):
+            continue
+        check = 0
+        for byte in body[1:]:
+            check ^= byte
+        if checksum.upper() != f'{check:02X}'.encode():
+            continue
+        fields = body[1:].decode('ascii', 'replace').split(',')
+        if fields[0].endswith('GGA'):
+            satellites = None
+        system = systems.get(fields[0][:2])
+        if not system or not fields[0].endswith('GSA') or len(fields) < 15:
+            continue
+        if satellites is None:
+            satellites = set()
+        if fields[2] not in ('2','3'):
+            continue
+        for field in fields[3:15]:
+            if field.isdigit():
+                n = int(field)
+                if system == 'G' and 33 <= n <= 64:
+                    satellites.add(f'S{n + 87}')
+                else:
+                    n = n - 64 if system == 'R' and 65 <= n <= 96 else n
+                    satellites.add(f'{system}{n:02d}')
+    return sorted(satellites) if satellites is not None else None

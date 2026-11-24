@@ -7,3 +7,6 @@
 .dialog-body{max-height:calc(90vh - 170px)}.dialog-footer{padding:12px 24px;background:white;border-top:1px solid var(--line)}.dialog-footer .actions{justify-content:flex-end}.dialog-footer #validation{margin:8px 0 0;color:#9a622e}.dialog-footer #validation:empty{display:none}
 
 @media(max-width:850px){.workspaces{flex-wrap:wrap;overflow:visible}.workspaces button{padding:10px 12px;font-size:12px}}
+
+.signal-progress{padding:10px 16px;border-bottom:1px solid #d9e5e8}.signal-progress summary{cursor:pointer}.signal-progress p{font-size:12px}.signal-progress th,.signal-progress td{white-space:nowrap}
+#b1cChoice[hidden],#sharedRecording[hidden]{display:none}

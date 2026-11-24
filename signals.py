@@ -1,5 +1,8 @@
 """Signal identities and channel order from the bundled GNSS-SDR block factory."""
+import math
 import re
+
+from signal_input import FORMATS
 
 # Keep factory order: absolute channel IDs depend on it, not configuration order.
 _ROWS = [
@@ -13,7 +16,7 @@ _ROWS = [
  ('1G','R','GLONASS L1 C/A',1602.0,'GLONASS_L1_CA_PCPS_Acquisition','GLONASS_L1_CA_DLL_PLL_Tracking','GLONASS_L1_CA_Telemetry_Decoder',8e6),
  ('2G','R','GLONASS L2 C/A',1246.0,'GLONASS_L2_CA_PCPS_Acquisition','GLONASS_L2_CA_DLL_PLL_Tracking','GLONASS_L2_CA_Telemetry_Decoder',8e6),
  ('B1','C','北斗 B1I',1561.098,'BEIDOU_B1I_PCPS_Acquisition','BEIDOU_B1I_DLL_PLL_Tracking','BEIDOU_B1I_Telemetry_Decoder',4e6),
- ('1D','C','北斗 B1C',1575.42,'BEIDOU_B1C_PCPS_Ambiguous_Acquisition','BEIDOU_B1C_DLL_PLL_VEML_Tracking','BEIDOU_B1C_Telemetry_Decoder',4e6),
+ ('1D','C','北斗 B1C',1575.42,'BEIDOU_B1C_PCPS_Ambiguous_Acquisition','BEIDOU_B1C_DLL_PLL_VEML_Tracking','BEIDOU_B1C_Telemetry_Decoder',8e6),
  ('5D','C','北斗 B2a',1176.45,'BEIDOU_B2A_PCPS_Acquisition','BEIDOU_B2A_DLL_PLL_Tracking','BEIDOU_B2A_Telemetry_Decoder',24e6),
  ('B3','C','北斗 B3I',1268.52,'BEIDOU_B3I_PCPS_Acquisition','BEIDOU_B3I_DLL_PLL_Tracking','BEIDOU_B3I_Telemetry_Decoder',24e6),
  ('7X','E','Galileo E5b',1207.14,'Galileo_E5b_PCPS_Acquisition','Galileo_E5b_DLL_PLL_Tracking','Galileo_E5b_Telemetry_Decoder',24e6),
@@ -56,20 +59,87 @@ def role(cfg,base,sid,ch):
     specific=f'{base}_{sid}{ch}'
     return specific if specific+'.implementation' in cfg else f'{base}_{sid}'
 
-def template(ids, count=8, fs=None):
+def branch_bandwidth(ids, wide_b1c, single_frequency):
+    # One-sided low-pass cutoff and transition width in Hz.
+    if any(CATALOG[s]['fs'] >= 24e6 for s in ids) or ('1D' in ids and wide_b1c):
+        return 10_300_000, 900_000
+    if any(s in ('1G', '2G') for s in ids):
+        return 4_600_000, 900_000
+    if single_frequency and '1D' in ids:
+        return 3_000_000, 750_000
+    return 2_600_000, 1_200_000
+
+
+def check_band(frequency, center, rate, internal, cutoff, transition):
+    if not all(math.isfinite(v) and v > 0 for v in (frequency, center, rate, internal, cutoff, transition)):
+        raise ValueError('采集中心、采样率、低通带宽和过渡带必须为正数')
+    offset = frequency - center
+    if abs(offset) + cutoff + transition > rate / 2:
+        raise ValueError(f'{frequency / 1e6:g} MHz 支路超出录制带宽（IF {offset / 1e6:+g} MHz，低通和过渡带 {(cutoff + transition) / 1e6:g} MHz）')
+    if cutoff + transition > internal / 2:
+        raise ValueError('抽取后采样率不足以容纳支路低通和过渡带')
+
+
+def lowpass(cfg, suffix, rate, offset, cutoff, transition, factor):
+    values = dict(implementation='Freq_Xlating_Fir_Filter', IF=offset,
+                  sampling_frequency=rate, filter_type='lowpass', bw=cutoff, tw=transition,
+                  decimation_factor=factor, input_item_type='gr_complex',
+                  output_item_type='gr_complex', taps_item_type='float')
+    cfg.update({f'InputFilter{suffix}.{key}': value for key, value in values.items()})
+
+
+def template(ids, count=8, fs=None, shared=None, b1c_profile='narrow'):
     ids=list(dict.fromkeys(ids))
     if not ids or any(s not in CATALOG for s in ids):raise ValueError('请选择信号')
     if not 1<=int(count)<=128 or len(ids)*int(count)>128:raise ValueError('总通道数需在 1–128 之间')
-    fs=int(fs or max(CATALOG[s]['fs'] for s in ids))
-    if fs<=0:raise ValueError('采样率无效')
-    # Same carrier uses one RF file; each other carrier receives an independent file.
-    frequencies=list(dict.fromkeys(CATALOG[s]['mhz'] for s in ids));multi=len(frequencies)>1
-    cfg={'GNSS-SDR.internal_fs_sps':fs,'GNSS-SDR.use_acquisition_resampler':'false','ControlThread.wait_for_flowgraph':'false'}
+    if b1c_profile not in ('narrow', 'wide'):
+        raise ValueError('请选择 B1C 接收模式')
+    wide = '1D' in ids and b1c_profile == 'wide'
+    frequencies = list(dict.fromkeys(CATALOG[s]['mhz'] for s in ids))
+    multi = len(frequencies) > 1
+    bands = [branch_bandwidth([s for s in ids if CATALOG[s]['mhz'] == freq], wide, not multi)
+             for freq in frequencies]
+    rate = int(fs or max(24e6 if wide else 0, *(CATALOG[s]['fs'] for s in ids)))
+    fmt = 'ibyte'
+    factor = 1
+    cfg = {}
+    if shared is not None:
+        center = float(shared.get('center_mhz', 0)) * 1e6
+        rate = int(shared.get('rate_hz', 0))
+        fmt = shared.get('format', 'ibyte')
+        if fmt not in FORMATS or FORMATS[fmt]['components'] != 2:
+            raise ValueError('共享宽带文件请选择 IQ 格式')
+        minimum = max(2 * (bw + tw) for bw, tw in bands)
+        if fs is not None:
+            internal = int(fs)
+            if internal <= 0 or rate < internal or rate % internal:
+                raise ValueError('输入采样率应为内部采样率的整数倍')
+            factor = rate // internal
+        else:
+            # Prefer an integral output rate and the largest alias-free decimation.
+            if not 0 < rate <= 2_147_483_647:
+                raise ValueError('采样率超出接收机范围')
+            factor = max(n for n in range(1, max(1, rate // minimum) + 1) if rate % n == 0)
+        cfg['Workbench.capture_center_hz'] = round(center) if math.isfinite(center) else 0
+    internal = rate // factor
+    if rate <= 0 or (wide and internal < 22_400_000):
+        raise ValueError('宽带 QMBOC 配置需要至少 22.4 MS/s' if wide else '采样率无效')
+    cfg.update({'GNSS-SDR.internal_fs_sps':internal,'GNSS-SDR.use_acquisition_resampler':'false','ControlThread.wait_for_flowgraph':'false'})
     if multi:cfg['GNSS-SDR.num_sources']=len(frequencies)
     for n,freq in enumerate(frequencies):
         suffix=str(n) if multi else '';src='SignalSource'+suffix
-        cfg.update({src+'.implementation':'File_Signal_Source',src+'.filename':f'INPUT-RF{n}.bin',src+'.item_type':'ibyte',src+'.sampling_frequency':fs,src+'.samples':0,src+'.repeat':'false',src+'.enable_throttle_control':'false',
-          'SignalConditioner'+suffix+'.implementation':'Signal_Conditioner','DataTypeAdapter'+suffix+'.implementation':'Ibyte_To_Complex','InputFilter'+suffix+'.implementation':'Pass_Through','InputFilter'+suffix+'.IF':0,'InputFilter'+suffix+'.input_item_type':'gr_complex','Resampler'+suffix+'.implementation':'Pass_Through'})
+        cfg.update({src+'.implementation':'File_Signal_Source',src+'.filename':('INPUT-IQ.bin' if shared is not None else f'INPUT-RF{n}.bin'),src+'.item_type':fmt,src+'.sampling_frequency':rate,src+'.samples':0,src+'.repeat':'false',src+'.enable_throttle_control':'false',
+          'SignalConditioner'+suffix+'.implementation':'Signal_Conditioner','DataTypeAdapter'+suffix+'.implementation':FORMATS[fmt]['adapter'],'InputFilter'+suffix+'.implementation':'Pass_Through','InputFilter'+suffix+'.IF':0,'InputFilter'+suffix+'.input_item_type':'gr_complex','Resampler'+suffix+'.implementation':'Pass_Through'})
+        frequency = round(freq * 1e6)
+        if shared is not None:
+            center = cfg['Workbench.capture_center_hz']
+            cutoff, transition = bands[n]
+            check_band(frequency, center, rate, internal, cutoff, transition)
+            lowpass(cfg, suffix, rate, frequency - center, cutoff, transition, factor)
+        elif '1D' in ids and freq == CATALOG['1D']['mhz']:
+            cutoff, transition = bands[n]
+            check_band(frequency, frequency, rate, internal, cutoff, transition)
+            lowpass(cfg, suffix, rate, 0, cutoff, transition, 1)
     for sid in ids:
         cfg['Channels_'+sid+'.count']=int(count);cfg['Channels_'+sid+'.RF_channel_ID']=frequencies.index(CATALOG[sid]['mhz'])
         item=CATALOG[sid]
@@ -77,5 +147,14 @@ def template(ids, count=8, fs=None):
         for key,value in {'item_type':'gr_complex','doppler_max':10000,'doppler_step':500,'pfa':.0001,'blocking':'true','coherent_integration_time_ms':20 if sid=='2S' else 4 if sid=='1B' else 10 if sid in ('1S','1D') else 1}.items():cfg[f'Acquisition_{sid}.'+key]=value
         for key,value in {'item_type':'gr_complex','pll_bw_hz':35,'dll_bw_hz':2,'dump':'true','dump_mat':'false','dump_filename':f'./tracking_{sid}_ch_'}.items():cfg[f'Tracking_{sid}.'+key]=value
         if sid in ('1S','1D'):cfg[f'Acquisition_{sid}.acquire_pilot']='true';cfg[f'Tracking_{sid}.track_pilot']='true'
-    cfg.update({'Channels.in_acquisition':min(2,len(ids)*int(count)),'Channel.signal':ids[0],'Observables.implementation':'Hybrid_Observables','PVT.implementation':'RTKLIB_PVT','PVT.positioning_mode':'Single','PVT.output_rate_ms':100,'PVT.display_rate_ms':1000,'PVT.output_enabled':'true','PVT.output_path':'.','PVT.nmea_dump_filename':'./solution.nmea','PVT.flag_nmea_tty_port':'false','PVT.flag_rtcm_tty_port':'false','PVT.flag_rtcm_server':'false'})
+    if '1D' in ids:
+        replica = 'true' if wide else 'false'
+        cfg.update({'Acquisition_1D.qmboc': replica, 'Tracking_1D.qmboc': replica,
+                    'Acquisition_1D.doppler_step': 50, 'Acquisition_1D.doppler_max': 4500})
+        if not wide:
+            loops = dict(pll_bw_hz=10, dll_bw_hz=0.5, pll_bw_narrow_hz=5, dll_bw_narrow_hz=0.2,
+                         pll_filter_order=2, early_late_space_chips=0.15, very_early_late_space_chips=0.5,
+                         cn0_min=20, bit_synchronization_time_limit_s=90, extend_correlation_symbols=1)
+            cfg.update({f'Tracking_1D.{key}': value for key, value in loops.items()})
+    cfg.update({'Channels.in_acquisition':min(6 if '1D' in ids else 2,len(ids)*int(count)),'Channel.signal':ids[0],'Observables.implementation':'Hybrid_Observables','PVT.implementation':'RTKLIB_PVT','PVT.positioning_mode':'Single','PVT.output_rate_ms':100,'PVT.display_rate_ms':1000,'PVT.output_enabled':'true','PVT.output_path':'.','PVT.nmea_dump_filename':'./solution.nmea','PVT.flag_nmea_tty_port':'false','PVT.flag_rtcm_tty_port':'false','PVT.flag_rtcm_server':'false'})
     return '[GNSS-SDR]\n'+'\n'.join(f'{k}={v}' for k,v in cfg.items())+'\n'

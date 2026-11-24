@@ -78,6 +78,23 @@ class Run:
         self.signal_time = 0; self.last_packet = None
         self.log_signal_time=0
         self.log_sink=None
+        self.identities = {r['channel']: r for r in meta.get('channel_map', [])}
+        self.progress = {}
+        for row in self.identities.values():
+            stats = self.progress.setdefault(row['signal'], dict(label=row['label'], channels=0,
+                                             acquired=set(), tracking=set(), decoded=set()))
+            stats['channels'] += 1
+
+    def record_stage(self, channel, prn, stage):
+        row = self.identities.get(channel)
+        if row and prn > 0:
+            self.progress[row['signal']][stage].add(f"{row['system']}{prn:02d}")
+
+    def stage_summary(self):
+        rows = [dict(signal=sid, **{k:sorted(v) if isinstance(v,set) else v for k,v in stats.items()})
+                for sid,stats in self.progress.items()]
+        return dict(signals=rows, pvt=diagnostics.pvt_satellites(self.path))
+
     def event(self,row):
         self.events.append(row)
         if self.path.is_dir():
@@ -93,6 +110,12 @@ class Run:
                 prn=re.search(r'PRN (\d+)',text)
                 prior=next((a for a in reversed(self.acquisitions) if a['channel']==ch and prn and a['prn']==int(prn[1])),None)
                 if prior:event_time=prior['t']
+            message = re.search(r'New .+?(?:message received|ephemeris) in channel (\d+)\b.*?\bPRN (\d+)', text, re.I)
+            if message:
+                self.record_stage(int(message[1]), int(message[2]), 'decoded')
+            started = re.search(r'Tracking of .*?started on channel (\d+) for satellite .*?PRN (\d+)', text)
+            if started:
+                self.record_stage(int(started[1]), int(started[2]), 'tracking')
             position = re.search(r'Position at (.+?) UTC using (\d+) observations is Lat = ([\d.+-]+).*?Long = ([\d.+-]+).*?Height = ([\d.+-]+)',text)
             if position:
                 row = dict(t=self.signal_time,utc=position[1],observations=int(position[2]),lat=float(position[3]),lon=float(position[4]),height=float(position[5]))
@@ -108,6 +131,10 @@ class Run:
     def sample(self, row, persist=None):
         ch = row['channel']; t = row['t']
         if ch < 0 or ch > 127 or t is None: return
+        if row.get('valid'):
+            self.record_stage(ch, row['prn'], 'tracking')
+        if row.get('word'):
+            self.record_stage(ch, row['prn'], 'decoded')
         old = self.channels.get(ch)
         row['received_wall'] = time.time()
         self.channels[ch] = row; self.signal_time = max(self.signal_time, t)
@@ -124,7 +151,7 @@ class Run:
     def snapshot(self, after=0):
         with LOCK:
             end = self.meta.get('ended', time.time())
-            return dict(meta=dict(self.meta), wall_elapsed=max(0,end-self.meta['started']), signal_time=self.signal_time,
+            return dict(meta=dict(self.meta), stages=self.stage_summary(), wall_elapsed=max(0,end-self.meta['started']), signal_time=self.signal_time,
                         channels=list(self.channels.values()), history={str(k):list(v) for k,v in self.history.items()},
                         events=list(self.events), logs=[r for r in self.logs if r['seq']>after][-600:],
                         log_seq=self.seq, log_gap=bool(after and (self.seq-after>600 or self.logs and after < self.logs[0]['seq']-1)), udp=self.udp,
@@ -156,6 +183,7 @@ class Workbench:
         if '[GNSS-SDR]' not in config: raise ValueError('配置缺少 [GNSS-SDR] 段')
         options = dict(re.findall(r'^\s*([^#;\s=]+)\s*=\s*([^\r\n;#]+)',config,re.M))
         inputs=signal_input.sources(options,data)
+        channel_map = signals.channels(options)
         for item in inputs:
             cfg=item['options'];fmt=item['layout'];source=Path(item['path']);fs=item['fs']
             if not source.is_file():raise ValueError(f"RF {item['index']} 信号文件不存在")
@@ -163,6 +191,22 @@ class Workbench:
             if cfg.get('SignalSource.implementation','').strip()!='File_Signal_Source':raise ValueError('文件实验请选择 File_Signal_Source')
             if not math.isfinite(fs) or fs<=0:raise ValueError('输入采样率无效')
             if float(cfg.get('SignalSource.seconds_to_skip',0))!=0 or float(cfg.get('SignalSource.header_size',0))!=0:raise ValueError('时间轴从文件起点计算，请移除文件头和跳过设置')
+            if 'Workbench.capture_center_hz' in options:
+                center = float(options['Workbench.capture_center_hz'])
+                branch = {signals.CATALOG[r['signal']]['mhz'] for r in channel_map if r['rf_channel'] == item['index']}
+                if len(branch) != 1 or fmt['real'] or fs != inputs[0]['fs'] or item['format'] != inputs[0]['format']:
+                    raise ValueError('共享 IQ 支路需要一致的录制参数，每支路对应一个载频')
+                frequency = round(next(iter(branch)) * 1e6)
+                if (cfg.get('InputFilter.implementation') != 'Freq_Xlating_Fir_Filter'
+                    or cfg.get('InputFilter.filter_type') != 'lowpass'
+                    or float(cfg.get('InputFilter.IF', 0)) != frequency - center
+                    or float(cfg.get('InputFilter.sampling_frequency', 0)) != fs
+                    or cfg.get('Resampler.implementation') != 'Pass_Through'):
+                    raise ValueError('共享 IQ 支路的中频或滤波配置与录制参数不一致，请重新生成配置')
+                signals.check_band(frequency, center, fs, float(options['GNSS-SDR.internal_fs_sps']),
+                                   float(cfg.get('InputFilter.bw', 0)), float(cfg.get('InputFilter.tw', 0)))
+            if cfg.get('InputFilter.implementation') == 'Freq_Xlating_Fir_Filter' and int(cfg.get('InputFilter.decimation_factor',1)) < 1:
+                raise ValueError('抽取因子应为正整数')
             output_fs=fs/float(cfg.get('InputFilter.decimation_factor',1)) if cfg.get('InputFilter.implementation')=='Freq_Xlating_Fir_Filter' else fs
             if cfg.get('Resampler.implementation','Pass_Through')=='Pass_Through' and 'GNSS-SDR.internal_fs_sps' in options and not math.isclose(output_fs,float(options['GNSS-SDR.internal_fs_sps']),rel_tol=1e-6):raise ValueError(f"RF {item['index']} 输出采样率与内部采样率不一致，请设置抽取或重采样")
             if source.stat().st_size<int(duration*fs)*fmt['sample_bytes']:raise ValueError(f"RF {item['index']} 信号文件长度不足")
@@ -231,7 +275,7 @@ class Workbench:
                         exe_sha256=executable_hash,
                         config_sha256=hashlib.sha256((path/'receiver.conf').read_bytes()).hexdigest(),iq_bytes=iq.stat().st_size,
                         iq_mtime_ns=iq.stat().st_mtime_ns,output=str(path),command=command,input_format=fmt['item_type'],input_label=fmt['label'],source=str(data.get('source_label','本地信号 / 独立接收机进程'))[:120],
-                        monitor='TrackingMonitor / UDP Protobuf',version='0.4.0',tracking_port=sock.getsockname()[1],acquisition_port=acq_sock.getsockname()[1],capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label=' + '.join(dict.fromkeys(r['label'] for r in channel_map)),signals=list(dict.fromkeys(r['signal'] for r in channel_map)),channel_map=channel_map,inputs=[{k:v for k,v in item.items() if k not in ('layout','options')} for item in inputs])
+                        monitor='TrackingMonitor / UDP Protobuf',version='0.4.1',tracking_port=sock.getsockname()[1],acquisition_port=acq_sock.getsockname()[1],capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label=' + '.join(dict.fromkeys(r['label'] for r in channel_map)),signals=list(dict.fromkeys(r['signal'] for r in channel_map)),channel_map=channel_map,inputs=[{k:v for k,v in item.items() if k not in ('layout','options')} for item in inputs])
             run = Run(path,meta); run.sock = sock; self.active = run
             try:
                 if getattr(sys,'frozen',False):
@@ -260,6 +304,7 @@ class Workbench:
                     for row in decode(data):
                         row['t']=row['acq_samples']/fs
                         with LOCK:
+                            run.record_stage(row['channel'], row['prn'], 'acquired')
                             run.acquisitions.append(row)
                             run.event(dict(t=row['t'],wall=time.time(),level='INFO',module='acquisition',channel=row['channel'],text=f"{row['system'] or '?'}{row['prn']:02} 捕获成功 · {row['acq_doppler']:.0f} Hz"))
                         out.write(json.dumps(row)+'\n');out.flush()
@@ -420,7 +465,7 @@ class Handler(BaseHTTPRequestHandler):
             size=int(self.headers.get('Content-Length',0))
             if size>100000: raise ValueError('请求过大')
             data=json.loads(self.rfile.read(size) or b'{}')
-            if self.path=='/api/template':return self.send({'config':signals.template(data.get('signals',[]),int(data.get('count',8)),data.get('fs'))})
+            if self.path=='/api/template':return self.send({'config':signals.template(data.get('signals',[]),int(data.get('count',8)),data.get('fs'),data.get('shared'),data.get('b1c_profile','narrow'))})
             if self.path=='/api/browse':
                 kind=data.get('kind')
                 if kind not in ('exe','iq','config'):raise ValueError('文件类型无效')

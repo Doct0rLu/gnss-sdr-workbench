@@ -1,10 +1,10 @@
-# GNSS-SDR Workbench v0.4.0
+# GNSS-SDR Workbench v0.4.1
 
 Windows 本地接收机调试工作台。浏览器负责交互，Python 管理独立 GNSS-SDR 进程、监测接口和数据访问。前端与内核分开维护。
 
 ## 下载即用（推荐）
 
-Windows 10/11 x64 用户请在 [Releases](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/latest) 下载 [GNSS-SDR-Workbench-v0.4.0-win-x64.zip](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/download/v0.4.0/GNSS-SDR-Workbench-v0.4.0-win-x64.zip)，完整解压后双击 `Start-Workbench.cmd`。它包含 Python、前端、接收机及运行 DLL，无需安装开发环境。接收机路径自动定位；只需选择自己的信号文件。使用方式见 [PORTABLE.md](PORTABLE.md)。
+Windows 10/11 x64 用户请在 [Releases](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/latest) 下载 win-x64 便携包，完整解压后双击 `Start-Workbench.cmd`。它包含 Python、前端、接收机及运行 DLL，无需安装开发环境。接收机路径自动定位；只需选择自己的信号文件。使用方式见 [PORTABLE.md](PORTABLE.md)。
 
 Code → Download ZIP 仅为源码，适用于开发者。便携包不包含 IQ、开发者本机设置或历史运行结果。
 
@@ -20,7 +20,7 @@ Code → Download ZIP 仅为源码，适用于开发者。便携包不包含 IQ�
 
 ## 操作顺序
 
-1. 配置实验：展开“信号与频点配置”，勾选信号并生成单频或组合配置；不同频点会出现独立 RF 文件栏。浏览选择 EXE、信号或 .conf 文件，也可输入路径。设置时长、捕获快照通道、采样率、中频、通道数、环路带宽与搜索参数。高级配置文本可展开编辑。
+1. 配置实验：展开“信号与频点配置”，勾选信号并生成单频或组合配置；可选择各频点同步录制，或让多个频点复用一份宽带 IQ。在共享模式下填写采集中心、采样率和格式，生成后核对各支路 IF。浏览选择 EXE、信号或 .conf 文件，也可输入路径。设置时长、捕获快照通道、采样率、中频、通道数、环路带宽与搜索参数。高级配置文本可展开编辑。
 2. 检查输入，保存配置。配置存储在本机 local.json，刷新后仍保留。
 3. 启动实验，或使用“重启接收机”。配置窗口也可以“保存并重启”。重启先向当前进程发送 q，等待正常保存，再创建独立实验，不覆盖原来的输出。30 秒仍未结束时保留停止状态，界面给出提示。
 4. 进入单通道或捕获工作区，使用统一时间轴查看和回放。实时跟随、暂停与回放只控制显示，接收机继续计算。
@@ -89,7 +89,7 @@ POST /api/restart
 
 ### 支持与回归检查
 
-工作台信号目录与随附 GNSS-SDR 的 17 类处理链一致，支持同频多系统及多 RF 文件组合。配置、捕获监测、逐通道跟踪文件与前端卫星标识按原生绝对通道顺序处理。完整清单与验证层级见 [SIGNALS.md](SIGNALS.md)。B3I 配置示例为 `templates/bds-b3i-m1-24m.conf`，需用户自行提供匹配 IQ。正常文件结束显示“结束”，文件尾保护提示显示“文件边界”，不当作失锁事件。24 项 Python 检查、JS 语法和回放状态检查通过。
+工作台信号目录与随附 GNSS-SDR 的 17 类处理链一致，支持同频多系统及多 RF 文件组合。配置、捕获监测、逐通道跟踪文件与前端卫星标识按原生绝对通道顺序处理。完整清单与验证层级见 [SIGNALS.md](SIGNALS.md)。B3I 配置示例为 `templates/bds-b3i-m1-24m.conf`，需用户自行提供匹配 IQ。正常文件结束显示“结束”，文件尾保护提示显示“文件边界”，不当作失锁事件。27 项 Python 检查、JS 语法和回放状态检查通过。
 
 ```powershell
 python -m unittest discover -s tests -v

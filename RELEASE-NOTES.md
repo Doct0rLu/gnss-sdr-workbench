@@ -1,11 +1,9 @@
-# v0.4.0 — All-signal workbench and multi-RF replay
+# v0.4.1 — 宽带 IQ 分频接收与 B1C 模板
 
-- Added all 17 signal identities present in the bundled GNSS-SDR receiver: GPS L1 C/A, L1C, L2C and L5; Galileo E1, E5a, E5b and E6; GLONASS L1/L2; BeiDou B1I, B1C, B2a and B3I; QZSS L1/L5; SBAS L1.
-- Added signal selection, native configuration generation, single-signal and mixed/multiband templates, and independent RF file/format settings.
-- Preserved the receiver's fixed absolute channel order. Channel monitoring, tracking dump selection, satellite labels, input previews and original-byte slices now follow each channel's signal and RF.
-- Kept native PVT and telemetry roles, including SBAS augmentation and Galileo E6 correction data.
-- Preserved portable file selection and real/IQ int8/int16/float32 inputs.
+- 一份宽带 IQ 可同时驱动多个载频的捕获、跟踪和电文处理。输入采集中心、采样率及格式后，工作台计算有符号 IF、低通与抽取，检查录制频带并显示各支路参数。
+- B1C 增加窄带 BOC(1,1) 和宽带 QMBOC 捕获配置。窄带模板采用 50 Hz 多普勒步进、二阶 PLL 与独立的窄环带宽。
+- 运行总览按信号显示配置通道、累计捕获、进入跟踪与已解电文卫星数，并从最近的 NMEA GSA 历元列出参与 PVT 的卫星。
 
-Validation: 24 Python tests and JavaScript replay tests; 17 native signal-chain startup/run/exit checks with seeded noise at template rates; same-RF GPS/Galileo and dual-RF GPS L1/L5 startup checks. GPS recording and B3I simulation PVT regressions are run separately. Noise checks do not establish satellite decoding or position performance on the other frequencies. See SIGNALS.md for the capability and verification matrix.
+使用方式和接收机副本说明见 SIGNALS.md。
 
-Extract the complete win-x64 ZIP and run Start-Workbench.cmd. Source, matching receiver source, runtime and dependency notices are included.
+便携包实录验证：24 MS/s 跨频录制的 8 秒片段中，GPS L1 C/A、北斗 B1I、B1C 各捕获并进入跟踪 6 星。40 秒 B1C 实板回采中，12 通道锁定二次码，接收机未报告失锁，本段未输出星历或定位结果。

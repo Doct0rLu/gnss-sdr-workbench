@@ -3,7 +3,7 @@ let workspace='overview',debugGeneration=0,debugData=null,acqFile='',lastDebugRu
 const workspaceNames={overview:'运行总览',channel:'单通道 / 环路',acquisition:'捕获搜索',baseband:'输入信号',sky:'卫星星座',events:'事件 / 切片',files:'数据文件',ports:'调试接口'};
 $('workspaces').innerHTML=Object.entries(workspaceNames).map(([k,v])=>`<button data-workspace="${k}" class="${k==='overview'?'active':''}">${v}</button>`).join('');
 $('workspaces').querySelectorAll('button').forEach(b=>b.onclick=()=>setWorkspace(b.dataset.workspace));
-document.querySelectorAll('[data-browse]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const v=await api('/api/browse',{kind:b.dataset.browse});if(v.path){if(b.dataset.browse==='config'){$('config').value=v.config;loadCommonFields();}else $(b.dataset.browse).value=v.path;}}catch(e){$('validation').textContent=e.message;}finally{b.disabled=false;}});
+document.querySelectorAll('[data-browse]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const v=await api('/api/browse',{kind:b.dataset.browse});if(v.path){if(b.dataset.browse==='config'){presetDirty=false;$('config').value=v.config;loadCommonFields();}else $(b.dataset.browse).value=v.path;}}catch(e){$('validation').textContent=e.message;}finally{b.disabled=false;}});
 function plot(rows,series,unit,xkey='t',bounds=null){
  if(!rows.length)return '<div class="empty">等待数据</div>';
  const values=rows.flatMap(r=>series.map(s=>r[s[0]])).filter(Number.isFinite);if(!values.length)return '<div class="empty">此窗口无有效值</div>';
@@ -37,7 +37,7 @@ async function restartReceiver(next){
  catch(e){notify(e.message);}finally{$('restart').disabled=false;$('saveRestart').disabled=false;}
 }
 $('restart').onclick=()=>restartReceiver(config);
-$('saveRestart').onclick=async()=>{const next=formData();try{await api('/api/settings',next);$('configDialog').close();await restartReceiver(next);}catch(e){$('validation').textContent=e.message;}};
+$('saveRestart').onclick=async()=>{try{const next=formData();await api('/api/settings',next);$('configDialog').close();await restartReceiver(next);}catch(e){$('validation').textContent=e.message;}};
 
 const commonFields=[['GNSS-SDR.internal_fs_sps','内部采样率 / MS/s',1e6],['SignalSource.sampling_frequency','输入采样率 / MS/s',1e6],['InputFilter.IF','中频 / kHz',1e3],['Channels_1C.count','通道数',1],['Channels.in_acquisition','并行捕获通道',1],['Tracking_1C.pll_bw_hz','PLL 带宽 / Hz',1],['Tracking_1C.dll_bw_hz','DLL 带宽 / Hz',1],['Acquisition_1C.doppler_max','多普勒范围 / Hz',1],['Acquisition_1C.doppler_step','搜索步长 / Hz',1]];
 function configValue(key){const line=$('config').value.split('\n').find(l=>l.trim().split('=')[0].trim()===key);return line?Number(line.split('=')[1]):null;}
@@ -46,10 +46,15 @@ function activeCommonFields(){const signal=$('parameterSignal').value||'1C',suff
 function loadCommonFields(){
  loadSignalSelectors();const suffix=rfCount()>1?$('parameterRF').value:'';const type=textConfigValue('SignalSource'+suffix+'.item_type')||'ibyte';$('inputFormat').value=type;
  $('commonParameters').innerHTML=activeCommonFields().map(([key,label,scale],n)=>`<label>${label}<input type="number" step="any" data-common="${n}" data-original="${configValue(key)===null?'':configValue(key)/scale}" value="${configValue(key)===null?'':configValue(key)/scale}"></label>`).join('');
+ const shared = isSharedConfig();
+ $('inputFormat').disabled = shared;
+ for(const input of $('commonParameters').querySelectorAll('input')){
+   input.disabled = shared && Number(input.dataset.common) < 3;
+ }
  $('commonParameters').querySelectorAll('input').forEach(input=>input.oninput=()=>{const [key,label,scale]=activeCommonFields()[Number(input.dataset.common)],value=Number(input.value)*scale;updateParameter(key,value);if(/SignalSource\d*\.sampling_frequency/.test(key)){const suffix=rfCount()>1?$('parameterRF').value:'';updateParameter('InputFilter'+suffix+'.sampling_frequency',value);const decimation=configValue('InputFilter'+suffix+'.decimation_factor')||1;if(rfCount()===1)updateParameter('GNSS-SDR.internal_fs_sps',Math.round(value/decimation));}if(/InputFilter\d*\.IF/.test(key)&&value!==0){const suffix=rfCount()>1?$('parameterRF').value:'';updateParameter('InputFilter'+suffix+'.implementation','Freq_Xlating_Fir_Filter');updateParameter('InputFilter'+suffix+'.filter_type','lowpass');updateParameter('InputFilter'+suffix+'.sampling_frequency',configValue('SignalSource'+suffix+'.sampling_frequency'));updateParameter('InputFilter'+suffix+'.output_item_type','gr_complex');updateParameter('InputFilter'+suffix+'.taps_item_type','float');}});
 }
-$('config').oninput=loadCommonFields;
-function applyCommonFields(){for(const input of $('commonParameters').querySelectorAll('input')){if(input.value!==input.dataset.original){if(input.oninput)input.oninput();}}}
+$('config').oninput=()=>{presetDirty=false;loadCommonFields();};
+function applyCommonFields(){if(presetDirty)throw Error("录制或信号选择已修改，请先生成配置");for(const input of $('commonParameters').querySelectorAll('input')){if(input.value!==input.dataset.original){if(input.oninput)input.oninput();}}}
 
 $('inputFormat').onchange=()=>{
  const suffix=rfCount()>1?$('parameterRF').value:'',set=(key,value)=>updateParameter(key.replace(/^(SignalSource|DataTypeAdapter|SignalConditioner|InputFilter)\./,'$1'+suffix+'.'),value);const type=$('inputFormat').value,real=['byte','short','float'].includes(type);
@@ -64,16 +69,50 @@ $('inputFormat').onchange=()=>{
 let signalCatalog=[],inputPaths=[];
 function textConfigValue(key){const line=$('config').value.split('\n').find(l=>l.trim().split('=')[0].trim()===key);return line?line.slice(line.indexOf('=')+1).split(/[;#]/)[0].trim():'';}
 function rfCount(){return Number(textConfigValue('GNSS-SDR.num_sources')||textConfigValue('Receiver.sources_count')||1);}
-function collectInputs(){const inputs=[{path:$('iq').value}];for(let n=1;n<rfCount();n++)inputs.push({path:document.querySelector('[data-rf-path="'+n+'"]')?.value||inputPaths[n]||textConfigValue('SignalSource'+n+'.filename')});return inputs;}
+function collectInputs(){if(isSharedConfig())return [{path:$('iq').value}];const inputs=[{path:$('iq').value}];for(let n=1;n<rfCount();n++)inputs.push({path:document.querySelector('[data-rf-path="'+n+'"]')?.value||inputPaths[n]||textConfigValue('SignalSource'+n+'.filename')});return inputs;}
 function loadSignalSelectors(){
  const enabled=signalCatalog.filter(s=>Number(textConfigValue('Channels_'+s.id+'.count'))>0),previous=$('parameterSignal').value,rf=$('parameterRF').value;
  $('parameterSignal').innerHTML=(enabled.length?enabled:signalCatalog).map(s=>`<option value="${s.id}">${esc(s.label)}</option>`).join('');if(enabled.some(s=>s.id===previous))$('parameterSignal').value=previous;
  $('parameterRF').innerHTML=Array.from({length:rfCount()},(_,n)=>`<option value="${n}">RF ${n}</option>`).join('');if(Number(rf)<rfCount())$('parameterRF').value=rf||'0';
  const current=[...document.querySelectorAll('[data-rf-path]')];for(const f of current)inputPaths[Number(f.dataset.rfPath)]=f.value;
- $('rfFiles').innerHTML=Array.from({length:Math.max(0,rfCount()-1)},(_,i)=>{const n=i+1,path=inputPaths[n]||textConfigValue('SignalSource'+n+'.filename');return `<label>RF ${n} 信号文件</label><div class="file-field"><input data-rf-path="${n}" aria-label="RF ${n} 文件路径" value="${esc(path)}"><button data-rf-browse="${n}">浏览…</button></div>`;}).join('');
+ $('rfFiles').innerHTML=isSharedConfig()?'':Array.from({length:Math.max(0,rfCount()-1)},(_,i)=>{const n=i+1,path=inputPaths[n]||textConfigValue('SignalSource'+n+'.filename');return `<label>RF ${n} 信号文件</label><div class="file-field"><input data-rf-path="${n}" aria-label="RF ${n} 文件路径" value="${esc(path)}"><button data-rf-browse="${n}">浏览…</button></div>`;}).join('');
  for(const b of $('rfFiles').querySelectorAll('[data-rf-browse]'))b.onclick=async()=>{b.disabled=true;try{const v=await api('/api/browse',{kind:'iq'});if(v.path){inputPaths[Number(b.dataset.rfBrowse)]=v.path;document.querySelector('[data-rf-path="'+b.dataset.rfBrowse+'"]').value=v.path;}}catch(e){$('validation').textContent=e.message;}finally{b.disabled=false;}};
- for(const c of $('signalCatalog').querySelectorAll('input'))c.checked=enabled.some(s=>s.id===c.value);
+ if(!presetDirty)restorePreset(enabled);
 }
 $('parameterSignal').onchange=loadCommonFields;$('parameterRF').onchange=loadCommonFields;
-$('generateSignals').onclick=async()=>{try{const ids=[...$('signalCatalog').querySelectorAll('input:checked')].map(c=>c.value);const v=await api('/api/template',{signals:ids,count:Number($('presetCount').value)});$('config').value=v.config;loadCommonFields();$('validation').textContent='配置已生成，请选择各 RF 文件并填写录制参数。';}catch(e){$('validation').textContent=e.message;}};
-api('/api/signals').then(rows=>{signalCatalog=rows;$('signalCatalog').innerHTML=rows.map(s=>`<label><input type="checkbox" value="${s.id}"> ${esc(s.label)} · ${s.mhz} MHz</label>`).join('');}).catch(e=>notify(e.message));
+let presetDirty=false;
+function isSharedConfig(){return textConfigValue('Workbench.capture_center_hz')!=='';}
+function showPresetFields(){
+ $('sharedRecording').hidden=$('rfMode').value!=='shared';
+ $('b1cChoice').hidden=!$('signalCatalog').querySelector('input[value="1D"]:checked');
+}
+function restorePreset(enabled){
+ for(const c of $('signalCatalog').querySelectorAll('input'))c.checked=enabled.some(s=>s.id===c.value);
+ const shared=isSharedConfig(),suffix=rfCount()>1?'0':'';
+ $('rfMode').value=shared?'shared':'separate';
+ $('b1cProfile').value=textConfigValue('Acquisition_1D.qmboc')==='true'?'wide':'narrow';
+ if(enabled.length)$('presetCount').value=configValue('Channels_'+enabled[0].id+'.count');
+ if(shared){
+   $('captureCenter').value=configValue('Workbench.capture_center_hz')/1e6;
+   $('captureRate').value=configValue('SignalSource'+suffix+'.sampling_frequency')/1e6;
+   $('captureFormat').value=textConfigValue('SignalSource'+suffix+'.item_type');
+ }
+ showPresetFields();
+ $('branchPlan').textContent=shared?Array.from({length:rfCount()},(_,n)=>{
+   const prefix='InputFilter'+(rfCount()>1?n:'')+'.',offset=configValue(prefix+'IF')/1e6;
+   const names=enabled.filter(s=>Number(textConfigValue('Channels_'+s.id+'.RF_channel_ID'))===n).map(s=>s.label).join(' / ');
+   return names+'：IF '+(offset>0?'+':'')+offset+' MHz，低通 '+configValue(prefix+'bw')/1e6+' MHz，抽取 ×'+configValue(prefix+'decimation_factor');
+ }).join('　·　'):'各频点分别选择同步录制文件。';
+}
+function editPreset(){presetDirty=true;showPresetFields();$('branchPlan').textContent='生成配置后显示支路参数。';}
+for(const id of ['signalCatalog','rfMode','b1cProfile','captureCenter','captureRate','captureFormat','presetCount'])$(id).oninput=editPreset;
+$('generateSignals').onclick=async()=>{
+ try{
+   const ids=[...$('signalCatalog').querySelectorAll('input:checked')].map(c=>c.value);
+   const request={signals:ids,count:Number($('presetCount').value),b1c_profile:$('b1cProfile').value};
+   if($('rfMode').value==='shared')request.shared={center_mhz:Number($('captureCenter').value),rate_hz:Math.round(Number($('captureRate').value)*1e6),format:$('captureFormat').value};
+   const v=await api('/api/template',request);
+   presetDirty=false;$('config').value=v.config;loadCommonFields();$('validation').textContent='配置已生成。';
+ }catch(e){$('validation').textContent=e.message;}
+};
+api('/api/signals').then(rows=>{signalCatalog=rows;$('signalCatalog').innerHTML=rows.map(s=>`<label><input type="checkbox" value="${s.id}"> ${esc(s.label)} · ${s.mhz} MHz</label>`).join('');if($('configDialog').open)loadCommonFields();}).catch(e=>notify(e.message));

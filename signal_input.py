@@ -48,6 +48,9 @@ def sources(options, data=None):
         supplied=data.get('inputs',[])
         filename=supplied[n].get('path','') if n<len(supplied) else ''
         filename=filename or (data.get('iq','') if n==0 else '') or flat.get('SignalSource.filename','')
+        if 'Workbench.capture_center_hz' in options:
+            filename = data.get('iq') or (supplied[0].get('path') if supplied else '') or options.get(
+                ('SignalSource0' if count > 1 else 'SignalSource') + '.filename', '')
         fmt=layout(flat);fs=float(flat.get('SignalSource.sampling_frequency',0))
         result.append(dict(index=n,role=role,path=str(Path(filename).resolve()),fs=fs,format=fmt['item_type'],label=fmt['label'],options=flat,layout=fmt))
     return result
