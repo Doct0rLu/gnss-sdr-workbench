@@ -37,20 +37,28 @@ def source_count(fmt, duration, fs, file_bytes):
 def sources(options, data=None):
     data=data or {}
     count=int(options.get('GNSS-SDR.num_sources',options.get('Receiver.sources_count',1)))
+    synchronized = options.get('SignalSource.implementation')=='Multichannel_File_Signal_Source'
+    if synchronized:
+        channels = int(options.get('SignalSource.RF_channels',1))
+        if count!=1 or channels!=int(options.get('SignalSource.total_channels',1)):
+            raise ValueError('多通道文件源需要一个源，RF_channels 与 total_channels 应相同')
+        count = channels
     if not 1<=count<=32:raise ValueError('RF 输入数需在 1–32 之间')
     result=[]
     for n in range(count):
-        suffix=str(n) if count>1 else '';role='SignalSource'+suffix
+        suffix=str(n) if count>1 else '';role='SignalSource' if synchronized else 'SignalSource'+suffix
         flat={}
         for base in ('SignalSource','SignalConditioner','DataTypeAdapter','InputFilter','Resampler'):
+            prefix=role if base=='SignalSource' else base+suffix
             for k,v in options.items():
-                if k.startswith(base+suffix+'.'):flat[base+k[len(base+suffix):]]=v
+                if k.startswith(prefix+'.'):flat[base+k[len(prefix):]]=v
         supplied=data.get('inputs',[])
         filename=supplied[n].get('path','') if n<len(supplied) else ''
-        filename=filename or (data.get('iq','') if n==0 else '') or flat.get('SignalSource.filename','')
+        filename_key=role+'.filename'+(str(n) if synchronized else '')
+        filename=filename or (data.get('iq','') if n==0 else '') or options.get(filename_key,'')
         if 'Workbench.capture_center_hz' in options:
-            filename = data.get('iq') or (supplied[0].get('path') if supplied else '') or options.get(
-                ('SignalSource0' if count > 1 else 'SignalSource') + '.filename', '')
+            first_key='SignalSource.filename0' if synchronized else ('SignalSource0' if count>1 else 'SignalSource')+'.filename'
+            filename=data.get('iq') or (supplied[0].get('path') if supplied else '') or options.get(first_key,'')
         fmt=layout(flat);fs=float(flat.get('SignalSource.sampling_frequency',0))
-        result.append(dict(index=n,role=role,path=str(Path(filename).resolve()),fs=fs,format=fmt['item_type'],label=fmt['label'],options=flat,layout=fmt))
+        result.append(dict(index=n,role=role,filename_key=filename_key,path=str(Path(filename).resolve()),fs=fs,format=fmt['item_type'],label=fmt['label'],options=flat,layout=fmt))
     return result

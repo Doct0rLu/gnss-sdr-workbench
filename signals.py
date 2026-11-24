@@ -61,6 +61,8 @@ def role(cfg,base,sid,ch):
 
 def branch_bandwidth(ids, wide_b1c, single_frequency):
     # One-sided low-pass cutoff and transition width in Hz.
+    if set(ids)=={'2S'}:
+        return 1_500_000, 500_000
     if any(CATALOG[s]['fs'] >= 24e6 for s in ids) or ('1D' in ids and wide_b1c):
         return 10_300_000, 900_000
     if any(s in ('1G', '2G') for s in ids):
@@ -86,6 +88,26 @@ def lowpass(cfg, suffix, rate, offset, cutoff, transition, factor):
                   decimation_factor=factor, input_item_type='gr_complex',
                   output_item_type='gr_complex', taps_item_type='float')
     cfg.update({f'InputFilter{suffix}.{key}': value for key, value in values.items()})
+
+
+def synchronize_sources(cfg):
+    """Give shared RF branches one native sample counter and one end-of-input event."""
+    count = int(cfg.get('GNSS-SDR.num_sources',1))
+    if 'Workbench.capture_center_hz' not in cfg or count < 2:
+        return
+    source = {}
+    for n in range(count):
+        prefix = f'SignalSource{n}.'
+        for key in [key for key in cfg if key.startswith(prefix)]:
+            option = key[len(prefix):]
+            value = cfg.pop(key)
+            if option == 'filename':
+                source[f'SignalSource.filename{n}'] = value
+            elif n == 0:
+                source['SignalSource.' + option] = value
+    cfg.update(source)
+    cfg.update({'GNSS-SDR.num_sources':1, 'SignalSource.implementation':'Multichannel_File_Signal_Source',
+                'SignalSource.RF_channels':count, 'SignalSource.total_channels':count})
 
 
 def template(ids, count=8, fs=None, shared=None, b1c_profile='narrow'):
@@ -147,6 +169,10 @@ def template(ids, count=8, fs=None, shared=None, b1c_profile='narrow'):
         for key,value in {'item_type':'gr_complex','doppler_max':10000,'doppler_step':500,'pfa':.0001,'blocking':'true','coherent_integration_time_ms':20 if sid=='2S' else 4 if sid=='1B' else 10 if sid in ('1S','1D') else 1}.items():cfg[f'Acquisition_{sid}.'+key]=value
         for key,value in {'item_type':'gr_complex','pll_bw_hz':35,'dll_bw_hz':2,'dump':'true','dump_mat':'false','dump_filename':f'./tracking_{sid}_ch_'}.items():cfg[f'Tracking_{sid}.'+key]=value
         if sid in ('1S','1D'):cfg[f'Acquisition_{sid}.acquire_pilot']='true';cfg[f'Tracking_{sid}.track_pilot']='true'
+    if '2S' in ids:
+        cfg.update({'Acquisition_2S.doppler_max':5000, 'Acquisition_2S.doppler_step':25,
+                    'Acquisition_2S.pfa':0.001, 'Tracking_2S.pll_bw_hz':6, 'Tracking_2S.dll_bw_hz':0.2,
+                    'Tracking_2S.pll_bw_narrow_hz':3, 'Tracking_2S.dll_bw_narrow_hz':0.15})
     if '1D' in ids:
         replica = 'true' if wide else 'false'
         cfg.update({'Acquisition_1D.qmboc': replica, 'Tracking_1D.qmboc': replica,
@@ -157,24 +183,33 @@ def template(ids, count=8, fs=None, shared=None, b1c_profile='narrow'):
                          cn0_min=20, bit_synchronization_time_limit_s=90, extend_correlation_symbols=1)
             cfg.update({f'Tracking_1D.{key}': value for key, value in loops.items()})
     cfg.update({'Channels.in_acquisition':min(6 if '1D' in ids else 2,len(ids)*int(count)),'Channel.signal':ids[0],'Observables.implementation':'Hybrid_Observables','PVT.implementation':'RTKLIB_PVT','PVT.positioning_mode':'Single','PVT.output_rate_ms':100,'PVT.display_rate_ms':1000,'PVT.output_enabled':'true','PVT.output_path':'.','PVT.nmea_dump_filename':'./solution.nmea','PVT.flag_nmea_tty_port':'false','PVT.flag_rtcm_tty_port':'false','PVT.flag_rtcm_server':'false'})
+    synchronize_sources(cfg)
     return '[GNSS-SDR]\n'+'\n'.join(f'{k}={v}' for k,v in cfg.items())+'\n'
 
-def m1_template(sid, count=9, prns=''):
-    """Single-band M1 replay at the recorded 24 MS/s, with optional satellite assignments."""
-    if sid not in ('1D', '2S', 'L5'):
-        raise ValueError('M1 单频预设支持 B1C、L2C 和 L5')
+def parse_prns(sid, prns):
     if not isinstance(prns, str):
         raise ValueError('PRN 请用空格或逗号分隔')
     tokens = prns.strip()
     satellites = []
     if tokens:
-        maximum = 63 if sid == '1D' else 32
+        maximum = 63 if CATALOG[sid]['system'] == 'C' else 32
         for token in re.split(r'[，,\s]+', tokens):
             if not token.isascii() or not token.isdecimal() or not 1 <= int(token) <= maximum:
                 raise ValueError(f'PRN 应为 1–{maximum} 的整数')
             satellites.append(int(token))
         if len(set(satellites)) != len(satellites):
             raise ValueError('PRN 列表中有重复卫星')
+    return satellites
+
+
+def m1_template(sid, count=None, prns=''):
+    """M1 single-band replay with optional assignments from the current recording."""
+    if sid not in ('1D', '2S', 'L5'):
+        raise ValueError('M1 单频预设支持 B1C、L2C 和 L5')
+    satellites = parse_prns(sid, prns)
+    if count is None:
+        count = 12 if sid == '2S' else 9
+    if satellites:
         count = len(satellites)
 
     rate = 24_000_000
@@ -188,9 +223,6 @@ def m1_template(sid, count=9, prns=''):
                     'Channels.in_acquisition':min(9, count)})
     elif sid == '2S':
         lowpass(cfg, '', rate, 0, 1_500_000, 500_000, 6)
-        cfg.update({'Acquisition_2S.doppler_max':5000, 'Acquisition_2S.doppler_step':25,
-                    'Acquisition_2S.pfa':0.001, 'Tracking_2S.pll_bw_hz':6, 'Tracking_2S.dll_bw_hz':0.2,
-                    'Tracking_2S.pll_bw_narrow_hz':3, 'Tracking_2S.dll_bw_narrow_hz':0.15})
     else:
         cfg.update({'Acquisition_L5.doppler_max':6500, 'Acquisition_L5.doppler_step':250,
                     'Acquisition_L5.pfa':0.01, 'Acquisition_L5.max_dwells':4, 'Acquisition_L5.acquire_pilot':'false',
@@ -201,3 +233,32 @@ def m1_template(sid, count=9, prns=''):
     for channel_id, prn in enumerate(satellites):
         cfg[f'Channel{channel_id}.satellite'] = prn
     return '[GNSS-SDR]\n' + '\n'.join(f'{k}={v}' for k,v in cfg.items()) + '\n'
+
+M1_CROSS_SIGNALS = ('1C','1D','B1')
+
+
+def m1_cross_template(count=9, prns=None):
+    """Centered 24 MS/s M1 recording spanning L1 and B1I, with user-selected PRNs."""
+    prns = {} if prns is None else prns
+    if not isinstance(prns,dict) or set(prns).difference(M1_CROSS_SIGNALS):
+        raise ValueError('请按 L1 C/A、B1C 和 B1I 分别填写 PRN')
+    pins = {sid:parse_prns(sid,prns.get(sid,'')) for sid in M1_CROSS_SIGNALS}
+    shared = dict(center_mhz=1568.259, rate_hz=24_000_000, format='ibyte')
+    cfg = parse(template(M1_CROSS_SIGNALS,1,shared=shared))
+    cfg['Workbench.replay_profile'] = 'm1'
+    if not 1 <= count <= 128:
+        raise ValueError('通道数需在 1–128 之间')
+    for sid, assigned in pins.items():
+        cfg[f'Channels_{sid}.count'] = len(assigned) or count
+    mapping = channels(cfg)
+    cfg['Channels.in_acquisition'] = min(8,len(mapping))
+    for sid in ('1C','B1'):
+        cfg.update({f'Acquisition_{sid}.doppler_max':6000, f'Acquisition_{sid}.doppler_step':250})
+    cfg.update({'Acquisition_1D.doppler_step':100, 'Tracking_1D.b1c_data_prompt_scale':4.0,
+                'Tracking_1D.b1c_pilot_prompt_scale':1.0, 'PVT.elevation_mask':5,
+                'PVT.iono_model':'OFF', 'PVT.trop_model':'OFF'})
+    for sid, assigned in pins.items():
+        group = [row['channel'] for row in mapping if row['signal']==sid]
+        for channel_id, prn in zip(group,assigned):
+            cfg[f'Channel{channel_id}.satellite'] = prn
+    return '[GNSS-SDR]\n'+'\n'.join(f'{k}={v}' for k,v in cfg.items())+'\n'

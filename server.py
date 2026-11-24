@@ -209,7 +209,7 @@ class Workbench:
             cfg=item['options'];fmt=item['layout'];source=Path(item['path']);fs=item['fs']
             if not source.is_file():raise ValueError(f"RF {item['index']} 信号文件不存在")
             signal_input.validate_chain(cfg,fmt)
-            if cfg.get('SignalSource.implementation','').strip()!='File_Signal_Source':raise ValueError('文件实验请选择 File_Signal_Source')
+            if cfg.get('SignalSource.implementation','').strip() not in ('File_Signal_Source','Multichannel_File_Signal_Source'):raise ValueError('文件实验请选择文件信号源')
             if not math.isfinite(fs) or fs<=0:raise ValueError('输入采样率无效')
             if float(cfg.get('SignalSource.seconds_to_skip',0))!=0 or float(cfg.get('SignalSource.header_size',0))!=0:raise ValueError('时间轴从文件起点计算，请移除文件头和跳过设置')
             if 'Workbench.capture_center_hz' in options:
@@ -251,6 +251,10 @@ class Workbench:
             exe, iq, duration, fs = self.validate(data)
             capture_channel=int(data.get('capture_channel',0))
             options=dict(re.findall(r'^\s*([^#;\s=]+)\s*=\s*([^\r\n;#]+)',data['config'],re.M))
+            config = data['config']
+            if 'Workbench.capture_center_hz' in options and int(options.get('GNSS-SDR.num_sources',1))>1:
+                signals.synchronize_sources(options)
+                config = '[GNSS-SDR]\n'+'\n'.join(f'{k}={v}' for k,v in options.items())+'\n'
             signal,configured_channels=signal_contract(options)
             inputs=signal_input.sources(options,data);channel_map=signals.channels(options)
             fmt=inputs[0]['layout']
@@ -260,9 +264,7 @@ class Workbench:
             sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,4*1024*1024)
             run_id = time.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:6]
             path = RUNS/run_id; path.mkdir(parents=True)
-            config = data['config']
-            overrides = {'SignalSource.filename':iq.as_posix(),'SignalSource.samples':str(signal_input.source_count(fmt,duration,fs,iq.stat().st_size)),
-                         'SignalSource.repeat':'false','TrackingMonitor.enable_monitor':'true',
+            overrides = {'TrackingMonitor.enable_monitor':'true',
                          'TrackingMonitor.enable_protobuf':'true','TrackingMonitor.client_addresses':'127.0.0.1',
                          'TrackingMonitor.udp_port':str(sock.getsockname()[1]),'TrackingMonitor.decimation_factor':'10',
                          'AcquisitionMonitor.enable_monitor':'true','AcquisitionMonitor.enable_protobuf':'true','AcquisitionMonitor.client_addresses':'127.0.0.1','AcquisitionMonitor.udp_port':str(acq_sock.getsockname()[1]),
@@ -270,9 +272,10 @@ class Workbench:
                          'PVT.output_path':'.','PVT.nmea_dump_filename':'./solution.nmea'}
             for item in inputs:
                 src=Path(item['path']);role=item['role']
-                overrides.update({role+'.filename':src.as_posix(),role+'.samples':str(signal_input.source_count(item['layout'],duration,item['fs'],src.stat().st_size)),role+'.repeat':'false'})
-            if len(inputs)>1:
-                for key in ('SignalSource.filename','SignalSource.samples','SignalSource.repeat'):overrides.pop(key,None)
+                samples=signal_input.source_count(item['layout'],duration,item['fs'],src.stat().st_size)
+                previous=int(overrides.get(role+'.samples',samples))
+                overrides.update({item['filename_key']:src.as_posix(),role+'.samples':str(min(previous,samples)),
+                                  role+'.repeat':'false'})
             for row in channel_map:
                 sid=row['signal'];ch=row['channel']
                 acq=signals.role(options,'Acquisition',sid,ch);trk=signals.role(options,'Tracking',sid,ch)
@@ -296,7 +299,7 @@ class Workbench:
                         exe_sha256=executable_hash,
                         config_sha256=hashlib.sha256((path/'receiver.conf').read_bytes()).hexdigest(),iq_bytes=iq.stat().st_size,
                         iq_mtime_ns=iq.stat().st_mtime_ns,output=str(path),command=command,input_format=fmt['item_type'],input_label=fmt['label'],source=str(data.get('source_label','本地信号 / 独立接收机进程'))[:120],
-                        monitor='TrackingMonitor / UDP Protobuf',version='0.4.2',tracking_port=sock.getsockname()[1],acquisition_port=acq_sock.getsockname()[1],capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label=' + '.join(dict.fromkeys(r['label'] for r in channel_map)),signals=list(dict.fromkeys(r['signal'] for r in channel_map)),channel_map=channel_map,inputs=[{k:v for k,v in item.items() if k not in ('layout','options')} for item in inputs])
+                        monitor='TrackingMonitor / UDP Protobuf',version='0.4.3',tracking_port=sock.getsockname()[1],acquisition_port=acq_sock.getsockname()[1],capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label=' + '.join(dict.fromkeys(r['label'] for r in channel_map)),signals=list(dict.fromkeys(r['signal'] for r in channel_map)),channel_map=channel_map,inputs=[{k:v for k,v in item.items() if k not in ('layout','options')} for item in inputs])
             run = Run(path,meta); run.sock = sock; self.active = run
             if options.get('Workbench.replay_profile') == 'm1':
                 satellites = [options.get(f"Channel{row['channel']}.satellite",'').strip() for row in channel_map]
@@ -494,9 +497,14 @@ class Handler(BaseHTTPRequestHandler):
                 profile = data.get('profile','standard')
                 ids = data.get('signals', [])
                 if profile == 'm1':
-                    if len(ids) != 1 or data.get('shared') is not None or data.get('b1c_profile','narrow') != 'narrow':
+                    if data.get('shared') is not None or data.get('b1c_profile','narrow') != 'narrow':
                         raise ValueError('M1 单频预设使用一份以载频为中心的 24 MS/s IQ 录制')
-                    config = signals.m1_template(ids[0], int(data.get('count',9)), data.get('prns',''))
+                    if len(ids)==3 and set(ids)==set(signals.M1_CROSS_SIGNALS):
+                        config = signals.m1_cross_template(int(data.get('count',9)), data.get('prns'))
+                    elif len(ids)==1:
+                        config = signals.m1_template(ids[0], int(data['count']) if 'count' in data else None, data.get('prns',''))
+                    else:
+                        raise ValueError('请选择对应的 M1 实验预设')
                 elif profile == 'standard':
                     config = signals.template(ids,int(data.get('count',8)),data.get('fs'),data.get('shared'),data.get('b1c_profile','narrow'))
                 else:

@@ -104,13 +104,44 @@ class SignalTests(unittest.TestCase):
                     self.assertEqual(cfg['PVT.iono_model'], 'OFF')
                     self.assertEqual(cfg['PVT.trop_model'], 'OFF')
                     self.assertEqual(cfg['PVT.elevation_mask'], '5')
-                self.assertEqual(len(signals.channels(cfg)), 9)
+                self.assertEqual(len(signals.channels(cfg)), 12 if sid=='2S' else 9)
                 known = signals.parse(signals.m1_template(sid, prns='7，2  6'))
                 self.assertEqual(len(signals.channels(known)), 3)
                 self.assertEqual([known[f'Channel{n}.satellite'] for n in range(3)], ['7','2','6'])
         self.assertNotIn('Tracking_1D.b1c_data_prompt_scale', signals.parse(signals.template(['1D'])))
-        self.assertEqual(signals.parse(signals.template(['2S']))['Tracking_2S.pll_bw_hz'], '35')
+        self.assertEqual(signals.parse(signals.template(['2S']))['Tracking_2S.pll_bw_hz'], '6')
         self.assertEqual(signals.parse(signals.template(['L5']))['Acquisition_L5.pfa'], '0.0001')
+
+    def test_shared_input_synchronization_and_per_signal_assignments(self):
+        cfg=signals.parse(signals.m1_cross_template(3,{'1D':'25 26','B1':'3','1C':'6 8'}))
+        self.assertEqual(cfg['GNSS-SDR.num_sources'],'1')
+        self.assertEqual(cfg['SignalSource.implementation'],'Multichannel_File_Signal_Source')
+        self.assertEqual(cfg['SignalSource.total_channels'],cfg['SignalSource.RF_channels'])
+        self.assertEqual([r['signal'] for r in signals.channels(cfg)],['1C','1C','B1','1D','1D'])
+        self.assertEqual([cfg[f'Channel{n}.satellite'] for n in range(5)],['6','8','3','25','26'])
+        sources=signal_input.sources(cfg,{'iq':'sample.iq','inputs':[{'path':'cached.iq'}]})
+        self.assertEqual([src['filename_key'] for src in sources],['SignalSource.filename0','SignalSource.filename1'])
+        self.assertEqual([src['options']['InputFilter.IF'] for src in sources],['7161000','-7161000'])
+        self.assertEqual(sources[0]['path'],sources[1]['path'])
+        self.assertTrue(sources[0]['path'].endswith('sample.iq'))
+        self.assertFalse(any(k.endswith('.satellite') for k in signals.parse(signals.m1_cross_template())))
+        with self.assertRaises(ValueError):signals.m1_cross_template(50)
+        with self.assertRaises(ValueError):signals.m1_cross_template(prns={'2S':'4'})
+        regular=signals.parse(signals.template(['1C','B1']))
+        self.assertEqual(regular['GNSS-SDR.num_sources'],'2')
+        legacy=dict(regular)
+        legacy['Workbench.capture_center_hz']='1568259000'
+        signals.synchronize_sources(legacy)
+        self.assertEqual(int(legacy['SignalSource.total_channels']),2)
+        self.assertNotIn('SignalSource0.implementation',legacy)
+        self.assertIn('InputFilter1.implementation',legacy)
+
+    def test_standard_l2c_24m_capture(self):
+        cfg=signals.parse(signals.template(['2S'],12,shared=dict(rate_hz=24_000_000,center_mhz=1227.60)))
+        self.assertEqual(cfg['GNSS-SDR.internal_fs_sps'],'4000000')
+        self.assertEqual(cfg['InputFilter.decimation_factor'],'6')
+        self.assertEqual(cfg['Acquisition_2S.doppler_step'],'25')
+        self.assertNotIn('PVT.iono_model',cfg)
 
     def test_m1_assignment_validation(self):
         for text in ('0', '1 33', '1,1', '1,2a', '-1', '2.5'):

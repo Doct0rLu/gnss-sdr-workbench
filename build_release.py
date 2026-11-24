@@ -12,7 +12,7 @@ def main():
     for module in ('picker','ctypes.wintypes','signal_input','signals'):
         if module not in archive.toc:raise SystemExit('Missing frozen module: '+module)
     # Build a new staging directory, excluding runtime test outputs and local.json.
-    stage=ROOT/'release/GNSS-SDR-Workbench-v0.4.2-win-x64'
+    stage=ROOT/'release/GNSS-SDR-Workbench-v0.4.3-win-x64'
     if stage.exists():raise SystemExit('Release staging already exists; keep it for review or choose a new release version')
     stage.mkdir(parents=True)
     frozen=ROOT/'dist/GNSS-SDR-Workbench'
@@ -32,7 +32,7 @@ def main():
                 target=licenses/package/str(f).replace('..','_');target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(distribution.locate_file(f),target)
     for name,url in {'python-LICENSE.txt':'https://raw.githubusercontent.com/python/cpython/v3.12.7/LICENSE','hdf5-LICENSE.txt':'https://raw.githubusercontent.com/HDFGroup/hdf5/hdf5_1_14_2/COPYING'}.items():
         (licenses/name).write_bytes(urllib.request.urlopen(url,timeout=30).read())
-    manifest={'version':'0.4.2','python':sys.version,'components':{n:importlib.metadata.version(n) for n in ('numpy','h5py','pyinstaller')},'files':{str(f.relative_to(stage)).replace('\\','/'):hashlib.sha256(f.read_bytes()).hexdigest() for f in stage.rglob('*') if f.is_file()}}
+    manifest={'version':'0.4.3','python':sys.version,'components':{n:importlib.metadata.version(n) for n in ('numpy','h5py','pyinstaller')},'files':{str(f.relative_to(stage)).replace('\\','/'):hashlib.sha256(f.read_bytes()).hexdigest() for f in stage.rglob('*') if f.is_file()}}
     (stage/'MANIFEST.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
     output=stage.parent/(stage.name+'.zip')
     with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED) as z:
