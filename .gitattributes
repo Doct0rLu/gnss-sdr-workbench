@@ -6,3 +6,6 @@
 *.md text eol=lf
 *.json text eol=lf
 *.cmd text eol=crlf
+*.sh text eol=lf
+*.yml text eol=lf
+portable_linux/init text eol=lf

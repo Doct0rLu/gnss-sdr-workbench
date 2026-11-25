@@ -26,7 +26,7 @@ copy_elf() {
   install -D "$input" "$lnroot/$destination"
   while read -r dep; do
     install -D "$dep" "$lnroot/$dep"
-  done < <(ldd "$input" | awk '/=> \// {print $3} /^\s*\// {print $1}' | sort -u)
+  done < <(ldd "$input" | awk '/=> \// {print $3} /^[[:space:]]*\// {print $1}' | sort -u)
 }
 copy_elf "$exe" usr/bin/gnss-sdr
 # Upstream's uninstalled executable may resolve bundled VOLK via a build-tree RUNPATH.
@@ -45,7 +45,13 @@ kernel="$(basename "$(find /boot -name 'vmlinuz-*-generic' | sort -V | tail -1)"
 test -f "/boot/vmlinuz-$kernel"
 for mod in virtio_pci virtio_net fuse qemu_fw_cfg; do
   while read -r module; do
-    target="${module%.zst}"; [[ "$module" == *.zst ]] && { mkdir -p "$(dirname "$lnroot/$target")"; zstd -dc "$module" > "$lnroot/$target"; } || install -D "$module" "$lnroot/$target"
+    target="${module%.zst}"
+    if [[ "$module" == *.zst ]]; then
+      mkdir -p "$(dirname "$lnroot/$target")"
+      zstd -dc "$module" > "$lnroot/$target"
+    else
+      install -D "$module" "$lnroot/$target"
+    fi
   done < <(modprobe --set-version "$kernel" --show-depends "$mod" | awk '$1=="insmod" {print $2}')
 done
 mkdir -p "$lnroot/lib/modules/$kernel"
@@ -83,5 +89,8 @@ sudo chmod 644 guest-output/vmlinuz
 git -C upstream archive --format=tar.gz -o "$PWD/guest-output/gnss-sdr-upstream.tar.gz" "$commit"
 printf '%s\n' "$commit" > guest-output/upstream-commit.txt
 dpkg-query -W -f='${Package}\t${Version}\n' > guest-output/build-packages.tsv
+sha256sum "$exe" | awk '{print $1"  /usr/bin/gnss-sdr"}' > guest-output/receiver.sha256
+dpkg-query -W -f='${Package}\t${Version}\t${source:Package}\t${source:Version}\n' > guest-output/source-packages.tsv
+find /usr/share/doc -name copyright -type f -print0 | tar --null -T - -czf guest-output/package-notices.tar.gz
 cp receiver-build/CMakeCache.txt guest-output/
 (cd guest-output && sha256sum vmlinuz initramfs.gz gnss-sdr-upstream.tar.gz > SHA256SUMS)
