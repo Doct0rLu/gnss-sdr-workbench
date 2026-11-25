@@ -1,5 +1,6 @@
 """File sample layout shared by validation, receiver configuration and inspection."""
 import math
+import json
 from pathlib import Path
 FORMATS = {
     'byte': dict(label='实数 · int8', dtype='i1', components=1, scalar_bytes=1, source_items=1, adapter='Pass_Through', filter_type='byte'),
@@ -9,6 +10,24 @@ FORMATS = {
     'ishort': dict(label='IQ · int16 LE', dtype='<i2', components=2, scalar_bytes=2, source_items=2, adapter='Ishort_To_Complex', filter_type='gr_complex'),
     'gr_complex': dict(label='IQ · float32 LE', dtype='<f4', components=2, scalar_bytes=4, source_items=1, adapter='Pass_Through', filter_type='gr_complex'),
 }
+
+def recording_metadata(source):
+    """M1 describes the physical samples in <recording>.json."""
+    source = Path(source)
+    sidecar = source.with_name(source.name + '.json') if source.name else None
+    if not sidecar or not source.is_file() or not sidecar.is_file() or sidecar.stat().st_size > 2_000_000:
+        return {}
+    try:
+        note = json.loads(sidecar.read_text(encoding='utf-8-sig'))
+        rate = int(note['config']['sample_rate_hz'])
+        fmt = {'ci8':'ibyte','ci16':'ishort','cf32':'gr_complex'}[note['datatype']]
+        if int(note['bytes']) == source.stat().st_size and rate > 0:
+            width = FORMATS[fmt]['components']*FORMATS[fmt]['scalar_bytes']
+            return dict(rate_hz=rate, format=fmt, start_utc=note['config'].get('start_utc'),
+                        center_hz=note.get('center_frequency_hz'), duration_s=round(note['bytes']/width/rate,3))
+    except (OSError, ValueError, TypeError, KeyError):
+        pass
+    return {}
 
 def layout(options):
     item_type=options.get('SignalSource.item_type','ibyte').strip()

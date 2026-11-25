@@ -2,6 +2,7 @@
 import bisect, datetime, json, math, re, struct, threading
 import signal_input
 import signals
+import sky_geometry
 from pathlib import Path
 
 RECORD=struct.Struct('<7fQd11fdIQI')
@@ -67,9 +68,10 @@ def tracking(path,ch,start,end):
             rows.append({k:v if not isinstance(v,float) or math.isfinite(v) else None for k,v in row.items()})
     return dict(rows=rows,records=count,record_bytes=RECORD.size,file=p.name,fs=fs,**signals.channel(cfg,ch))
 
-def acquisition(path,name='',channel=None,at=None):
+def acquisition(path,name='',channel=None,at=None,surface=False,channels=None):
     listing=acquisition_index(path)
     if channel is not None:listing=[r for r in listing if r['channel']==channel]
+    if channels is not None:listing=[r for r in listing if r['channel'] in channels]
     if not listing:return dict(files=[],frame=None)
     eligible=[r for r in listing if at is None or r['t']<=at]
     if name:
@@ -78,7 +80,12 @@ def acquisition(path,name='',channel=None,at=None):
     chosen=eligible[-1];p=safe_file(path,chosen['name'])
     if p.suffix!='.mat':raise ValueError('请选择捕获快照')
     import h5py,numpy as np
-    with h5py.File(p,'r') as f:
+    try:
+        f = h5py.File(p,'r')
+    except OSError:
+        return dict(files=listing,frame=None)
+    with f:
+        if 'acq_grid' not in f:return dict(files=listing,frame=None)
         def scalar(k,default=0):return float(np.asarray(f[k]).flat[0]) if k in f else default
         grid=f['acq_grid'];nr,nc=grid.shape
         n=min(nr,int(scalar('doppler_num_candidates',nr)))
@@ -88,6 +95,21 @@ def acquisition(path,name='',channel=None,at=None):
         edges=np.array_split(np.arange(nc),min(128,nc))
         starts=[part[0] for part in edges]
         pooled=np.empty((n,len(starts)))
+        if surface:
+            cfg=settings(path)
+            match=re.search(r'_([A-Z0-9]{2})_ch_(\d+)_',p.name)
+            sid,ch=(match[1],int(match[2])) if match else (None,None)
+            period_ms={'2S':20,'1B':4,'1D':10,'1S':10}.get(sid,1)
+            role=signals.role(cfg,'Acquisition',sid,ch) if match else None
+            integration=int(cfg.get(f'{role}.coherent_integration_time_ms',period_ms))
+            periods=integration//period_ms if integration>0 and integration%period_ms==0 else 1
+            # PCPS doubles the FFT for integrations longer than one code; the
+            # bit-transition option doubles input and retains half the FFT.
+            period_columns=max(1,nc//(2*periods if periods>1 else 1))
+            x_bins=min(112,period_columns)
+            y_bins=min(64,n)
+            x_index=(np.arange(nc)%period_columns)*x_bins//period_columns
+            mesh=np.zeros((y_bins,x_bins))
         height=max(1,1_000_000//nc)
         peak=-math.inf
         for first in range(0,n,height):
@@ -97,14 +119,31 @@ def acquisition(path,name='',channel=None,at=None):
             candidate=float(block[local_row,local_col])
             if candidate>peak:
                 peak=candidate
-                row,col=first+local_row,local_col
-            pooled[first:last]=np.maximum.reduceat(block,starts,axis=1)
+                row,col=first+int(local_row),int(local_col)
+            if surface:
+                # Fold repeated code periods and pool in both dimensions without
+                # averaging the narrow peak away.
+                if nc==period_columns:
+                    x_starts=(np.arange(x_bins)*period_columns+x_bins-1)//x_bins
+                    folded=np.maximum.reduceat(block,x_starts,axis=1)
+                else:
+                    folded=np.zeros((last-first,x_bins))
+                    np.maximum.at(folded,(np.arange(last-first)[:,None],x_index),block)
+                np.maximum.at(mesh,np.arange(first,last)*y_bins//n,folded)
+            else:
+                pooled[first:last]=np.maximum.reduceat(block,starts,axis=1)
         scale=peak or 1
         indices=np.arange(max(0,col-80),min(nc,col+81))
         profile=np.nan_to_num(grid[row,indices[0]:indices[-1]+1],nan=0,posinf=0,neginf=0)
         doppler_profile=np.nan_to_num(grid[:n,col],nan=0,posinf=0,neginf=0)
         step=scalar('doppler_step');center=scalar('doppler_center');dmax=scalar('doppler_max')
-        return dict(files=listing,frame=dict(t=chosen['t'],name=p.name,channel=int(re.search(r'_ch_(\d+)',p.name)[1]),prn=scalar('PRN'),sample_counter=scalar('sample_counter'),positive=bool(scalar('positive_acq')),statistic=scalar('test_statistic'),threshold=scalar('threshold'),peak=peak,delay_samples=scalar('acq_delay_samples'),doppler_hz=scalar('acq_doppler_hz'),delay=indices.tolist(),profile=(profile/scale).tolist(),dopplers=(center-dmax+np.arange(n)*step).tolist(),doppler_profile=(doppler_profile/scale).tolist(),heat=(pooled/scale).tolist(),code_samples=nc))
+        frame=dict(t=chosen['t'],name=p.name,channel=int(re.search(r'_ch_(\d+)',p.name)[1]),prn=scalar('PRN'),sample_counter=scalar('sample_counter'),positive=bool(scalar('positive_acq')),statistic=scalar('test_statistic'),threshold=scalar('threshold'),peak=peak,delay_samples=scalar('acq_delay_samples'),doppler_hz=scalar('acq_doppler_hz'),delay=indices.tolist(),profile=(profile/scale).tolist(),dopplers=(center-dmax+np.arange(n)*step).tolist(),doppler_profile=(doppler_profile/scale).tolist(),code_samples=nc)
+        if surface:
+            frame['surface']=dict(values=mesh.tolist(),period_ms=period_ms,phase_ms=(col%period_columns)*period_ms/period_columns,
+                peak_hz=center-dmax+row*step,peak_col=(col%period_columns)*x_bins//period_columns,peak_row=row*y_bins//n)
+        else:
+            frame['heat']=(pooled/scale).tolist()
+        return dict(files=listing,frame=frame)
 
 def timeline(path):
     fs=float(settings(path)['GNSS-SDR.internal_fs_sps']);available=0;channels=[]
@@ -301,6 +340,118 @@ def sky(path, utc=None):
                     except ValueError:
                         continue
     return list({key:row for group in satellites.values() for key,row in group.items()}.values())
+
+
+_NMEA_TRACK = {}
+_SKY_STATES = {}
+
+def utc_origin(path, meta):
+    iq = meta.get('iq')
+    if iq:
+        value = signal_input.recording_metadata(iq).get('start_utc')
+        if value:
+            try:return datetime.datetime.fromisoformat(value).replace(tzinfo=None)
+            except ValueError:pass
+    positions = path/'positions.jsonl'
+    if positions.is_file():
+        with positions.open('rb') as f:
+            try:
+                row = json.loads(f.readline())
+                return datetime.datetime.strptime(row['utc'],'%Y-%b-%d %H:%M:%S.%f') - datetime.timedelta(seconds=row['t'])
+            except (ValueError, KeyError):pass
+    return None
+
+
+def solution_track(path, filename=None):
+    meta = json.loads((path/'manifest.json').read_text(encoding='utf8'))
+    origin = utc_origin(path, meta)
+    file = path/filename if filename else solution_file(path)
+    if not origin or not file.is_file():return []
+    with _INDEX_LOCK, file.open('rb') as f:
+        item = _NMEA_TRACK.get(file)
+        stat=file.stat()
+        if not item or stat.st_size < item['offset'] or item['origin'] != origin or item['inode']!=stat.st_ino:
+            if len(_NMEA_TRACK)>=16:_NMEA_TRACK.clear()
+            item = _NMEA_TRACK[file] = dict(offset=0,rows=[],origin=origin,inode=stat.st_ino)
+        f.seek(item['offset'])
+        for line in f:
+            if not line.endswith(b'\n'):break
+            item['offset']=f.tell()
+            if line[3:6]!=b'GGA':continue
+            v=nmea_fields(line)
+            try:
+                if len(v)<12 or int(v[6])==0:continue
+                def degrees(raw,sign):
+                    deg,minutes=divmod(float(raw),100)
+                    return (deg+minutes/60)*(-1 if sign in ('S','W') else 1)
+                tod=v[1];epoch=datetime.datetime.combine(origin.date(),datetime.time(int(tod[:2]),int(tod[2:4])))+datetime.timedelta(seconds=float(tod[4:]))
+                t=(epoch-origin).total_seconds()
+                if t < -43200:epoch+=datetime.timedelta(days=1);t+=86400
+                if t > 43200:epoch-=datetime.timedelta(days=1);t-=86400
+                item['rows'].append(dict(t=t,utc=epoch.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3],
+                    lat=degrees(v[2],v[3]),lon=degrees(v[4],v[5]),height=float(v[9])+float(v[11] or 0),observations=int(v[7])))
+            except (ValueError,IndexError):continue
+        rows=item['rows']
+        step=max(1,math.ceil(len(rows)/3600))
+        return rows[::step]+([rows[-1]] if rows and (len(rows)-1)%step else [])
+
+
+def sky_at(path, t, reference=False):
+    meta=json.loads((path/'manifest.json').read_text(encoding='utf8'))
+    identities={row['channel']:row for row in meta.get('channel_map',[])}
+    # Index state changes once as the receiver writes them. Each channel can be reassigned.
+    with _INDEX_LOCK:
+        if path not in _SKY_STATES and len(_SKY_STATES)>=32:_SKY_STATES.clear()
+        index=_SKY_STATES.setdefault(path,dict(offset=0,channels={}))
+        events=path/'events.jsonl'
+        if events.is_file():
+            if events.stat().st_size<index['offset']:index.update(offset=0,channels={})
+            with events.open('rb') as stream:
+                stream.seek(index['offset'])
+                for line in stream:
+                    if not line.endswith(b'\n'):break
+                    index['offset']=stream.tell()
+                    try:e=json.loads(line)
+                    except ValueError:continue
+                    ch=e.get('channel')
+                    if ch not in identities:continue
+                    msg=e.get('text','')
+                    hit=re.search(r'([A-Z])(\d+) 捕获成功',msg)
+                    prn=re.search(r'PRN (\d+)',msg)
+                    if hit: key,state=(hit[1],int(hit[2])),'已捕获'
+                    elif prn and ('started on channel' in msg or 'loss of lock' in msg.lower()):
+                        key=(identities[ch]['system'],int(prn[1]))
+                        state='已失锁' if 'loss of lock' in msg.lower() else '跟踪中'
+                    else:continue
+                    if not 0<key[1]<={'G':32,'C':63,'E':36,'R':32}.get(key[0],255):continue
+                    seq=len(index['channels'].setdefault(ch,[]))
+                    bisect.insort(index['channels'][ch],(e['t'],seq,key,state))
+        satellites={}
+        for ch,changes in index['channels'].items():
+            pos=bisect.bisect_right(changes,(t,math.inf))-1
+            if pos<0:continue
+            when,_,key,status=changes[pos]
+            identity=identities[ch]
+            satellites[(ch,key)]=dict(channel=ch,system=key[0],prn=key[1],signal=identity['signal'],status=status,since=when)
+    origin=utc_origin(path,meta)
+    angles={}
+    if origin:
+        utc=origin+datetime.timedelta(seconds=t)
+        fixes=solution_track(path)
+        n=bisect.bisect_right(fixes,t,key=lambda r:r['t'])-1
+        if n>=0 and t-fixes[n]['t']<=max(1.,meta.get('duration',0)/3600):
+            angles={(s['system'],s['prn']):dict(s,geometry='接收机 GSV') for s in sky(path,utc.strftime('%Y-%b-%d %H:%M:%S.%f'))}
+            for key,sat in list(angles.items()):
+                if not any(pair[1]==key for pair in satellites):
+                    satellites[None,key]=dict(channel=None,system=key[0],prn=key[1],signal='',status='接收机观测')
+            angles.update(sky_geometry.decoded_angles(path,utc,fixes[n],{key for _,key in satellites if key not in angles}))
+    if reference and meta.get('iq'):
+        missing={key for _,key in satellites if key not in angles}
+        if missing:angles.update(sky_geometry.reference_angles(Path(meta['iq']),t,missing))
+    result=[]
+    for (_,key),row in satellites.items():
+        result.append(dict(row,**{k:v for k,v in angles.get(key,{}).items() if k not in ('prn','system')}))
+    return sorted(result,key=lambda r:(r['system'],r['prn'],r['channel']))
 
 def pvt_satellites(path):
     """Satellites reported by the receiver's GSA writers for its latest GGA epoch."""

@@ -7,3 +7,13 @@
 .linked-events{position:relative}
 
 .linked-event,.event-marker,.linked-time-plot{scroll-margin-top:175px}
+
+.acq-surface{grid-column:1/-1}
+.surface-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+.surface-heading h3{margin:0 0 5px}
+.surface-heading p{margin:0;color:#42606f;font:11px var(--mono)}
+.surface-heading button{white-space:nowrap;padding:6px 9px;font-size:11px}
+#acqSurface{display:block;width:100%;height:auto;aspect-ratio:960/520;border-radius:6px;cursor:grab;touch-action:none}
+#acqSurface:active{cursor:grabbing}
+#acqSurface:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.capture-filter{max-width:750px;margin:10px 0}.capture-filter summary{cursor:pointer;color:var(--teal);font-size:12px}

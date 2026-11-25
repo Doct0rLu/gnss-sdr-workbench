@@ -38,6 +38,30 @@ class BackendTests(unittest.TestCase):
     def test_nan_telemetry_is_not_json_nan(self):
         row=list(server.decode(blob(1,double(13,float('nan')))))[0]
         self.assertIsNone(row['cn0']);json.dumps(row,allow_nan=False)
+
+    def test_live_history_delta_and_full_resync(self):
+        with tempfile.TemporaryDirectory() as d:
+            run = server.Run(Path(d), {'id': 'abc', 'started': time.time()})
+            initial = run.snapshot(history_after='0')
+            cursor = initial['history_cursor']
+            run.sample(dict(channel=0, t=1, prn=4, valid=True))
+            run.sample(dict(channel=0, t=1.1, prn=4, valid=True))
+            run.sample(dict(channel=1, t=1, prn=26, valid=True))
+            run.sample(dict(channel=0, t=1.1, prn=5, valid=True))
+            update = run.snapshot(history_after=cursor)
+            self.assertNotIn('history', update)
+            self.assertEqual([row['prn'] for row in update['history_delta']['0']], [4, 5])
+            self.assertEqual(update['history_delta'], run.snapshot()['history'])
+            self.assertEqual(run.snapshot(history_after=update['history_cursor'])['history_delta'], {})
+            self.assertEqual(run.snapshot(history_after='other:4')['history'], run.snapshot()['history'])
+
+            for second in range(server.HISTORY_LIMIT + 1):
+                run.sample(dict(channel=0, t=2+second, prn=5, valid=False))
+            resynced = run.snapshot(history_after=cursor)
+            self.assertNotIn('history_delta', resynced)
+            self.assertEqual(len(resynced['history']['0']), server.HISTORY_LIMIT)
+            self.assertEqual(resynced['history'], run.snapshot()['history'])
+
     def test_input_contract(self):
         with tempfile.TemporaryDirectory() as d:
             exe=Path(d)/'rx.exe';exe.write_bytes(b'test')

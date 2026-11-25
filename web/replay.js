@@ -1,6 +1,7 @@
 const clock=new ReplayClock();
 $('followLive').after($('freeze'));
-let sessionInfo=null,sessionEvents=[],playbackEpoch=0,loadingFrame=false,pendingFrame=false,lastFrameKey='',lastTimelinePoll=0,lastTick=performance.now(),dragTimer=null,refreshingTimeline=false;
+let captureFilter=null,offlineRows=[],offlineReady=false,offlineAvailable=false,showOffline=false;
+let terminalTimeline=false,sessionTrack=[],sessionInfo=null,sessionEvents=[],playbackEpoch=0,loadingFrame=false,pendingFrame=false,lastFrameKey='',lastTimelinePoll=0,lastTick=performance.now(),dragTimer=null,refreshingTimeline=false;
 const linkedViews=['channel','acquisition','events'];
 function activeRun(){return state&&['starting','running','stopping'].includes(state.meta.status)&&!selectedRun;}
 function inspect(kind,extra=''){return api('/api/inspect?run='+encodeURIComponent(state.meta.id)+'&kind='+kind+extra);}
@@ -8,18 +9,23 @@ function bump(){playbackEpoch++;debugGeneration++;lastFrameKey='';$('exportLinke
 function syncDebug(){syncPlayback();}
 function syncPlayback(){
  if(!state)return;
- const changed=clock.run!==state.meta.id;if(changed){bump();clock.reset(state.meta.id,state.signal_time,activeRun());sessionInfo=null;sessionEvents=[];lastTimelinePoll=0;eventWindow=null;debugData=null;$('debugContent').innerHTML='<div class="empty">读取实验数据…</div>';}
+ const changed=clock.run!==state.meta.id;if(changed){acqFile='';captureFilter=null;offlineRows=[];offlineReady=false;offlineAvailable=false;showOffline=false;acquisitionView={...defaultAcquisitionView};bump();clock.reset(state.meta.id,state.signal_time,activeRun());sessionInfo=null;sessionEvents=[];sessionTrack=[];terminalTimeline=false;lastTimelinePoll=0;eventWindow=null;debugData=null;$('debugContent').innerHTML='<div class="empty">读取实验数据…</div>';}
  clock.update(state.signal_time||0);if(!activeRun()&&clock.mode==='live')clock.mode='paused';
  const count=state.meta.configured_channels||12,signature=state.meta.id+':'+count;
  if($('playChannel').dataset.signature!==signature){$('playChannel').innerHTML=Array.from({length:count},(_,n)=>`<option value="${n}">CH ${String(n).padStart(2,'0')}</option>`).join('');$('debugChannel').innerHTML=$('playChannel').innerHTML;$('playChannel').dataset.signature=signature;}
  if(selected===null)selected=state.meta.capture_channel??state.channels[0]?.channel??0;
  $('playChannel').value=selected;$('debugChannel').value=selected;
  transportUI();if(changed&&workspace!=='overview')loadDebug();
- if(Date.now()-lastTimelinePoll>900)refreshTimeline();
+ if(!terminalTimeline&&Date.now()-lastTimelinePoll>900)refreshTimeline();
 }
 async function refreshTimeline(){
- if(!state||refreshingTimeline)return;refreshingTimeline=true;lastTimelinePoll=Date.now();const run=state.meta.id;
- try{const [info,events]=await Promise.all([inspect('timeline'),inspect('events','&start=0&end=3600')]);if(state?.meta.id!==run)return;sessionInfo=info;clock.update(info.available);sessionEvents=events.length?events:state.events;transportUI();}
+ if(!state||refreshingTimeline)return;refreshingTimeline=true;lastTimelinePoll=Date.now();const run=state.meta.id,finished=['completed','stopped','failed'].includes(state.meta.status);
+ try{const [info,events,track]=await Promise.all([inspect('timeline'),inspect('events','&start=0&end=3600'),inspect('solution')]);if(state?.meta.id!==run)return;sessionInfo=info;sessionTrack=track;terminalTimeline=finished;
+ if(finished){
+   const status=await inspect('offline-status');
+   if(state?.meta.id!==run)return;
+   offlineReady=status.ready;offlineAvailable=status.available;
+ }clock.update(info.available);sessionEvents=events.length?events:state.events;transportUI();renderSolution();}
  catch(e){$('rangeLabel').textContent=e.message;}
  finally{refreshingTimeline=false;}
 }
@@ -47,11 +53,11 @@ function setWorkspace(key){
 function selectPlaybackChannel(ch){selected=Number(ch);acqFile='';bump();syncPlayback();if(workspace==='overview')setWorkspace('channel');else loadDebug();}
 $('playChannel').onchange=()=>selectPlaybackChannel($('playChannel').value);
 $('debugChannel').onchange=()=>selectPlaybackChannel($('debugChannel').value);
-function seekPlayback(t){clock.seek(Number(t));eventWindow=null;freeze=false;bump();transportUI();if(workspace==='overview')setWorkspace('channel');clearTimeout(dragTimer);dragTimer=setTimeout(()=>loadDebug(),100);}
+function seekPlayback(t){acqFile='';clock.seek(Number(t));eventWindow=null;freeze=false;bump();transportUI();if(workspace==='overview')setWorkspace('channel');clearTimeout(dragTimer);dragTimer=setTimeout(()=>loadDebug(),100);}
 $('playhead').oninput=()=>seekPlayback($('playhead').value);
 $('playhead').onchange=()=>{clearTimeout(dragTimer);loadDebug();};
-$('playReplay').onclick=()=>{clock.toggle();eventWindow=null;freeze=false;bump();if(workspace==='overview')setWorkspace('channel');transportUI();loadDebug();};
-$('followLive').onclick=()=>{clock.follow();eventWindow=null;freeze=false;bump();transportUI();loadDebug();};
+$('playReplay').onclick=()=>{acqFile='';clock.toggle();eventWindow=null;freeze=false;bump();if(workspace==='overview')setWorkspace('channel');transportUI();loadDebug();};
+$('followLive').onclick=()=>{acqFile='';clock.follow();eventWindow=null;freeze=false;bump();transportUI();loadDebug();};
 $('freeze').onclick=()=>{if(clock.mode==='live')clock.seek(clock.time);else clock.follow();freeze=false;bump();transportUI();loadDebug();};
 $('playRate').onchange=()=>{clock.speed=Number($('playRate').value);};
 $('playSpan').onchange=()=>{clock.span=Number($('playSpan').value);clock.eventRange=null;clock.eventPlaybackStarted=false;if(clock.event){clock.mode='paused';clock.time=Math.min(clock.available,clock.event.t);}bump();transportUI();loadDebug();};
@@ -78,8 +84,8 @@ function timePlot(rows,series,unit,range){
  const html=rows.length?plot(rows,series,unit,'t',range):'<div class="empty">此窗口无跟踪记录</div>';
  return '<div class="linked-time-plot" data-start="'+range[0]+'" data-end="'+range[1]+'">'+html+'</div>';
 }
-function satelliteSystem(){return state?.meta.channel_map?.find(r=>r.channel===selected)?.system||state?.channels.find(r=>r.channel===selected)?.system||({'B3':'C','1C':'G'}[state?.meta.signal])||'?';}
-function captureCard(d,compact=false){const f=d.frame;if(!f)return card('捕获快照','<div class="empty">当前通道在此时刻没有捕获快照</div>');return card(`捕获帧 · ${satelliteSystem()}${String(f.prn).padStart(2,'0')} · ${fmt(f.t,3)} s`,plot(f.delay.map((t,n)=>({t,value:f.profile[n]})),[['value','码延迟峰形']],'归一化功率 / sample'),`${f.positive?'成功':'未过门限'} · 统计量 ${fmt(f.statistic,2)} / ${fmt(f.threshold,2)} · ${fmt(f.doppler_hz,0)} Hz`);}
+function satelliteSystem(ch=selected){return state?.meta.channel_map?.find(r=>r.channel===ch)?.system||state?.channels.find(r=>r.channel===ch)?.system||({'B3':'C','1C':'G'}[state?.meta.signal])||'?';}
+function captureCard(d,compact=false){const f=d.frame;if(!f)return card('捕获快照','<div class="empty">当前时间窗口暂无捕获快照</div>');return card(`捕获帧 · ${satelliteSystem(f.channel)}${String(f.prn).padStart(2,'0')} · ${fmt(f.t,3)} s`,plot(f.delay.map((t,n)=>({t,value:f.profile[n]})),[['value','码延迟峰形']],'归一化功率 / sample'),`${f.positive?'成功':'未过门限'} · 统计量 ${fmt(f.statistic,2)} / ${fmt(f.threshold,2)} · ${fmt(f.doppler_hz,0)} Hz`);}
 function renderLinkedFrame(d,capture,range,at){
  const expanded=$('loopAdvanced')?.open||false,rows=d.rows,last=rows.at(-1),ch=selected;
  const event=clock.event?`<div class="event-focus"><b>${esc(eventType(clock.event))} · ${fmt(clock.event.t,3)} s</b><span>${esc(clock.event.text)}</span></div>`:'';
@@ -88,11 +94,46 @@ function renderLinkedFrame(d,capture,range,at){
  bindLinkedEvents();bindCrosshair(at);
 }
 function renderAcquisition(d){
- const f=d.frame;const before=d.files.filter(f=>f.t<=clock.available);const index=f?before.findIndex(r=>r.name===f.name):-1;
- $('debugContent').innerHTML=`<div class="debug-heading"><h2>CH ${String(selected).padStart(2,'0')} · 捕获搜索</h2><p>游标 ${fmt(clock.time,3)} s${f?' · 帧时间 '+fmt(f.t,3)+' s':''}</p><div class="snapshot-control"><button id="previousFrame" ${index<=0?'disabled':''}>← 上一帧</button><select id="acqFrames" aria-label="捕获快照"><option value="">${f?'选择捕获快照':'此时刻暂无快照'}</option>${before.map(r=>`<option value="${esc(r.name)}" ${f?.name===r.name?'selected':''}>${fmt(r.t,3)} s · ${satelliteSystem()}${r.prn} · ${r.positive?'成功':'未过门限'}</option>`).join('')}</select><button id="nextFrame" ${index>=before.length-1?'disabled':''}>下一帧 →</button></div></div><div class="linked-layout"><div class="instrument-grid">${captureCard(d)}${f?card('多普勒剖面',plot(f.dopplers.map((t,n)=>({t,value:f.doppler_profile[n]})),[['value','峰值码延迟列']],'归一化功率 / Hz'))+card('二维搜索网格','<canvas id="acqHeat"></canvas>','横轴：码延迟 sample · 纵轴：多普勒 Hz'):''}</div>${eventRail()}</div>`;
- const chooseFrame=r=>{if(!r)return;clock.seek(r.t);bump();transportUI();loadDebug();};
- $('previousFrame').onclick=()=>chooseFrame(before[index-1]);$('nextFrame').onclick=()=>chooseFrame(before[index+1]);$('acqFrames').onchange=()=>chooseFrame(before.find(r=>r.name===$('acqFrames').value));
- if(f){const canvas=$('acqHeat');canvas.width=f.heat[0].length;canvas.height=f.heat.length;const ctx=canvas.getContext('2d'),im=ctx.createImageData(canvas.width,canvas.height);f.heat.flat().forEach((v,n)=>{const a=Math.max(0,Math.min(1,(10*Math.log10(Math.max(v,1e-6))+45)/45));im.data.set([10+240*a,25+200*Math.sqrt(a),60+110*(1-a),255],n*4);});ctx.putImageData(im,0,0);}
+ const f=d.frame, frames=d.files;
+ const index=frames.findIndex(row=>row.name===f?.name);
+ const surface=f?.surface;
+ const saved=[...new Set([...(state.meta.capture_channels||[]),...(sessionInfo?.captures||[]).map(r=>r.channel),...frames.map(r=>r.channel)])].sort((a,b)=>a-b);
+ const labelFor=ch=>'CH '+String(ch).padStart(2,'0');
+ const filters=saved.length?`<details class="capture-filter" ${captureFilter===null?'':'open'}>
+  <summary>查看快照通道 · ${captureFilter?.size??saved.length} / ${saved.length}</summary>
+  <div class="capture-choice-actions"><button id="showAllCapture" type="button">查看全部</button></div>
+  <div id="snapshotFilter" class="capture-choices">${saved.map(ch=>`<label class="inline-choice"><input type="checkbox" value="${ch}" ${captureFilter===null||captureFilter.has(ch)?'checked':''}> ${labelFor(ch)} · ${esc(state.meta.channel_map?.find(r=>r.channel===ch)?.label||'')}</label>`).join('')}</div></details>`:'';
+ const summary=surface
+   ? `峰值码相位 ${fmt(surface.phase_ms,4)} ms · 多普勒 ${fmt(surface.peak_hz,0)} Hz · 峰值 ${f.peak.toExponential(3)}`
+   : '';
+ const view=surface?`<section class="instrument acq-surface">
+   <div class="surface-heading"><div><h3>三维捕获搜索网格</h3><p>${summary}</p></div><button id="resetAcqView" type="button">重置视角</button></div>
+   <canvas id="acqSurface" tabindex="0" aria-label="三维捕获网格，方向键旋转"></canvas>
+   <p>拖动旋转。码相位覆盖一个主码周期，每个网格块取最大相关功率。判决统计量和门限见下方。</p>
+   </section>`:'';
+ const waiting=frames.length?'选择快照，或将时间轴移到捕获发生之后。':'在「配置实验 → 生成配置并运行」勾选「保存捕获搜索网格」，再运行。这里显示所选快照通道的数据。';
+ $('debugContent').innerHTML=`<div class="debug-heading"><h2>捕获搜索${f?' · '+labelFor(f.channel):''}</h2>
+   ${filters}
+   <p>游标 ${fmt(clock.time,3)} s${f?' · 帧时间 '+fmt(f.t,3)+' s':''}</p>
+   <div class="snapshot-control"><button id="previousFrame" ${index<=0?'disabled':''}>← 上一帧</button>
+   <select id="acqFrames" aria-label="捕获快照"><option value="">${frames.length?'选择捕获快照':'暂无捕获快照'}</option>
+   ${frames.map(r=>`<option value="${esc(r.name)}" ${f?.name===r.name?'selected':''}>${fmt(r.t,3)} s · ${labelFor(r.channel)} · ${satelliteSystem(r.channel)}${r.prn} · ${r.positive?'成功':'未过门限'}</option>`).join('')}</select>
+   <button id="nextFrame" ${index>=frames.length-1?'disabled':''}>下一帧 →</button></div></div>
+   <div class="linked-layout"><div class="instrument-grid">${view}${f?captureCard(d)+card('多普勒剖面',plot(f.dopplers.map((t,n)=>({t,value:f.doppler_profile[n]})),[['value','峰值码延迟列']],'归一化功率 / Hz')):card('捕获快照','<div class="empty">'+waiting+'</div>')}</div>${eventRail()}</div>`;
+ const chooseFrame=row=>{
+   if(!row)return;
+   selected=row.channel;clock.update(row.t);clock.seek(row.t);acqFile=row.name;
+   bump();transportUI();loadDebug();
+ };
+ $('previousFrame').onclick=()=>chooseFrame(frames[index-1]);
+ $('nextFrame').onclick=()=>chooseFrame(frames[index+1]);
+ $('acqFrames').onchange=()=>chooseFrame(frames.find(row=>row.name===$('acqFrames').value));
+ if(filters){
+   const refresh=()=>{acqFile='';bump();loadDebug();};
+   $('snapshotFilter').onchange=()=>{captureFilter=new Set([...$('snapshotFilter').querySelectorAll('input:checked')].map(input=>Number(input.value)));refresh();};
+   $('showAllCapture').onclick=()=>{captureFilter=null;refresh();};
+ }
+ if(surface)bindAcquisitionSurface($('acqSurface'),f,$('resetAcqView'));
  bindLinkedEvents();
 }
 function bindCrosshair(at){
@@ -108,10 +149,16 @@ async function loadDebug(){
   $('frameStatus').textContent='读取…';$('debugSource').textContent='读取中…';
  try{
   if(linkedViews.includes(key)){
-   const jobs=[inspect('acquisition',`&channel=${ch}&t=${at}`)];if(key!=='acquisition')jobs.push(inspect('tracking',`&channel=${ch}&start=${range[0]}&end=${Math.max(range[0]+.001,range[1])}`));
-   const [capture,tracking]=await Promise.all(jobs);if(epoch!==playbackEpoch||run!==state?.meta.id)return;
-   debugData={run,channel:ch,time:at,range,event:clock.event?{...clock.event}:null,tracking,capture};
-   if(key==='acquisition')renderAcquisition(capture);else renderLinkedFrame(tracking,capture,range,at);
+   let captureQuery=`&channel=${ch}&t=${at}`;
+   if(key==='acquisition'){
+     captureQuery=`&surface=1&t=${at}`+(acqFile?'&file='+encodeURIComponent(acqFile):'');
+     if(captureFilter?.size)captureQuery+='&channels='+[...captureFilter].join(',');
+   }
+   const capture=key==='acquisition'&&captureFilter?.size===0?Promise.resolve({files:[],frame:null}):inspect('acquisition',captureQuery);
+   const jobs=[capture];if(key!=='acquisition')jobs.push(inspect('tracking',`&channel=${ch}&start=${range[0]}&end=${Math.max(range[0]+.001,range[1])}`));
+   const [captured,tracking]=await Promise.all(jobs);if(epoch!==playbackEpoch||run!==state?.meta.id)return;
+   debugData={run,channel:ch,time:at,range,event:clock.event?{...clock.event}:null,tracking,capture:captured};
+   if(key==='acquisition')renderAcquisition(captured);else renderLinkedFrame(tracking,captured,range,at);
    $('debugSource').textContent='Tracking dump · Acquisition MAT73';
    if(key!=='acquisition'&&clock.mode!=='live'){
     const logs=await inspect('logs',`&start=${range[0]}&end=${range[1]}&channel=${ch}`);if(epoch!==playbackEpoch)return;renderSliceLogs(logs,ch,range);
@@ -124,8 +171,8 @@ function renderSliceLogs(rows,ch,range){sliceLogRows=rows;sliceLogChannel=ch;sli
 // A single request flight plus a replaceable pending frame bounds work under dragging.
 setInterval(()=>{
  const now=performance.now(),delta=Math.min(1,(now-lastTick)/1000);lastTick=now;if(!state)return;
- const moved=clock.tick(delta);if(clock.mode==='live')clock.update(state.signal_time||0);transportUI();
- if([...linkedViews,'baseband'].includes(workspace)&&(moved||clock.mode==='live')){const range=clock.range(),key=[state.meta.id,workspace,selected,Math.floor(range[0]*4),Math.floor(range[1]*4),Math.floor(clock.time*4)].join('|');if(key!==lastFrameKey){lastFrameKey=key;loadDebug();}}
+ const moved=clock.tick(delta);if(document.hidden)return;if(moved)transportUI();
+ if([...linkedViews,'baseband','sky'].includes(workspace)&&(moved||clock.mode==='live')){const range=clock.range(),key=[state.meta.id,workspace,selected,Math.floor(range[0]*4),Math.floor(range[1]*4),Math.floor(clock.time*4)].join('|');if(key!==lastFrameKey){lastFrameKey=key;if(workspace==='sky')renderSolution();loadDebug();}}
 },200);
 // Preserve the existing overview but route its channel and event actions into the session.
 const originalChoose=choose;choose=ch=>selectPlaybackChannel(ch);

@@ -12,3 +12,34 @@
 #b1cChoice[hidden],#sharedRecording[hidden]{display:none}
 
 #singlePrnLabel[hidden],#mixedPrnFields[hidden],#standardPresetFields[hidden],#m1PrnFields[hidden]{display:none}
+
+.setup-step{border:1px solid #e4ecee;border-radius:8px;padding:14px 16px;margin:13px 0}
+.setup-step h3{font-size:15px;margin:0 0 13px;display:flex;align-items:center;gap:8px}
+.setup-step h3 span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#e6f2ef;color:#08786e;font:600 12px var(--mono)}
+.setup-step>label,#standardPresetFields>label,.setup-step details label{display:block;margin-top:8px}
+.setup-step .field-hint,.setup-example p,.state-guide p{margin:6px 0 10px;color:#526c78;font-size:12px;line-height:1.65}
+.setup-step .field-hint:empty{display:none}
+.setup-step .setup-parameters{align-items:end;flex-wrap:wrap;gap:12px 20px;margin:8px 0}
+.setup-step .setup-parameters label>input[type=number],.setup-short input{max-width:128px}
+.setup-short select{display:block;margin-top:8px}
+.setup-step summary,.state-guide summary{cursor:pointer}
+.setup-step .inline-choice,.inline-choice{display:inline-flex;align-items:center;gap:7px}
+.inline-choice input[type=checkbox]{display:inline;width:auto;margin:0;accent-color:#0a8779}
+.setup-step #sharedRecording{margin-top:16px}
+.setup-example{margin:7px 0 12px}
+.branch-plan{background:#f0f7f6;border-radius:6px;padding:10px 12px;font-size:12px;color:#375862;line-height:1.6}
+.branch-plan div{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:3px}
+.branch-plan div b{font:600 11px var(--mono);color:#08786e}
+.branch-plan div span{font-family:var(--mono);margin-left:auto}
+.state-tag.waiting{background:#eef3f6;color:#4d6877}
+.state-guide{padding-bottom:8px}
+#signalCatalog{margin:8px 0 14px;gap:7px 10px;grid-template-columns:repeat(auto-fit,minmax(151px,1fr))}
+#signalCatalog label{display:flex;align-items:center;gap:6px;margin:0;min-height:30px;padding:4px 5px;border-radius:4px;cursor:pointer}
+#signalCatalog label:has(input:checked){background:#eaf6f2;color:#205c55}
+#signalCatalog input[type=checkbox]{display:inline;width:auto;margin:0;flex:none;accent-color:var(--teal)}
+
+#captureChannelField{flex-basis:100%;padding:8px 0}
+.capture-choice-actions{display:flex;gap:8px;margin:8px 0}
+.capture-choice-actions button{padding:5px 9px;font-size:12px}
+.capture-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:5px 8px;max-height:180px;overflow:auto}
+.capture-choices label{margin:0;font-size:12px;color:#365461}

@@ -91,10 +91,16 @@ def lowpass(cfg, suffix, rate, offset, cutoff, transition, factor):
 
 
 def synchronize_sources(cfg):
-    """Give shared RF branches one native sample counter and one end-of-input event."""
+    """Give matched file streams one sample counter and one end-of-input event."""
     count = int(cfg.get('GNSS-SDR.num_sources',1))
-    if 'Workbench.capture_center_hz' not in cfg or count < 2:
+    if count < 2:
         return
+    if 'Workbench.capture_center_hz' not in cfg:
+        if cfg.get('Workbench.synchronized_files') != 'true':
+            return
+        # The native multi-channel file source shares every input option except filename.
+        streams=[{k.split('.',1)[1]:v for k,v in cfg.items() if k.startswith(f'SignalSource{n}.') and not k.endswith('.filename')} for n in range(count)]
+        if any(stream!=streams[0] for stream in streams[1:]):return
     source = {}
     for n in range(count):
         prefix = f'SignalSource{n}.'
@@ -110,7 +116,7 @@ def synchronize_sources(cfg):
                 'SignalSource.RF_channels':count, 'SignalSource.total_channels':count})
 
 
-def template(ids, count=8, fs=None, shared=None, b1c_profile='narrow'):
+def template(ids, count=8, fs=None, shared=None, b1c_profile='narrow', separate=None):
     ids=list(dict.fromkeys(ids))
     if not ids or any(s not in CATALOG for s in ids):raise ValueError('请选择信号')
     if not 1<=int(count)<=128 or len(ids)*int(count)>128:raise ValueError('总通道数需在 1–128 之间')
@@ -125,6 +131,18 @@ def template(ids, count=8, fs=None, shared=None, b1c_profile='narrow'):
     fmt = 'ibyte'
     factor = 1
     cfg = {}
+    if separate is not None:
+        if shared is not None:
+            raise ValueError('请选择一种录制方式')
+        target = rate
+        rate = int(separate['rate_hz'])
+        fmt = separate['format']
+        if not 0 < rate <= 2_147_483_647 or fmt not in FORMATS or FORMATS[fmt]['components'] != 2:
+            raise ValueError('请填写录制采样率并选择 IQ 格式')
+        if rate < target:
+            raise ValueError(f'当前信号接收配置需要至少 {target/1e6:g} MS/s')
+        factor = max(n for n in range(1, rate // target + 1) if rate % n == 0)
+        if multi:cfg['Workbench.synchronized_files']='true'
     if shared is not None:
         center = float(shared.get('center_mhz', 0)) * 1e6
         rate = int(shared.get('rate_hz', 0))
@@ -158,10 +176,12 @@ def template(ids, count=8, fs=None, shared=None, b1c_profile='narrow'):
             cutoff, transition = bands[n]
             check_band(frequency, center, rate, internal, cutoff, transition)
             lowpass(cfg, suffix, rate, frequency - center, cutoff, transition, factor)
-        elif '1D' in ids and freq == CATALOG['1D']['mhz']:
+        elif ('1D' in ids and freq == CATALOG['1D']['mhz']) or factor > 1:
             cutoff, transition = bands[n]
+            if factor > 1 and cutoff + transition > internal/2:
+                cutoff, transition = int(.38*internal), int(.1*internal)
             check_band(frequency, frequency, rate, internal, cutoff, transition)
-            lowpass(cfg, suffix, rate, 0, cutoff, transition, 1)
+            lowpass(cfg, suffix, rate, 0, cutoff, transition, factor)
     for sid in ids:
         cfg['Channels_'+sid+'.count']=int(count);cfg['Channels_'+sid+'.RF_channel_ID']=frequencies.index(CATALOG[sid]['mhz'])
         item=CATALOG[sid]
@@ -177,13 +197,12 @@ def template(ids, count=8, fs=None, shared=None, b1c_profile='narrow'):
         replica = 'true' if wide else 'false'
         cfg.update({'Acquisition_1D.qmboc': replica, 'Tracking_1D.qmboc': replica,
                     'Acquisition_1D.doppler_step': 50, 'Acquisition_1D.doppler_max': 4500})
-        if not wide:
-            loops = dict(pll_bw_hz=10, dll_bw_hz=0.5, pll_bw_narrow_hz=5, dll_bw_narrow_hz=0.2,
-                         pll_filter_order=2, early_late_space_chips=0.15, very_early_late_space_chips=0.5,
-                         cn0_min=20, bit_synchronization_time_limit_s=90, extend_correlation_symbols=1)
-            cfg.update({f'Tracking_1D.{key}': value for key, value in loops.items()})
+        loops = dict(pll_bw_hz=10, dll_bw_hz=0.5, pll_bw_narrow_hz=5, dll_bw_narrow_hz=0.2,
+                     pll_filter_order=2, early_late_space_chips=0.15, very_early_late_space_chips=0.5,
+                     cn0_min=20, bit_synchronization_time_limit_s=90, extend_correlation_symbols=1)
+        cfg.update({f'Tracking_1D.{key}': value for key, value in loops.items()})
     cfg.update({'Channels.in_acquisition':min(6 if '1D' in ids else 2,len(ids)*int(count)),'Channel.signal':ids[0],'Observables.implementation':'Hybrid_Observables','PVT.implementation':'RTKLIB_PVT','PVT.positioning_mode':'Single','PVT.output_rate_ms':100,'PVT.display_rate_ms':1000,'PVT.output_enabled':'true','PVT.output_path':'.','PVT.nmea_dump_filename':'./solution.nmea','PVT.flag_nmea_tty_port':'false','PVT.flag_rtcm_tty_port':'false','PVT.flag_rtcm_server':'false'})
-    synchronize_sources(cfg)
+    if shared is not None:synchronize_sources(cfg)
     return '[GNSS-SDR]\n'+'\n'.join(f'{k}={v}' for k,v in cfg.items())+'\n'
 
 def parse_prns(sid, prns):

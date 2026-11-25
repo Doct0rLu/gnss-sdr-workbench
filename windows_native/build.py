@@ -161,7 +161,12 @@ def main():
             '-DPython3_EXECUTABLE='+str(tools/'python.exe'),'-DENABLE_UHD=OFF','-DENABLE_ZMQ=OFF',
             '-DENABLE_CPUFEATURES=OFF','-DENABLE_UNIT_TESTING=OFF','-DENABLE_SYSTEM_TESTING=OFF','-DENABLE_GNSS_SIM_INSTALL=OFF')
         run('--build',a.work/'build','--target','gnss-sdr','--parallel',str(a.jobs))
-    print(package(a,src,volk))
+    runtime=package(a,src,volk)
+    from build_b1c import build
+    build(a.work,runtime/'bin/gnss-sdr-b1c.exe',a.prefix)
+    from build_pvt import build as build_offline
+    build_offline(a.work,runtime/'bin/gnss-sdr-pvt-replay.exe',a.prefix)
+    print(runtime)
 
 
 if __name__=='__main__':

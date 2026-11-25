@@ -22,6 +22,22 @@ class DiagnosticsTests(unittest.TestCase):
             self.assertEqual(frame['doppler_profile'][320],0.25)
             self.assertEqual(frame['heat'][321][73456//625],1)
 
+    def test_surface_folds_repeated_code_and_serializes_peak_position(self):
+        import h5py,json,numpy as np
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp)
+            (p/'receiver.conf').write_text('[GNSS-SDR]\nGNSS-SDR.internal_fs_sps=8000\nAcquisition_1C.coherent_integration_time_ms=2\n')
+            with h5py.File(p/'acquisition_1C_G_1C_ch_0_1_sat_8.mat','w') as f:
+                for key,value in dict(sample_counter=8,PRN=8,positive_acq=1,doppler_step=500,doppler_max=500).items():
+                    f[key]=[value]
+                grid=np.zeros((3,32))
+                grid[2,26]=13
+                f['acq_grid']=grid
+            frame=json.loads(json.dumps(d.acquisition(p,surface=True),allow_nan=False))['frame']
+            surface=frame['surface']
+            self.assertEqual((surface['period_ms'],surface['phase_ms'],surface['peak_hz']),(1,.25,500))
+            self.assertEqual(surface['values'][surface['peak_row']][surface['peak_col']],frame['peak'])
+
     def test_dump_slice_search_and_bound(self):
         with tempfile.TemporaryDirectory() as tmp:
             p=Path(tmp);(p/'receiver.conf').write_text('[GNSS-SDR]\nGNSS-SDR.internal_fs_sps=1000\n')

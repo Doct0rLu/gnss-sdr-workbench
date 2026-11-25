@@ -1,18 +1,18 @@
-# GNSS-SDR Workbench v0.6.1
+# GNSS-SDR Workbench
 
-Windows x64 的 GNSS-SDR 配置、监测与回放界面。本版直接启动随包的 Windows 接收机进程。接收机基于提交 `3132713`，构建时应用 Windows 平台适配及有限文件 EOF 修复，保留上游捕获统计量、跟踪环路、电文解码和定位计算。[上游源码](https://github.com/gnss-sdr/gnss-sdr/tree/3132713b88a1b5b2ee8291bff8076574749349de) · [运行对照](NATIVE-REGRESSION.md)
+Windows x64 的 GNSS-SDR 配置、监测与回放界面。本版直接启动随包的 Windows 接收机进程。接收机基于提交 `3132713`，构建时应用 Windows 平台适配及有限文件 EOF 修复，沿用上游捕获统计量、跟踪环路、电文解码和定位计算。工作台实验可选用随包的 B1C 短录制电文恢复版或多通道快照版。[上游源码](https://github.com/gnss-sdr/gnss-sdr/tree/3132713b88a1b5b2ee8291bff8076574749349de) · [运行对照](NATIVE-REGRESSION.md)
 
 同一份 M1 L5 录制在常规调度和上游确定性调度下的逐星捕获、跟踪及星历复验见[L5 重复实验](L5-REPEAT.md)。
 
 ## 下载使用
 
-完整解压 win-x64 便携包到可写目录，双击 `Start-Workbench.cmd`。接收机、GNU Radio DLL 和界面所需运行库都在包内。[下载 v0.6.1](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/tag/v0.6.1) · [操作说明](PORTABLE.md)
+完整解压 win-x64 便携包到可写目录，双击 `Start-Workbench.cmd`。接收机、GNU Radio DLL 和界面所需运行库都在包内。[下载 Windows 便携版](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/latest) · [操作说明](PORTABLE.md)
 
 “使用原始 GNSS-SDR 配置”支持本机 .conf 和随包的上游示例。相对或已迁移的录制路径会解析到实际文件，实验目录同时保留原文和传给内核的配置。“工作台实验”提供多频、实数和 IQ 预设，并配置监测端口、转储与时长。
 
 ## 从源码启动
 
-使用 Python 3.11 或更高版本执行 `python -m pip install -r requirements.txt`。把 v0.6.1 便携包的 `receiver` 目录放在 `server.py` 旁，双击 `start.cmd`。也可执行 `python server.py --port 8767 --open`。
+使用 Python 3.11 或更高版本执行 `python -m pip install -r requirements.txt`。把配套便携包的 `receiver` 目录放在 `server.py` 旁，双击 `start.cmd`。也可执行 `python server.py --port 8767 --open`。
 
 ## 输入格式
 
@@ -45,9 +45,9 @@ Windows x64 的 GNSS-SDR 配置、监测与回放界面。本版直接启动随�
 | --- | --- |
 | 运行总览 | UDP C/N₀ 趋势、各通道观测状态、Prompt I/Q、运行进度、定位与日志 |
 | 单通道 / 环路 | 跟踪 dump 的 PLL/DLL 鉴别器、NCO、E/P/L 相关器、锁定指标、多普勒与 Prompt I/Q |
-| 捕获搜索 | 所选通道的历次 MAT73 快照、码延迟峰形、多普勒剖面、二维搜索网格、统计量/门限；全通道成功捕获记录来自 AcquisitionMonitor |
+| 捕获搜索 | 所选通道的历次 MAT73 快照、码延迟峰形、多普勒剖面、三维搜索网格、统计量/门限；全通道成功捕获记录来自 AcquisitionMonitor |
 | 输入 I/Q | 文件时间切片、波形、Hann FFT 频谱、I/Q 散点、RMS/DC/满幅比例，支持原始 iq8 切片下载 |
-| 卫星星座 | 最近完整 NMEA GSV 组的天空图、方位角、仰角和 C/N₀ |
+| 卫星星座 | 按信号时间查看卫星捕获、跟踪和失锁状态及可用的方位角、仰角和 C/N₀，标注角度来源 |
 | 事件 / 切片 | 捕获、跟踪启动、符号输出变化、周跳、失锁、运行停止等已观测事件；点击联动前后 2 秒环路与日志 |
 | 数据文件 | 浏览本次目录内的原始日志、dump、MAT、配置、NMEA、定位输出，逐文件下载 |
 | 调试接口 | Windows 原生接收机进程、接收机和配置的 SHA-256、监测端口、数据 API |
@@ -80,9 +80,9 @@ POST /api/restart
 
 ## 当前适配与后续方向
 
-v0.4 系列 Windows 接收机曾验证 17 类信号处理链运行、同频混合与双 RF 链路；实际定位回归包括 GPS L1 C/A 和北斗 B3I。GPS L1 C/A 录制使用 18 MS/s signed int8 I/Q、+20 kHz IF、抽取至 3 MS/s。文件输入支持实数 int8/byte、int16/short、float32/float，以及 IQ int8/ibyte、int16/ishort、float32/gr_complex；多字节格式为小端序。工作台按格式计算文件长度、接收机样本数与切片字节偏移；随包接收机支持将实数 int16 读到最后一个完整样本，其他格式的工作台时长计算保留原有的 100 ms 尾部余量。实数输入使用 Pass_Through 适配器与 Freq_Xlating_Fir_Filter 完成滤波、下变频和抽取，填写实际录制中频；IQ 整数输入使用对应的 Ibyte/Ishort_To_Complex。捕获网格使用内核已有 dump_channel，每次实验选择一个通道；成功捕获消息覆盖各通道。跟踪二进制解析适配当前构建的 112 字节记录。
+v0.4 系列 Windows 接收机曾验证 17 类信号处理链运行、同频混合与双 RF 链路；实际定位回归包括 GPS L1 C/A 和北斗 B3I。GPS L1 C/A 录制使用 18 MS/s signed int8 I/Q、+20 kHz IF、抽取至 3 MS/s。文件输入支持实数 int8/byte、int16/short、float32/float，以及 IQ int8/ibyte、int16/ishort、float32/gr_complex；多字节格式为小端序。工作台按格式计算文件长度、接收机样本数与切片字节偏移；随包接收机支持将实数 int16 读到最后一个完整样本，其他格式的工作台时长计算保留原有的 100 ms 尾部余量。实数输入使用 Pass_Through 适配器与 Freq_Xlating_Fir_Filter 完成滤波、下变频和抽取，填写实际录制中频；IQ 整数输入使用对应的 Ibyte/Ishort_To_Complex。启用捕获网格后可以多选记录通道，成功捕获消息覆盖各通道。跟踪二进制解析适配当前构建的 112 字节记录。
 
-天空图按 GGA 历元合并各星座的 GSV，拖动时间轴时使用游标处最近定位解的 UTC。定位面板收录原生首次定位和周期位置，事件的时间精度取决于接收机对应的输出。输入工作区可查看原始采样。
+天空图和环路监测随信号时间轴回放。定位面板收录原生首次定位和周期位置，工作台实验可用已保存的观测量和星历直接重算单点定位。输入工作区可查看原始采样。
 
 接收机内核与工作台分开维护，后续内核接口扩展单独提交上游。项目采用 GPL-3.0-or-later；便携版附接收机对应源码和第三方许可信息。local.json、runs、测试 IQ 与私人验收记录不进入公开源码。
 

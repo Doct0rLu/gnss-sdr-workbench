@@ -1,0 +1,20 @@
+--- a/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition.cc
++++ b/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition.cc
+@@ -40,6 +40,7 @@
+ #include <iostream>
+ #include <limits>
+ #include <map>
++#include <mutex>
+ #include <vector>
+ 
+ #if USE_GLOG_AND_GFLAGS
+@@ -586,6 +587,9 @@
+ 
+ void pcps_acquisition::dump_results(const AcquisitionResult& result)
+ {
++    // The Windows MAT/HDF5 runtime is shared by all acquisition channels.
++    static std::mutex mat_writer;
++    const std::lock_guard<std::mutex> lock(mat_writer);
+     ensure_dump_grid_allocated();
+ 
+     d_dump_number++;

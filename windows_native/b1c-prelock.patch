@@ -1,0 +1,105 @@
+--- a/src/algorithms/telemetry_decoder/gnuradio_blocks/beidou_b1c_telemetry_decoder_gs.cc
++++ b/src/algorithms/telemetry_decoder/gnuradio_blocks/beidou_b1c_telemetry_decoder_gs.cc
+@@ -230,7 +230,7 @@
+       d_dump_crc_stats(conf.dump_crc_stats),
+       d_tow_to_trk(conf.tow_to_trk)
+ {
+-    set_history(static_cast<unsigned int>(BEIDOU_CNAV1_FRAME_SYMBOLS));
++    set_history(static_cast<unsigned int>(BEIDOU_CNAV1_FRAME_SYMBOLS + 1));
+     set_output_multiple(1);
+     configure_basic_outputs();
+     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+@@ -298,7 +298,7 @@
+ 
+ void beidou_b1c_telemetry_decoder_gs::forecast(int noutput_items, gr_vector_int& ninput_items_required)
+ {
+-    ninput_items_required[0] = BEIDOU_CNAV1_FRAME_SYMBOLS + std::max(noutput_items, 1) - 1;
++    ninput_items_required[0] = BEIDOU_CNAV1_FRAME_SYMBOLS + std::max(noutput_items, 1);
+ }
+ 
+ 
+@@ -390,14 +390,14 @@
+ {
+     const auto* in = reinterpret_cast<const Gnss_Synchro*>(input_items[0]);
+     auto* out = reinterpret_cast<Gnss_Synchro*>(output_items[0]);
+-    if (ninput_items[0] < BEIDOU_CNAV1_FRAME_SYMBOLS || noutput_items <= 0)
++    if (ninput_items[0] <= BEIDOU_CNAV1_FRAME_SYMBOLS || noutput_items <= 0)
+         {
+             return 0;
+         }
+ 
+     const int32_t hist = BEIDOU_CNAV1_FRAME_SYMBOLS;
+-    const Gnss_Synchro* frame_window = in;
+-    Gnss_Synchro current_symbol = in[hist - 1];
++    const Gnss_Synchro* frame_window = in + 1;
++    Gnss_Synchro current_symbol = frame_window[hist - 1];
+     // Navigation data sent to the PVT is stamped with this symbol
+     const TelemetryWorkScope symbol_stamp(this, current_symbol.Tracking_sample_counter);
+     current_symbol.PRN = d_satellite.get_PRN();
+@@ -440,6 +440,7 @@
+                 {
+                     bool invert = false;
+                     int32_t matched_offset = -1;
++                    bool preceding_frame = false;
+                     if (d_stat == 0 && (just_locked_event || periodic_reacq))
+                         {
+                             const int32_t expected_prn_scan = d_satellite.get_PRN();
+@@ -502,6 +503,42 @@
+                                         }
+                                 }
+ 
++                            // Pilot-referenced pre-lock data retains the sign of the raw pilot.
++                            // The first valid epoch follows the last symbol of the preceding frame.
++                            if (!frame_decoded && just_locked_event && d_sample_counter > static_cast<uint64_t>(hist))
++                                {
++                                    std::vector<float> symbols(hist);
++                                    bool continuous = current_symbol.fs > 0;
++                                    for (int32_t i = 0; continuous && i < hist; ++i)
++                                        {
++                                            const auto& symbol = in[i];
++                                            const auto& next = in[i + 1];
++                                            const double interval = (static_cast<double>(next.Tracking_sample_counter) -
++                                                static_cast<double>(symbol.Tracking_sample_counter)) / current_symbol.fs;
++                                            continuous = symbol.PRN == current_symbol.PRN && !symbol.Flag_valid_symbol_output &&
++                                                std::abs(interval - 0.01) < 0.001;
++                                            symbols[i] = symbol.Prompt_I * (symbol.Prompt_Q < 0.0 ? -1.0F : 1.0F);
++                                        }
++                                    if (continuous)
++                                        {
++                                            for (int polarity = 0; polarity < 2; ++polarity)
++                                                {
++                                                    if (polarity)
++                                                        {
++                                                            for (auto& value : symbols) value = -value;
++                                                        }
++                                                    if (d_nav.probe_subframe1_prn(symbols.data(), hist, expected_prn_scan) &&
++                                                        d_nav.decode_frame_symbols(symbols.data(), hist, expected_prn_scan))
++                                                        {
++                                                            frame_decoded = true;
++                                                            preceding_frame = true;
++                                                            matched_offset = 0;
++                                                            invert = polarity != 0;
++                                                            break;
++                                                        }
++                                                }
++                                        }
++                                }
+                             if (frame_decoded)
+                                 {
+                                     d_await_post_lock_frame_decode = false;
+@@ -543,10 +580,14 @@
+                         {
+                             d_CRC_error_counter = 0;
+                             d_flag_PLL_180_deg_phase_locked = invert;
+-                            d_frame_sync_index = d_sample_counter;
++                            d_frame_sync_index = d_sample_counter - (preceding_frame ? 1U : 0U);
+                             const int32_t frame_soh_offset = (matched_offset >= 0) ? matched_offset : 0;
+                             d_TOW_at_current_symbol_ms = compute_b1c_tow_ms_at_current_symbol(
+                                 d_nav.get_tow_s(), frame_soh_offset, d_symbol_duration_ms);
++                            if (preceding_frame)
++                                {
++                                    d_TOW_at_current_symbol_ms = (d_TOW_at_current_symbol_ms + d_symbol_duration_ms) % 604800000U;
++                                }
+                             d_flag_valid_word = true;
+                             if (d_dump_crc_stats && d_Tlm_CRC_Stats)
+                                 {

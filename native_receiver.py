@@ -126,6 +126,17 @@ def identity(exe, root):
     result = dict(exe_sha256=digest, backend='native-windows')
     manifest = root / 'receiver/WINDOWS-BUILD.json'
     bundled = root / 'receiver/bin/gnss-sdr.exe'
+    alternate = bundled.with_name('gnss-sdr-b1c.exe')
+    if exe.resolve()==alternate.resolve():
+        build=json.loads(manifest.read_text(encoding='utf8'))
+        if build['upstream_commit']!=COMMIT or build.get('b1c_exe_sha256')!=digest:
+            raise ValueError('B1C 接收机与构建记录不一致')
+        result.update(upstream_commit=COMMIT,b1c_prelock=True,full_int16_eof=bool(build.get('file_eof_patch_sha256')))
+    elif exe.resolve()==bundled.with_name('gnss-sdr-snapshots.exe').resolve():
+        build=json.loads(manifest.read_text(encoding='utf8'))
+        if build['upstream_commit']!=COMMIT or build.get('snapshot_exe_sha256')!=digest:
+            raise ValueError('多通道快照接收机与构建记录不一致')
+        result.update(upstream_commit=COMMIT,full_int16_eof=bool(build.get('file_eof_patch_sha256')))
     if bundled.is_file() and exe.samefile(bundled):
         if not manifest.is_file():
             raise ValueError('缺少随包接收机构建记录，请重新解压便携包')

@@ -1,6 +1,9 @@
 'use strict';
 const $=id=>document.getElementById(id), colors=['#0c9583','#518fc5','#bd994f','#9a7bb6','#ce826c','#65a2a8','#86984f','#bc77a1','#5a79a0','#bb9d79','#659e7e','#a78baf'];
 let config={}, state=null, selected=null, selectedRun='', freeze=false, logPaused=false, logRows=[], lastSeq=0, cursor=null, compareIds=[],logSignalClock=0;
+const historyLimit=2400;
+const logTimeFormat=new Intl.DateTimeFormat('zh-CN',{hour:'numeric',minute:'numeric',second:'numeric',hour12:false});
+let pollGeneration=0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=(v,n=1)=>Number.isFinite(v)?v.toFixed(n):'—';
 const labels={starting:'正在启动',running:'正在运行',stopping:'等待优雅收尾',stopped:'已停止',completed:'已完成',failed:'运行失败'};
@@ -23,16 +26,16 @@ $('configMode').onchange=syncConfigMode;
 $('pickOriginal').onclick=async()=>{try{const value=await api('/api/browse',{kind:'config'});if(value.path)$('originalPath').value=value.path;}catch(e){$('validation').textContent=e.message;}};
 function formData(){
  const mode=config.upstream?$('configMode').value:'guided';
+ if(mode!=='original'&&typeof applyCommonFields==='function')applyCommonFields();
  const base={upstream:config.upstream,config_mode:mode,original_config:$('originalPath').value,executable:$('exe').value,config:$('config').value};
  if(mode==='original')return {...base,iq:'',inputs:[...$('originalInputs').querySelectorAll('input')].map(e=>({path:e.value.trim()}))};
- if(typeof applyCommonFields==='function')applyCommonFields();
- return {...base,inputs:typeof collectInputs==='function'?collectInputs():[],capture_enabled:$('captureEnabled').checked,capture_channel:Number($('captureChannel').value),iq:$('iq').value,duration:Number($('duration').value)};
+ return {...base,inputs:typeof collectInputs==='function'?collectInputs():[],b1c_recovery:$('prelock').checked,capture_enabled:$('captureEnabled').checked,capture_channels:[...captureSelection].sort((a,b)=>a-b),iq:$('iq').value,duration:Number($('duration').value)};
 }
-function configure(){$('upstreamSetup').hidden=!config.upstream;$('configMode').value=config.config_mode||'guided';$('originalPath').value=config.original_config||'';$('originalInputs').replaceChildren();if(config.config_mode==='original')(config.inputs||[]).forEach(v=>originalInput(v.path));syncConfigMode();presetDirty=false;$('rfFiles').replaceChildren();if(typeof inputPaths!=='undefined')inputPaths=(config.inputs||[]).map(v=>v.path);for(const [key,id] of [['executable','exe'],['iq','iq'],['duration','duration'],['config','config']])$(id).value=config[key]??'';$('captureChannel').value=config.capture_channel??0;$('captureEnabled').checked=config.capture_enabled??true;$('captureChannel').disabled=!$('captureEnabled').checked;$('validation').textContent='';if(typeof loadCommonFields==='function')loadCommonFields();$('configDialog').showModal();}
-$('captureEnabled').onchange=()=>{$('captureChannel').disabled=!$('captureEnabled').checked;};
+function configure(){$('upstreamSetup').hidden=!config.upstream;$('configMode').value=config.config_mode||'guided';$('originalPath').value=config.original_config||'';$('originalInputs').replaceChildren();if(config.config_mode==='original')(config.inputs||[]).forEach(v=>originalInput(v.path));syncConfigMode();presetDirty=false;$('rfFiles').replaceChildren();if(typeof inputPaths!=='undefined')inputPaths=(config.inputs||[]).map(v=>v.path);for(const [key,id] of [['executable','exe'],['iq','iq'],['duration','duration'],['config','config']])$(id).value=config[key]??'';captureSelection=new Set(config.capture_channels?.length?config.capture_channels:[config.capture_channel??0]);$('prelock').checked=config.b1c_recovery??true;$('captureEnabled').checked=config.capture_enabled??false;$('validation').textContent='';if(typeof loadCommonFields==='function')loadCommonFields();$('configDialog').showModal();$('captureEnabled').onchange();$('recordingInfo').textContent='';if($('iq').value)readRecording(false).catch(e=>$('validation').textContent=e.message);}
+$('captureEnabled').onchange=()=>{$('captureChannelField').hidden=!$('captureEnabled').checked;};
 $('configure').onclick=configure;$('settingsNav').onclick=configure;
 $('saveConfig').onclick=async()=>{try{const next=formData();await api('/api/settings',next);config=next;$('configDialog').close();notify('配置已保存');}catch(e){$('validation').textContent=e.message;}};
-$('validate').onclick=async()=>{try{await api('/api/validate',formData());$('validation').textContent='✓ 文件、格式、采样率、时长与输出路径检查通过。';}catch(e){$('validation').textContent=e.message;}};
+$('validate').onclick=async()=>{try{if($('configMode').value!=='original'&&presetDirty)await generateConfig();await api('/api/validate',formData());$('validation').textContent='✓ 文件、格式、采样率、时长与输出路径检查通过。';}catch(e){$('validation').textContent=e.message;}};
 $('start').onclick=async()=>{if(!config.executable||(config.config_mode==='original'?!config.original_config:(!config.iq&&!config.inputs?.[0]?.path))){configure();return;}$('start').disabled=true;try{const meta=await api('/api/start',config);selectedRun='';lastSeq=0;logRows=[];cursor=null;freeze=false;selected=null;notify('实验已启动');await poll();}catch(e){notify(e.message);$('start').disabled=false;}};
 $('stop').onclick=async()=>{try{await api('/api/stop',{});notify('正在停止接收机并保存结果…');}catch(e){notify(e.message);}};
 $('freeze').onclick=()=>{freeze=!freeze;$('freeze').textContent=freeze?'▶ 恢复查看':'Ⅱ 暂停查看';notify(freeze?'图表和日志已暂停查看，接收机仍继续计算并保存数据。':'');if(!freeze)render();};
@@ -41,20 +44,113 @@ $('window').onchange=()=>renderChart();$('cursor').oninput=()=>{cursor=Number($(
 for(const id of ['search','level','module','logChannel'])$(id).oninput=()=>renderLogs();
 document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));
 function view(v){$('liveView').hidden=v!=='live';$('historyView').hidden=v!=='history';document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));if(v==='history')history();}
-async function poll(){try{let data=await api('/api/state?after='+lastSeq+(selectedRun?'&run='+encodeURIComponent(selectedRun):''));$('connection').textContent='本地服务已连接';$('connectionDot').className='ok';
-if(data){if(state&&data.meta.id!==state.meta.id){logRows=[];lastSeq=0;data=await api('/api/state?after=0'+(selectedRun?'&run='+encodeURIComponent(selectedRun):''));}state=data;if(lastSeq===0)logSignalClock=0;const fresh=data.logs.filter(x=>x.seq>lastSeq);for(const r of fresh){const tick=r.text.match(/Current receiver time: (?:(\d+) min )?(\d+) s/);if(tick)logSignalClock=Number(tick[1]||0)*60+Number(tick[2]);r.t=r.t??logSignalClock;}logRows.push(...fresh);logRows=logRows.slice(-3000);lastSeq=data.log_seq;if(!freeze)render();if(typeof syncPlayback==='function')syncPlayback();}else{$('start').disabled=false;if(!state){const entries=await api('/api/history');const previous=entries.find(r=>['completed','stopped'].includes(r.status));if(previous){selectedRun=previous.id;notify('');}}}}
-catch(e){$('connection').textContent='连接中断 · 自动重试';$('connectionDot').className='';} }
+async function poll(){
+ const generation=++pollGeneration;
+ try{
+  const requestedRun=selectedRun;
+  if(requestedRun&&requestedRun===state?.meta.id&&['completed','stopped','failed'].includes(state.meta.status)){
+   syncPlayback();
+   return;
+  }
+  const historyCursor=state?.history_cursor||'0';
+  const pollState=(after,token)=>api('/api/state?after='+after+(requestedRun?
+   '&run='+encodeURIComponent(requestedRun):'&history_after='+encodeURIComponent(token)));
+  let data=await pollState(lastSeq,historyCursor);
+  if(generation!==pollGeneration||requestedRun!==selectedRun)return;
+  $('connection').textContent='本地服务已连接';
+  $('connectionDot').className='ok';
+  if(!data){
+   $('start').disabled=false;
+   if(!state){
+    const entries=await api('/api/history');
+    const previous=entries.find(r=>['completed','stopped'].includes(r.status));
+    if(previous&&!state&&generation===pollGeneration&&requestedRun===selectedRun){selectedRun=previous.id;notify('');}
+   }
+   return;
+  }
+  if(state&&data.meta.id!==state.meta.id){
+   data=await pollState(0,'0');
+   if(!data||generation!==pollGeneration||requestedRun!==selectedRun)return;
+   logRows=[];
+   lastSeq=0;
+  }
+  if(data.history_delta){
+   if(state?.history_cursor!==historyCursor)return;
+   data.history=state.history;
+   for(const [ch,rows] of Object.entries(data.history_delta)){
+    const history=data.history[ch]??=[];
+    history.push(...rows);
+    if(history.length>historyLimit)history.splice(0,history.length-historyLimit);
+   }
+  }
+  state=data;
+  if(lastSeq===0)logSignalClock=0;
+  const fresh=data.logs.filter(x=>x.seq>lastSeq);
+  for(const r of fresh){
+   const tick=r.text.match(/Current receiver time: (?:(\d+) min )?(\d+) s/);
+   if(tick)logSignalClock=Number(tick[1]||0)*60+Number(tick[2]);
+   r.t=r.t??logSignalClock;
+  }
+  logRows.push(...fresh);
+  logRows=logRows.slice(-3000);
+  lastSeq=data.log_seq;
+  if(!freeze)render();
+  if(typeof syncPlayback==='function')syncPlayback();
+ }catch(e){
+  if(generation!==pollGeneration)return;
+  $('connection').textContent='连接中断 · 自动重试';
+  $('connectionDot').className='';
+ }
+}
 function render(){if(!state)return;renderSignalStages();const m=state.meta;$('signalBadge').textContent=m.signal_label||([...new Set(state.channels.map(c=>c.system+' / '+c.signal))].join(' · ')||'等待信号标识');const active=['running','starting','stopping'].includes(m.status)&&!selectedRun;$('start').disabled=active;$('stop').disabled=!active||m.status==='stopping';$('status').textContent=labels[m.status]||m.status;$('status').className='status '+m.status;$('runName').textContent=m.id;$('dataIdentity').textContent=(m.input_label||m.source||'本地信号')+' · '+m.fs/1e6+' MS/s · '+m.duration+' s'+(m.profile_label?' · '+m.profile_label:'');
-const processed=typeof clock!=='undefined'&&clock.run===m.id?clock.available:state.signal_time;$('signalTime').textContent=processed?fmt(processed,2):'—';$('wallTime').textContent=fmt(state.wall_elapsed,1);$('progress').style.width=Math.min(100,processed/m.duration*100)+'%';$('progressText').textContent=state.udp?'处理进度 '+fmt(processed/m.duration*100,1)+'% / '+m.duration+' s':'等待 UDP 监测 · 暂无信号时间';
-const valid=state.channels.filter(c=>c.valid&&processed-c.t<=1),cn=valid.filter(c=>c.cn0>0).map(c=>c.cn0).sort((a,b)=>a-b);$('validCount').textContent=state.channels.length?valid.length:'—';$('totalCount').textContent='/ '+(m.configured_channels||state.channels.length||'—');$('medianCn0').textContent=cn.length?fmt((cn[Math.floor((cn.length-1)/2)]+cn[Math.ceil((cn.length-1)/2)])/2):'—';$('speed').textContent=state.wall_elapsed>0&&state.udp?'处理信号时长 / 主机用时 = '+fmt(processed/state.wall_elapsed,2)+'×':'等待监测数据';
+const processed=typeof clock!=='undefined'&&clock.run===m.id?clock.available:state.signal_time;$('signalTime').textContent=processed?fmt(processed,2):'—';$('wallTime').textContent=fmt(state.wall_elapsed,1);$('progress').style.width=Math.min(100,processed/m.duration*100)+'%';$('progressText').textContent=processed>0?'处理进度 '+fmt(processed/m.duration*100,1)+'% / '+m.duration+' s':'正在等待首个捕获或跟踪数据';
+const valid=state.channels.filter(c=>c.valid&&processed-c.t<=1),cn=valid.filter(c=>c.cn0>0).map(c=>c.cn0).sort((a,b)=>a-b);$('validCount').textContent=state.channels.length?valid.length:'—';$('totalCount').textContent='/ '+(m.configured_channels||state.channels.length||'—');$('medianCn0').textContent=cn.length?fmt((cn[Math.floor((cn.length-1)/2)]+cn[Math.ceil((cn.length-1)/2)])/2):'—';$('speed').textContent=state.wall_elapsed>0&&processed>0?'处理信号时长 / 主机用时 = '+fmt(processed/state.wall_elapsed,2)+'×':'等待监测数据';
 $('outputPath').textContent='输出 / '+m.output;$('export').href='/api/file?run='+m.id+'&name=receiver.log';
 if(selected===null&&state.channels.length)selected=state.meta.capture_channel??state.channels[0].channel;
 renderChart();renderChannels();renderEvents();renderSolution();if(!logPaused)renderLogs();}
 function choose(ch){selected=Number(ch);renderChart();renderChannels();if(typeof setWorkspace==='function')setWorkspace('channel');}
 function atCursor(ch){const hist=state.history[String(ch)]||[];if(cursor===null)return state.channels.find(c=>c.channel===ch);return [...hist].reverse().find(c=>c.t<=cursor);}
-function renderChannels(){if(!state)return;const chs=[...state.channels].sort((a,b)=>a.channel-b.channel);$('channels').innerHTML=chs.length?chs.map(current=>{const c=atCursor(current.channel);if(!c)return '';const ref=cursor??(typeof clock!=='undefined'&&clock.run===state.meta.id?clock.available:state.signal_time);const stale=ref-c.t>1||(cursor===null&&state.meta.status==='running'&&Date.now()/1000-c.received_wall>3);return `<tr data-ch="${c.channel}" class="${selected===c.channel?'selected':''}"><td><span class="channel-id">${String(c.channel).padStart(2,'0')}</span><span class="sat">${esc(c.system)}${String(c.prn).padStart(2,'0')}</span> <small class="muted">${esc(c.signal)}</small></td><td><span class="state-tag ${!c.valid||stale?'invalid':''}">${stale?'监测过期':c.valid?'符号有效':'符号无效'}</span></td><td class="num">${c.valid&&c.cn0>0?fmt(c.cn0):'—'}</td><td class="num">${fmt(c.doppler,0)}</td><td><div class="quality"><i style="width:${c.valid?Math.min(100,Math.max(0,(c.cn0-20)/35*100)):0}%"></i></div></td><td class="num">${fmt(c.t,2)}</td></tr>`;}).join(''):'<tr><td colspan="6" class="empty">尚未收到跟踪监测。捕获期间可能没有通道输出。</td></tr>';
-for(let ch=0;ch<(state.meta.configured_channels||12);ch++){if(!chs.some(c=>c.channel===ch)){const a=(state.acquisitions||[]).filter(a=>a.channel===ch).at(-1);$('channels').insertAdjacentHTML('beforeend',`<tr data-ch="${ch}"><td><span class="channel-id">${String(ch).padStart(2,'0')}</span>${a?esc(a.system||'?')+a.prn:'—'}</td><td><span class="state-tag invalid">${a?'已捕获 / 等待跟踪':'等待观测'}</span></td><td>—</td><td>—</td><td>—</td><td>${a?fmt(a.t,2):'—'}</td></tr>`);}}
-$('channels').querySelectorAll('[data-ch]').forEach(r=>r.onclick=()=>choose(r.dataset.ch));renderDetails();}
+function renderChannels(){
+ if(!state)return;
+ const at=cursor??(typeof clock!=='undefined'&&clock.run===state.meta.id?clock.available:state.signal_time);
+ const count=state.meta.configured_channels||Math.max(12,...state.channels.map(c=>c.channel+1));
+ const staleWall=cursor===null&&['running','starting'].includes(state.meta.status);
+ const captures=new Map();
+ for(const entry of state.acquisitions||[]){
+   if(entry.t<=at&&(!captures.has(entry.channel)||entry.t>=captures.get(entry.channel).t))captures.set(entry.channel,entry);
+ }
+ const losses=new Map();
+ for(const event of state.events){
+   if(event.channel!=null&&event.t<=at&&/loss of lock|lost lock|跟踪失锁/i.test(event.text)){
+     if(!losses.has(event.channel)||event.t>=losses.get(event.channel).t)losses.set(event.channel,event);
+   }
+ }
+ const rows=[];
+ for(let ch=0;ch<count;ch++){
+   const recent=atCursor(ch), capture=captures.get(ch), loss=losses.get(ch);
+   const tracking=recent&&(!capture||recent.t>=capture.t)?recent:null;
+   const sat=tracking||capture;
+   const stale=tracking&&(at-tracking.t>1||(staleWall&&Date.now()/1000-tracking.received_wall>3));
+   const lost=loss&&loss.t>=(sat?.t??0);
+   const valid=tracking?.valid&&!stale&&!lost;
+   let status='等待捕获', hint='该时刻还没有本通道的捕获或跟踪记录。';
+   if(lost){status='已失锁';hint='接收机已记录失锁事件。可在「事件 / 切片」查看。';}
+   else if(stale){status='暂无新监测';hint='最近一条通道监测与游标相差较久，或实时监测包暂未到达。';}
+   else if(tracking&&!valid){status='符号暂未同步';hint='已有跟踪输出，接收机尚未标记符号有效。';}
+   else if(valid){status='符号有效';hint='接收机已标记该条跟踪符号有效。导航字状态在通道详情中查看。';}
+   else if(capture){status='已捕获 · 等待跟踪';hint='捕获已通过，等待跟踪器输出。';}
+   const id=sat?esc(sat.system)+String(sat.prn).padStart(2,'0'):'—';
+   rows.push(`<tr data-ch="${ch}" class="${selected===ch?'selected':''}">
+    <td><span class="channel-id">${String(ch).padStart(2,'0')}</span><span class="sat">${id}</span> <small class="muted">${esc(sat?.signal||'')}</small></td>
+    <td><span class="state-tag ${valid?'':lost?'invalid':'waiting'}" title="${esc(hint)}">${status}</span></td>
+    <td class="num">${valid&&tracking.cn0>0?fmt(tracking.cn0):'—'}</td><td class="num">${valid?fmt(tracking.doppler,0):'—'}</td>
+    <td><div class="quality"><i style="width:${valid?Math.min(100,Math.max(0,(tracking.cn0-20)/35*100)):0}%"></i></div></td>
+    <td class="num">${fmt(sat?.t,2)}</td></tr>`);
+ }
+ $('channels').innerHTML=rows.join('');
+ $('channels').querySelectorAll('[data-ch]').forEach(row=>row.onclick=()=>choose(row.dataset.ch));
+ renderDetails();
+}
 function renderDetails(){if(!state||selected===null)return;const c=atCursor(selected);if(!c){$('details').textContent='该时刻没有所选通道的观测';return;}$('detailTitle').textContent='CH '+String(c.channel).padStart(2,'0')+' / '+c.system+String(c.prn).padStart(2,'0');const values=[['Prompt I · 相关幅值',fmt(c.i,2)],['Prompt Q · 相关幅值',fmt(c.q,2)],['载波多普勒 · Hz',fmt(c.doppler,2)],['导航字有效',c.word?'是':'否'],['符号输出有效',c.valid?'是':'否'],['周跳标志',c.slip?'有':'无']];
 const samples=(state.history[String(selected)]||[]).filter(r=>r.prn===c.prn&&r.valid&&(cursor===null||r.t<=cursor)).slice(-100);const max=Math.max(1,...samples.flatMap(r=>[Math.abs(r.i||0),Math.abs(r.q||0)]));
 $('details').innerHTML=`<div class="detail-values">${values.map(([k,v])=>`<div><label>${k}</label><b>${esc(v)}</b></div>`).join('')}</div><svg class="iq-plot" viewBox="0 0 250 100" aria-label="Prompt I Q 散点"><path d="M125 4V96M5 50H245" stroke="#e3ecef"/>${samples.map((r,n)=>`<circle cx="${125+r.i/max*110}" cy="${50-r.q/max*42}" r="1.8" fill="#0c9583" opacity="${.15+.8*n/samples.length}"/>`).join('')}<text x="233" y="45" fill="#8a9aa0" font-size="9">I</text><text x="130" y="10" fill="#8a9aa0" font-size="9">Q</text></svg><div class="detail-note">Prompt I/Q · 最近 ${samples.length} 个有效抽样点<br>来源：TrackingMonitor，幅值未归一化。<br><a href="#" onclick="setWorkspace('channel');return false">查看环路与相关器 →</a><br>UDP 包 ${state.udp.toLocaleString()} · 解码错误 ${state.decode_errors}</div>`;}
@@ -68,21 +164,53 @@ svg+='</svg>';if(!count)svg+='<div class="chart-empty">等待有效 C/N₀ 观�
 $('legend').innerHTML=state.channels.map(c=>`<span class="legend-item" data-ch="${c.channel}"><i style="background:${colors[c.channel%colors.length]}"></i>${esc(c.system)}${String(c.prn).padStart(2,'0')} <span class="muted">#${c.channel}</span></span>`).join('');$('legend').querySelectorAll('[data-ch]').forEach(r=>r.onclick=()=>choose(r.dataset.ch));$('cursor').max=maxT;$('cursor').value=cursor===null?maxT:cursor;$('cursorText').textContent=cursor===null?'最新':fmt(cursor,1)+' s';
 $('chart').onmousemove=e=>{const r=$('chart').getBoundingClientRect();const t=start+Math.max(0,Math.min(1,(e.clientX-r.left-left/w*r.width)/((w-left-right)/w*r.width)))*(end-start);const rows=state.history[String(selected)]||[];const sample=rows.reduce((a,b)=>!a||Math.abs(b.t-t)<Math.abs(a.t-t)?b:a,null);let tip=$('chart').querySelector('.tooltip');if(!tip){tip=document.createElement('div');tip.className='tooltip';$('chart').append(tip);}tip.textContent=sample?`CH ${selected} · ${fmt(sample.t,2)} s · ${sample.valid&&sample.cn0>0?fmt(sample.cn0)+' dB-Hz':'无效'}`:'暂无采样';};$('chart').onmouseleave=()=>{$('chart').querySelector('.tooltip')?.remove();};}
 function renderEvents(){const groups=[];for(const e of state.events){const key=e.module+':'+e.channel+':'+e.text.replace(/\d+(\.\d+)?/g,'#');let g=groups.find(g=>g.key===key);if(g){g.count++;g.event=e;}else groups.push({key,event:e,count:1});}$('eventCount').textContent=state.events.length;$('events').innerHTML=groups.length?groups.slice(-30).reverse().map(({event:e,count})=>`<div class="event ${e.level==='WARN'||e.level==='ERROR'?'warn':''}"><time>${fmt(e.t,2)} s · ${esc(e.module)}${e.channel!==null&&e.channel!==undefined?' #'+e.channel:''}${count>1?' ×'+count:''}</time><p>${esc(e.text.slice(0,230))}</p></div>`).join(''):'<div class="empty">尚无关键事件</div>';}
-function renderLogs(){const search=$('search').value.toLowerCase(),level=$('level').value,module=$('module').value,ch=$('logChannel').value;const rows=logRows.filter(r=>(typeof eventWindow==='undefined'||!eventWindow||r.t>=eventWindow[0]&&r.t<=eventWindow[1])&&(!search||r.text.toLowerCase().includes(search))&&(!level||r.level===level)&&(!module||r.module===module)&&(ch===''||r.channel===Number(ch)));$('logCount').textContent=rows.length+' / '+(state?.log_seq||0)+' 行';const box=$('logs'),position=box.scrollTop;box.innerHTML=rows.slice(-600).map(r=>`<div class="log-row ${r.level}"><time>${new Date(r.wall*1000).toLocaleTimeString('zh-CN',{hour12:false})}</time><span class="level">${r.level}</span><span class="module">${esc(r.module)}${r.channel===null?'':' #'+r.channel}</span><span class="message">${esc(r.text)}</span></div>`).join('')||'<div class="empty">当前筛选无日志</div>';box.scrollTop=$('autoScroll').checked?box.scrollHeight:position;$('logSummary').textContent='显示最近 '+Math.min(600,rows.length)+' 行 · 完整日志可导出';}
+function renderLogs(){const search=$('search').value.toLowerCase(),level=$('level').value,module=$('module').value,ch=$('logChannel').value;const rows=logRows.filter(r=>(typeof eventWindow==='undefined'||!eventWindow||r.t>=eventWindow[0]&&r.t<=eventWindow[1])&&(!search||r.text.toLowerCase().includes(search))&&(!level||r.level===level)&&(!module||r.module===module)&&(ch===''||r.channel===Number(ch)));$('logCount').textContent=rows.length+' / '+(state?.log_seq||0)+' 行';const box=$('logs'),position=box.scrollTop;box.innerHTML=rows.slice(-600).map(r=>`<div class="log-row ${r.level}"><time>${logTimeFormat.format(r.wall*1000)}</time><span class="level">${r.level}</span><span class="module">${esc(r.module)}${r.channel===null?'':' #'+r.channel}</span><span class="message">${esc(r.text)}</span></div>`).join('')||'<div class="empty">当前筛选无日志</div>';box.scrollTop=$('autoScroll').checked?box.scrollHeight:position;$('logSummary').textContent='显示最近 '+Math.min(600,rows.length)+' 行 · 完整日志可导出';}
 async function history(){try{const rows=await api('/api/history');$('historyList').innerHTML=rows.length?rows.map(m=>`<div class="history-row"><label><input type="checkbox" data-compare="${m.id}" ${compareIds.includes(m.id)?'checked':''}> <span class="num">${m.id}</span><p>${esc(m.source)} · ${m.duration} s · ${labels[m.status]||esc(m.status)} · ${new Date(m.started*1000).toLocaleString('zh-CN')}</p><p>内核 ${esc(m.exe_sha256.slice(0,16))} · 配置 ${esc(m.config_sha256.slice(0,12))}</p></label><div class="actions"><a class="button" href="/api/file?run=${m.id}&name=receiver.conf">配置</a><a class="button" href="/api/file?run=${m.id}&name=manifest.json">记录</a><button data-open="${m.id}">打开回看 →</button></div></div>`).join(''):'<div class="empty">还没有实验。每次启动都会生成独立的实验记录。</div>';
 $('historyList').querySelectorAll('[data-open]').forEach(b=>b.onclick=async()=>{selectedRun=b.dataset.open;lastSeq=0;logRows=[];cursor=null;freeze=false;state=null;selected=null;view('live');await poll();notify('');});$('historyList').querySelectorAll('[data-compare]').forEach(b=>b.onchange=async()=>{compareIds=b.checked?[...compareIds,b.dataset.compare].slice(-2):compareIds.filter(x=>x!==b.dataset.compare);if(compareIds.length===2)await compare(rows);else $('comparison').hidden=true;});}catch(e){notify(e.message);}}
 async function compare(rows){const [a,b]=compareIds.map(id=>rows.find(r=>r.id===id));const fetchConfig=async id=>(await fetch('/api/file?run='+id+'&name=receiver.conf')).text();const [ca,cb]=await Promise.all([fetchConfig(a.id),fetchConfig(b.id)]);const parse=s=>Object.fromEntries(s.split('\n').filter(l=>l.includes('=')).map(l=>{const i=l.indexOf('=');return [l.slice(0,i).trim(),l.slice(i+1).trim()];}));const aa=parse(ca),bb=parse(cb),keys=[...new Set([...Object.keys(aa),...Object.keys(bb)])].sort();$('comparison').hidden=false;$('comparison').innerHTML='<h2>实验对比</h2><p>'+esc(a.id)+' → '+esc(b.id)+'</p><p>接收机二进制：'+(a.exe_sha256===b.exe_sha256?'相同':'不同')+' · 主机用时 '+fmt((a.ended||a.started)-a.started)+' s → '+fmt((b.ended||b.started)-b.started)+' s</p><pre>'+keys.filter(k=>aa[k]!==bb[k]).map(k=>esc(k)+'\n  − '+esc(aa[k]??'未设置')+'\n  + '+esc(bb[k]??'未设置')).join('\n')+'</pre><p>包含启动参数与监测端口。</p>';}
 $('refreshHistory').onclick=history;
 api('/api/defaults').then(v=>{config=v;for(const ex of v.upstream_examples||[])$('officialExample').add(new Option(ex.label,ex.path));}).catch(e=>notify(e.message));
-(async function loop(){await poll();setTimeout(loop,1000);})();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll();});
+(async function loop(){if(!document.hidden)await poll();setTimeout(loop,1000);})();
 
 function renderSolution(){
- const rows=(state.positions||[]).filter(r=>cursor===null||r.t<=cursor);const c=rows.at(-1);
- $('nmea').href='/api/file?run='+state.meta.id+'&name='+encodeURIComponent(state.nmea||'solution.nmea');
+ const measured=typeof sessionTrack!=='undefined'&&clock.run===state.meta.id&&sessionTrack.length;
+ const plottedOffline=showOffline&&offlineRows.length;
+ const full=plottedOffline?offlineRows:measured?sessionTrack:state.positions||[];
+ const rows=full.filter(r=>cursor===null||r.t<=cursor);const c=rows.at(-1);
+ const run=state.meta.id;
+ $('reprocess').hidden=!['completed','stopped'].includes(state.meta.status);
+ $('reprocess').disabled=!offlineReady||Boolean($('reprocess').dataset.busy);
+ $('reprocess').title=offlineReady?'使用已保存的伪距和星历直接定位':'此实验未保存可重算的伪距观测量';
+ $('offlineViewField').hidden=!offlineAvailable;
+ $('offlineView').checked=showOffline;
+ $('offlineView').onchange=async e=>{
+   showOffline=e.target.checked;
+   try{
+     if(showOffline&&!offlineRows.length){
+       const rows=await inspect('solution','&offline=1');
+       if(state?.meta.id!==run)return;
+       offlineRows=rows;
+     }
+     renderSolution();
+   }catch(err){notify(err.message);}
+ };
+ $('reprocess').onclick=async()=>{
+   $('reprocess').dataset.busy='1';$('reprocess').disabled=true;notify('正在用已保存的观测量和星历定位…');
+   try{
+     const result=await api('/api/reprocess',{run});
+     if(state?.meta.id!==run)return;
+     offlineRows=result.rows;offlineAvailable=true;showOffline=true;
+     notify(offlineRows.length?'已重算 '+offlineRows.length+' 个显示历元':'已生成重算 NMEA 输出');
+   }catch(e){notify(e.message);}
+   finally{delete $('reprocess').dataset.busy;renderSolution();}
+ };
+ $('nmea').href='/api/file?run='+state.meta.id+'&name='+encodeURIComponent(showOffline&&offlineAvailable?'recomputed.nmea':state.nmea||'solution.nmea');
  if(!c){$('solution').innerHTML='<div class="empty">等待定位解</div>';return;}
  const first=rows[0],xy=rows.map(r=>[(r.lon-first.lon)*111320*Math.cos(first.lat*Math.PI/180),(r.lat-first.lat)*111320]);
- const range=Math.max(1,...xy.flatMap(p=>p.map(Math.abs)));const path=xy.map((p,n)=>(n?'L':'M')+(160+p[0]/range*100).toFixed(1)+' '+(65-p[1]/range*50).toFixed(1)).join('');
- $('solution').innerHTML=`<div class="solution-values"><div><label>纬度 / °</label><b>${fmt(c.lat,6)}</b></div><div><label>经度 / °</label><b>${fmt(c.lon,6)}</b></div><div><label>椭球高 / m</label><b>${fmt(c.height,2)}</b></div><div><label>观测数</label><b>${c.observations??'—'}</b></div><p>UTC ${esc(c.utc)} · 共 ${rows.length} 个显示定位解<br>Position 输出 · 最近监测时刻关联</p></div><div class="trajectory"><svg viewBox="0 0 320 130" role="img" aria-label="相对首个定位解的水平轨迹"><path d="M160 5V125M20 65H300" stroke="#e5edef"/><path d="${path}" fill="none" stroke="#0c9583" stroke-width="1.5"/><circle cx="160" cy="65" r="3" fill="#b5cdc7"/><text x="165" y="12" fill="#96a8af" font-size="9">N</text><text x="300" y="60" fill="#96a8af" font-size="9">E</text></svg><p>相对首个解的水平变化 · 半幅 ${fmt(range,1)} m</p></div>`;
+ const scale=Math.min(135/Math.max(1,...xy.map(p=>Math.abs(p[0]))),55/Math.max(1,...xy.map(p=>Math.abs(p[1]))));
+ const path=xy.map((p,n)=>(n&&rows[n].t-rows[n-1].t<=Math.max(2,(full.at(-1).t-full[0].t)/full.length*3)?'L':'M')+(160+p[0]*scale).toFixed(1)+' '+(65-p[1]*scale).toFixed(1)).join('');
+ $('solution').innerHTML=`<div class="solution-values"><div><label>纬度 / °</label><b>${fmt(c.lat,6)}</b></div><div><label>经度 / °</label><b>${fmt(c.lon,6)}</b></div><div><label>椭球高 / m</label><b>${fmt(c.height,2)}</b></div><div><label>观测数</label><b>${c.observations??'—'}</b></div><p>UTC ${esc(c.utc)} · 共 ${rows.length} 个显示定位解<br>${plottedOffline?'观测量重算':measured?'NMEA GGA':'接收机 Position 输出'} · 首解 ${fmt(full[0].t,2)} s</p></div><div class="trajectory"><svg viewBox="0 0 320 130" role="img" aria-label="相对首个定位解的水平轨迹"><path d="M160 5V125M20 65H300" stroke="#e5edef"/><path d="${path}" fill="none" stroke="#0c9583" stroke-width="1.5"/><circle cx="160" cy="65" r="3" fill="#b5cdc7"/><text x="165" y="12" fill="#96a8af" font-size="9">N</text><text x="300" y="60" fill="#96a8af" font-size="9">E</text></svg><p>相对首解 · 东、北方向等比例</p></div>`;
 }
 
 function renderSignalStages(){
