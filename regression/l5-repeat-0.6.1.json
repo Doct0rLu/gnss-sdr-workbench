@@ -1,0 +1,7970 @@
+{
+  "baseline": {
+    "digests": {
+      "iq": "77633b90d01ea09b044bb9837759073173a302d46ed5d6f904275598ca615fe6",
+      "config": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+      "receiver": "8ba27d312112a09615da226d3877822a788ce0b32ce1635cc242b1a6e117cf1c"
+    },
+    "runs": {
+      "01-cli": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                277599990,
+                528.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1024141,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18096,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1244,
+              1820,
+              2460,
+              3036,
+              3612,
+              4252,
+              4828,
+              5404
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                14407244,
+                40.0,
+                1750.0
+              ],
+              [
+                279541468,
+                17387.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 15343282,
+            "tracking_last": 1725220529,
+            "tracking_rows": 18096,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1242,
+              1818,
+              2394,
+              3034,
+              3610,
+              4250,
+              4826,
+              5402
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                9574032,
+                21677.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 10507706,
+            "tracking_last": 1725423385,
+            "tracking_rows": 12524,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                10533056,
+                7621.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 11476674,
+            "tracking_last": 1725192907,
+            "tracking_rows": 12519,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                25138608,
+                13947.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 26088553,
+            "tracking_last": 1725215008,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1216,
+              1792,
+              2432,
+              3008,
+              3584,
+              4224,
+              4800,
+              5440,
+              6016
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                4650706,
+                7256.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 5617963,
+            "tracking_last": 1724619438,
+            "tracking_rows": 12541,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                30652345,
+                16440.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 31604782,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12437,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1216,
+              1792,
+              2368,
+              3008,
+              3584,
+              4160,
+              4800,
+              5376,
+              6016
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                13441179,
+                17607.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 14418787,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12507,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1856,
+              2432,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                7558828,
+                10719.0,
+                -2875.0
+              ],
+              [
+                278598824,
+                3368.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 8553549,
+            "tracking_last": 1725397637,
+            "tracking_rows": 17875,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1843,
+              2483,
+              3059,
+              3635,
+              4275,
+              4851,
+              5427
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.200000",
+        "config_sha256": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+        "nmea_sha256": "b2053e9d7455be871c692c598d386aaeeced437cf3a141c985c9326efc7fff17",
+        "ephemeris_xml_sha256": "435f66fdaefc72d9d70b0c792a08e0bdafd52ffeb660d24f7a53fda102aef75d"
+      },
+      "01-gui": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                265303527,
+                8974.0,
+                -1500.0
+              ],
+              [
+                549221399,
+                11490.0,
+                -1500.0
+              ],
+              [
+                815084908,
+                20344.0,
+                -1500.0
+              ],
+              [
+                1081930312,
+                7305.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1024141,
+            "tracking_last": 1724898498,
+            "tracking_rows": 34161,
+            "valid_symbol": true,
+            "loss_of_lock": 4,
+            "secondary_locks": 5,
+            "frame_decoder_symbol_counters": [
+              2996,
+              3572
+            ],
+            "ephemeris": false
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                8583385,
+                15908.0,
+                2000.0
+              ],
+              [
+                281023884,
+                22968.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 9535290,
+            "tracking_last": 1725220529,
+            "tracking_rows": 17869,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1842,
+              2418,
+              3058,
+              3634,
+              4210,
+              4850,
+              5426
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                19183107,
+                12578.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 20179682,
+            "tracking_last": 1725183386,
+            "tracking_rows": 12480,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1855,
+              2431,
+              3007,
+              3647,
+              4223,
+              4863,
+              5439,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                2750180,
+                14514.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 3724691,
+            "tracking_last": 1725192907,
+            "tracking_rows": 12554,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              703,
+              1279,
+              1919,
+              2495,
+              3071,
+              3711,
+              4287,
+              4927,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                3766556,
+                2018.0,
+                1000.0
+              ],
+              [
+                269203472,
+                4859.0,
+                1000.0
+              ],
+              [
+                541308592,
+                11491.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 4680572,
+            "tracking_last": 1725215008,
+            "tracking_rows": 23275,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1828,
+              2468,
+              3044,
+              3684,
+              4260,
+              4836
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                17233440,
+                533.0,
+                -875.0
+              ],
+              [
+                283972980,
+                21220.0,
+                -1125.0
+              ],
+              [
+                549811223,
+                7205.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 18193974,
+            "tracking_last": 1724379438,
+            "tracking_rows": 23962,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1749,
+              2325,
+              2965,
+              3541,
+              4117,
+              4757
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                5699264,
+                9575.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 6644836,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12541,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                18191888,
+                18903.0,
+                -1250.0
+              ],
+              [
+                296654092,
+                5017.0,
+                -1500.0
+              ],
+              [
+                568382420,
+                5000.0,
+                -1250.0
+              ],
+              [
+                832984408,
+                3315.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 19194792,
+            "tracking_last": 1725476748,
+            "tracking_rows": 28560,
+            "valid_symbol": true,
+            "loss_of_lock": 3,
+            "secondary_locks": 4,
+            "frame_decoder_symbol_counters": [
+              2323,
+              2963,
+              3539,
+              4115
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                12514915,
+                22644.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 13473561,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12516,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2432,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.300000",
+        "config_sha256": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+        "nmea_sha256": "c1d1470c3dd85943933c1060e139e16847644eb1014de2250fea430e498df467",
+        "ephemeris_xml_sha256": "0aa75308fe3199baa26a4ae714bea5dd42d121f088871b0bffd8e06fcee0b88d"
+      },
+      "02-cli": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                277665003,
+                7515.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1024141,
+            "tracking_last": 1725138498,
+            "tracking_rows": 18086,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1244,
+              1820,
+              2460,
+              3036,
+              3612,
+              4252,
+              4828,
+              5404
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                12703335,
+                23951.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 13711283,
+            "tracking_last": 1725220529,
+            "tracking_rows": 12508,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2431,
+              3071,
+              3647,
+              4287,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2012905,
+                22823.0,
+                2875.0
+              ],
+              [
+                267753357,
+                9702.0,
+                2875.0
+              ],
+              [
+                536303336,
+                19046.0,
+                2875.0
+              ],
+              [
+                801019571,
+                22144.0,
+                3125.0
+              ],
+              [
+                1070519812,
+                17224.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 2995725,
+            "tracking_last": 1725183386,
+            "tracking_rows": 34397,
+            "valid_symbol": true,
+            "loss_of_lock": 4,
+            "secondary_locks": 5,
+            "frame_decoder_symbol_counters": [
+              2977,
+              3617
+            ],
+            "ephemeris": false
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                28284324,
+                16314.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 29212635,
+            "tracking_last": 1725192907,
+            "tracking_rows": 12446,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1791,
+              2367,
+              3007,
+              3583,
+              4223,
+              4799,
+              5375,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                22468641,
+                19916.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 23400555,
+            "tracking_last": 1724495009,
+            "tracking_rows": 12470,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1791,
+              2431,
+              3007,
+              3647,
+              4223,
+              4799,
+              5439,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                19519564,
+                18411.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 20449976,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12484,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1216,
+              1856,
+              2432,
+              3008,
+              3648,
+              4224,
+              4800,
+              5440,
+              6016
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                10729664,
+                19164.0,
+                2625.0
+              ],
+              [
+                276665592,
+                2668.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 11708825,
+            "tracking_last": 1725425178,
+            "tracking_rows": 17886,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1266,
+              1842,
+              2482,
+              3058,
+              3634,
+              4274,
+              4850,
+              5490
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                9811600,
+                23182.0,
+                -1250.0
+              ],
+              [
+                274748697,
+                22387.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 10770783,
+            "tracking_last": 1725476748,
+            "tracking_rows": 17897,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1266,
+              1842,
+              2482,
+              3058,
+              3698,
+              4274,
+              4850,
+              5490
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                20518396,
+                11182.0,
+                -2875.0
+              ],
+              [
+                285988048,
+                6162.0,
+                -2875.0
+              ],
+              [
+                550950601,
+                4240.0,
+                -2750.0
+              ],
+              [
+                824727132,
+                20360.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 21489580,
+            "tracking_last": 1725397637,
+            "tracking_rows": 28556,
+            "valid_symbol": true,
+            "loss_of_lock": 3,
+            "secondary_locks": 4,
+            "frame_decoder_symbol_counters": [
+              2393,
+              2969,
+              3545,
+              4185
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.300000",
+        "config_sha256": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+        "nmea_sha256": "bbd0a22b268819fb836101c348072b564c6d0bdb2cf342583a08d179d484af69",
+        "ephemeris_xml_sha256": "f644f7fec519a41486264e6939c2ec47df838a9d0fc57f7f53c66ab0210ff9d5"
+      },
+      "02-gui": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                271095140,
+                1369.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1024141,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18116,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1243,
+              1883,
+              2459,
+              3035,
+              3675,
+              4251,
+              4891,
+              5467
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                9509072,
+                2220.0,
+                1750.0
+              ],
+              [
+                280508208,
+                10645.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 10447290,
+            "tracking_last": 1725220529,
+            "tracking_rows": 18145,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1811,
+              2387,
+              3027,
+              3603,
+              4243,
+              4819,
+              5395
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                22287878,
+                3799.0,
+                2875.0
+              ],
+              [
+                298948163,
+                14817.0,
+                2875.0
+              ],
+              [
+                563483487,
+                6827.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 23251674,
+            "tracking_last": 1725423385,
+            "tracking_rows": 23167,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1765,
+              2341,
+              2981,
+              3557,
+              4133,
+              4773
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                11449977,
+                2698.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 12436672,
+            "tracking_last": 1725432906,
+            "tracking_rows": 12516,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                29988872,
+                11678.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 30936548,
+            "tracking_last": 1725215008,
+            "tracking_rows": 12438,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1216,
+              1792,
+              2368,
+              3008,
+              3584,
+              4160,
+              4800,
+              5376,
+              6016
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                5633744,
+                8219.0,
+                -875.0
+              ],
+              [
+                275313972,
+                16221.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 6577964,
+            "tracking_last": 1725339439,
+            "tracking_rows": 18233,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1229,
+              1805,
+              2445,
+              3021,
+              3597,
+              4237,
+              4813,
+              5453
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                18610860,
+                9951.0,
+                2375.0
+              ],
+              [
+                306688948,
+                3248.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 19052809,
+            "tracking_last": 1725425178,
+            "tracking_rows": 18251,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1663,
+              2303,
+              2879,
+              3455,
+              4095,
+              4671,
+              5311
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                14301900,
+                20887.0,
+                -1375.0
+              ],
+              [
+                281450272,
+                16820.0,
+                -1250.0
+              ],
+              [
+                550171501,
+                23898.0,
+                -1250.0
+              ],
+              [
+                816583452,
+                12252.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 14370787,
+            "tracking_last": 1724516747,
+            "tracking_rows": 28618,
+            "valid_symbol": true,
+            "loss_of_lock": 3,
+            "secondary_locks": 4,
+            "frame_decoder_symbol_counters": [
+              2393,
+              3033,
+              3609,
+              4185
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                19830304,
+                3272.0,
+                -2875.0
+              ]
+            ],
+            "tracking_first": 20817578,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12480,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1216,
+              1856,
+              2432,
+              3008,
+              3648,
+              4224,
+              4800,
+              5440,
+              6016
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:42.940000",
+        "config_sha256": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+        "nmea_sha256": "bbc57f17cba210d7298097b049b69763578e835b71ec2d354eb2cafb53c9a69c",
+        "ephemeris_xml_sha256": "e211616d96bcbc83420bcbe5e37cce7d547985cae7162421a638577be2776ac0"
+      },
+      "03-cli": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                278271208,
+                1311.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1048141,
+            "tracking_last": 1725138498,
+            "tracking_rows": 18430,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1205,
+              1781,
+              2421,
+              2997,
+              3573,
+              4213,
+              4789,
+              5365
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                20813914,
+                1359.0,
+                2000.0
+              ],
+              [
+                286078678,
+                8166.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 21799270,
+            "tracking_last": 1724980530,
+            "tracking_rows": 17845,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1203,
+              1843,
+              2419,
+              2995,
+              3635,
+              4211,
+              4851,
+              5427
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                24762400,
+                1271.0,
+                3125.0
+              ],
+              [
+                290010240,
+                763.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 25723668,
+            "tracking_last": 1725183386,
+            "tracking_rows": 19143,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1057,
+              1633,
+              2273,
+              2849,
+              3489,
+              4065,
+              4641,
+              5281
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                38991757,
+                12857.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 39940611,
+            "tracking_last": 1724952907,
+            "tracking_rows": 12403,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1152,
+              1728,
+              2368,
+              2944,
+              3520,
+              4160,
+              4736,
+              5376,
+              5952
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                8803984,
+                4586.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 9792568,
+            "tracking_last": 1724735008,
+            "tracking_rows": 12525,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2496,
+              3072,
+              3648,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                18503789,
+                2185.0,
+                -1125.0
+              ],
+              [
+                284481248,
+                16953.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 19441975,
+            "tracking_last": 1725339439,
+            "tracking_rows": 18161,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1171,
+              1811,
+              2387,
+              2963,
+              3603,
+              4179,
+              4819,
+              5395
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                18855469,
+                5342.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 19820808,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12487,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1855,
+              2431,
+              3007,
+              3647,
+              4223,
+              4863,
+              5439,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                11802218,
+                566.0,
+                -1250.0
+              ],
+              [
+                289027200,
+                23901.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 12810785,
+            "tracking_last": 1724756747,
+            "tracking_rows": 17835,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1202,
+              1778,
+              2418,
+              2994,
+              3634,
+              4210,
+              4786,
+              5426
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                28620204,
+                21393.0,
+                -2750.0
+              ],
+              [
+                301126703,
+                11543.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 29601599,
+            "tracking_last": 1724917636,
+            "tracking_rows": 17785,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1779,
+              2355,
+              2931,
+              3571,
+              4147,
+              4787,
+              5363
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:42.840000",
+        "config_sha256": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+        "nmea_sha256": "29d974743ab464d56c132b212bd8ca085845dc4cfd9041038eba445010d4690b",
+        "ephemeris_xml_sha256": "fdfbc1cfb5fc4d2a3c3e5baa2f9b3da78d09020c0ef6d724eaa431c8f7c4b0ab"
+      },
+      "03-gui": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                273978800,
+                21713.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1024141,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18105,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1243,
+              1819,
+              2459,
+              3035,
+              3675,
+              4251,
+              4827,
+              5467
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                18273828,
+                21449.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 19207275,
+            "tracking_last": 1724500530,
+            "tracking_rows": 12483,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1216,
+              1856,
+              2432,
+              3008,
+              3648,
+              4224,
+              4864,
+              5440,
+              6016
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                12555867,
+                15835.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 13531699,
+            "tracking_last": 1725423385,
+            "tracking_rows": 12515,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2432,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                2742562,
+                22132.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 3484691,
+            "tracking_last": 1725432906,
+            "tracking_rows": 12565,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              703,
+              1279,
+              1919,
+              2495,
+              3071,
+              3711,
+              4287,
+              4927,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                3766556,
+                2018.0,
+                1000.0
+              ],
+              [
+                277845369,
+                2954.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 4680572,
+            "tracking_last": 1725455008,
+            "tracking_rows": 17894,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1265,
+              1841,
+              2481,
+              3057,
+              3633,
+              4273,
+              4849,
+              5425
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                10655348,
+                2619.0,
+                -875.0
+              ],
+              [
+                283498358,
+                15842.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 11569968,
+            "tracking_last": 1725339439,
+            "tracking_rows": 18309,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1153,
+              1793,
+              2369,
+              3009,
+              3585,
+              4161,
+              4801,
+              5377
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                5723836,
+                9003.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 6644836,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12541,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                6682862,
+                7916.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 7650779,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12537,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                7640740,
+                807.0,
+                -3000.0
+              ],
+              [
+                276854154,
+                20034.0,
+                -2875.0
+              ],
+              [
+                546117448,
+                13381.0,
+                -2875.0
+              ]
+            ],
+            "tracking_first": 8601549,
+            "tracking_last": 1725397637,
+            "tracking_rows": 23632,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1785,
+              2361,
+              3001,
+              3577,
+              4217,
+              4793
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.040000",
+        "config_sha256": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+        "nmea_sha256": "4dbe013eb8d7be45214eba988758210f82a6e7626ab2382d0afa3426318aca9a",
+        "ephemeris_xml_sha256": "b838d8ff093a3f859e67f4fbdb2c90d8974ea6291f59f58abcf6cf23921e8222"
+      },
+      "04-cli": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                266990928,
+                1575.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1024141,
+            "tracking_last": 1725138498,
+            "tracking_rows": 18136,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1308,
+              1884,
+              2460,
+              3100,
+              3676,
+              4252,
+              4892,
+              5468
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                25229300,
+                1966.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 26191264,
+            "tracking_last": 1724980530,
+            "tracking_rows": 12455,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1791,
+              2431,
+              3007,
+              3583,
+              4223,
+              4799,
+              5439,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2119392,
+                12336.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 3067725,
+            "tracking_last": 1724463388,
+            "tracking_rows": 12551,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              704,
+              1280,
+              1920,
+              2496,
+              3136,
+              3712,
+              4288,
+              4928,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                30693306,
+                7327.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 31636630,
+            "tracking_last": 1724712908,
+            "tracking_rows": 12433,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1791,
+              2367,
+              3007,
+              3583,
+              4159,
+              4799,
+              5375,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                6657720,
+                14852.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 7632570,
+            "tracking_last": 1724495009,
+            "tracking_rows": 12533,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3711,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                20379126,
+                22850.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 21361977,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12482,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1216,
+              1856,
+              2432,
+              3008,
+              3648,
+              4224,
+              4800,
+              5440,
+              6016
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                19412483,
+                326.0,
+                2625.0
+              ],
+              [
+                289383646,
+                4587.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 20372806,
+            "tracking_last": 1725425178,
+            "tracking_rows": 18295,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1152,
+              1728,
+              2368,
+              2944,
+              3584,
+              4160,
+              4736,
+              5376
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                12540063,
+                6722.0,
+                -1250.0
+              ],
+              [
+                282252564,
+                6529.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 13506786,
+            "tracking_last": 1725236747,
+            "tracking_rows": 17868,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1266,
+              1842,
+              2418,
+              3058,
+              3634,
+              4210,
+              4850,
+              5426
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                14481544,
+                20.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 15417566,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12507,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2432,
+              3072,
+              3648,
+              4224,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.160000",
+        "config_sha256": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+        "nmea_sha256": "5f77a23c7d3b732e4920c890a93a9626973e349ce6d84d995bf5f3ce8433316c",
+        "ephemeris_xml_sha256": "54f0d7e70f5321b0f18a5a8907a19f64e48b76087f7dcc74da458fbdf0c4771b"
+      },
+      "04-gui": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                269358460,
+                10047.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1024141,
+            "tracking_last": 1725138498,
+            "tracking_rows": 18124,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1244,
+              1884,
+              2460,
+              3036,
+              3676,
+              4252,
+              4892,
+              5468
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                22952504,
+                22766.0,
+                2000.0
+              ],
+              [
+                295187728,
+                19101.0,
+                1750.0
+              ],
+              [
+                560190708,
+                23693.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 23023269,
+            "tracking_last": 1724980530,
+            "tracking_rows": 23749,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1707,
+              2347,
+              2923,
+              3499,
+              4139,
+              4715
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                1775341,
+                20388.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 2731726,
+            "tracking_last": 1724943387,
+            "tracking_rows": 12558,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              703,
+              1279,
+              1919,
+              2495,
+              3135,
+              3711,
+              4287,
+              4927,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                4462284,
+                6406.0,
+                2500.0
+              ],
+              [
+                271652204,
+                7898.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 5428687,
+            "tracking_last": 1725192907,
+            "tracking_rows": 17908,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1266,
+              1906,
+              2482,
+              3058,
+              3698,
+              4274,
+              4850,
+              5490
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                24155564,
+                12992.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 25080554,
+            "tracking_last": 1724735008,
+            "tracking_rows": 12464,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1216,
+              1792,
+              2432,
+              3008,
+              3584,
+              4224,
+              4800,
+              5440,
+              6016
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                17184276,
+                1697.0,
+                -875.0
+              ],
+              [
+                282531148,
+                23051.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 18145974,
+            "tracking_last": 1725339439,
+            "tracking_rows": 18490,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1133,
+              1773,
+              2349,
+              2989,
+              3565,
+              4141,
+              4781,
+              5357
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                10344060,
+                20769.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 11300826,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12518,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                22042627,
+                8169.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 23010797,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12473,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1216,
+              1792,
+              2432,
+              3008,
+              3648,
+              4224,
+              4800,
+              5440,
+              6016
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                14235776,
+                5787.0,
+                -2875.0
+              ],
+              [
+                278992795,
+                17398.0,
+                -2625.0
+              ],
+              [
+                544126210,
+                12614.0,
+                -2875.0
+              ],
+              [
+                811373780,
+                5680.0,
+                -2750.0
+              ],
+              [
+                1076221700,
+                22391.0,
+                -2625.0
+              ],
+              [
+                1343222946,
+                21781.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 15177565,
+            "tracking_last": 1725157637,
+            "tracking_rows": 39550,
+            "valid_symbol": true,
+            "loss_of_lock": 5,
+            "secondary_locks": 6,
+            "frame_decoder_symbol_counters": [],
+            "ephemeris": false
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.180000",
+        "config_sha256": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+        "nmea_sha256": "4e81d7a5c962c0598c81e396c1bb12cc3bad9b19245a8147bc7900d004e275d6",
+        "ephemeris_xml_sha256": "12018223444b717dda5cf844fbb60af7e56d9375b4ac346c638fe2a9cd63665a"
+      },
+      "05-cli": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                268187104,
+                5401.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1024141,
+            "tracking_last": 1724418497,
+            "tracking_rows": 18127,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1243,
+              1883,
+              2459,
+              3099,
+              3675,
+              4251,
+              4891,
+              5467
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                8075464,
+                19830.0,
+                2000.0
+              ],
+              [
+                285529962,
+                4883.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 9007291,
+            "tracking_last": 1725220529,
+            "tracking_rows": 17854,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1203,
+              1843,
+              2419,
+              2995,
+              3635,
+              4211,
+              4851,
+              5427
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                1292015,
+                23715.0,
+                3125.0
+              ],
+              [
+                273036700,
+                6346.0,
+                2875.0
+              ],
+              [
+                544281799,
+                8563.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 2227727,
+            "tracking_last": 1725183386,
+            "tracking_rows": 23329,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1820,
+              2460,
+              3036,
+              3612,
+              4252,
+              4828
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                2225888,
+                10807.0,
+                2500.0
+              ],
+              [
+                270128580,
+                19525.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 3220692,
+            "tracking_last": 1724472908,
+            "tracking_rows": 17906,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1267,
+              1907,
+              2483,
+              3059,
+              3699,
+              4275,
+              4915,
+              5491
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                3193104,
+                23471.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 4128573,
+            "tracking_last": 1725215008,
+            "tracking_rows": 12547,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              704,
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4928,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                4191941,
+                10021.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 5137963,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12546,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                12868288,
+                16535.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 13844820,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12511,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2432,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                18421262,
+                5530.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 19410793,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12488,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1855,
+              2431,
+              3007,
+              3647,
+              4223,
+              4863,
+              5439,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                7076059,
+                13487.0,
+                -2875.0
+              ],
+              [
+                272102825,
+                19352.0,
+                -2875.0
+              ],
+              [
+                538670346,
+                20465.0,
+                -2875.0
+              ],
+              [
+                807875718,
+                23734.0,
+                -2875.0
+              ],
+              [
+                1084192352,
+                19758.0,
+                -2750.0
+              ],
+              [
+                1355748898,
+                23859.0,
+                -2875.0
+              ]
+            ],
+            "tracking_first": 8049548,
+            "tracking_last": 1725397637,
+            "tracking_rows": 39340,
+            "valid_symbol": true,
+            "loss_of_lock": 5,
+            "secondary_locks": 6,
+            "frame_decoder_symbol_counters": [],
+            "ephemeris": false
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.300000",
+        "config_sha256": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+        "nmea_sha256": "624987767b3fb73a5cc849872e7c701b6686ecd640bbcf94808181dc7177faa5",
+        "ephemeris_xml_sha256": "9476534807c8b8453e0ddda2f4bdef921e6042ff5d0e814c291d94925f23dc25"
+      },
+      "05-gui": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                270964119,
+                12390.0,
+                -1500.0
+              ],
+              [
+                547075260,
+                21626.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1024141,
+            "tracking_last": 1725138498,
+            "tracking_rows": 23437,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1807,
+              2383,
+              3023,
+              3599,
+              4239,
+              4815
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                13613209,
+                2076.0,
+                2000.0
+              ],
+              [
+                281687927,
+                6924.0,
+                2000.0
+              ],
+              [
+                551146648,
+                19768.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 14575282,
+            "tracking_last": 1725220529,
+            "tracking_rows": 23244,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1829,
+              2405,
+              3045,
+              3621,
+              4197,
+              4837
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2316008,
+                7720.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 3307725,
+            "tracking_last": 1725183386,
+            "tracking_rows": 12553,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              703,
+              1279,
+              1919,
+              2495,
+              3135,
+              3711,
+              4287,
+              4927,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                2774760,
+                13934.0,
+                2500.0
+              ],
+              [
+                281187639,
+                442.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 3700691,
+            "tracking_last": 1725192907,
+            "tracking_rows": 17870,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1842,
+              2418,
+              3058,
+              3634,
+              4210,
+              4850,
+              5426
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                3823332,
+                17242.0,
+                1000.0
+              ]
+            ],
+            "tracking_first": 4800572,
+            "tracking_last": 1724495009,
+            "tracking_rows": 12552,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4928,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                23345184,
+                8794.0,
+                -875.0
+              ],
+              [
+                288527657,
+                2547.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 24289979,
+            "tracking_last": 1725339439,
+            "tracking_rows": 17839,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1202,
+              1778,
+              2418,
+              2994,
+              3634,
+              4210,
+              4786,
+              5426
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                15554107,
+                18711.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 16508815,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12499,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2431,
+              3071,
+              3647,
+              4223,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                18486797,
+                11995.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 19482793,
+            "tracking_last": 1725236747,
+            "tracking_rows": 12484,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1855,
+              2431,
+              3007,
+              3647,
+              4223,
+              4863,
+              5439,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                12654180,
+                3379.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 13569561,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12512,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2432,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.320000",
+        "config_sha256": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+        "nmea_sha256": "874d3e7841caad656f2f5f8aa1a358d9b277c987ca8cfc6ad297bc6f13f64e25",
+        "ephemeris_xml_sha256": "23d09f28350661f1a86996f49ac2fe842a171308a200ee2dbfe269cae427e944"
+      }
+    }
+  },
+  "deterministic": {
+    "digests": {
+      "iq": "77633b90d01ea09b044bb9837759073173a302d46ed5d6f904275598ca615fe6",
+      "config": "0b1be47d11765ad719f6904d0d81ac3ae51ecf9c6a5ead35c1cb41af0a988c7f",
+      "receiver": "8ba27d312112a09615da226d3877822a788ce0b32ce1635cc242b1a6e117cf1c"
+    },
+    "runs": {
+      "01-cli": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                266560529,
+                23974.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 2512144,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18817,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1218,
+              1794,
+              2370,
+              3010,
+              3586,
+              4162,
+              4802,
+              5378
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                10080000,
+                7291.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 12511286,
+            "tracking_last": 1725460529,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2496,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2544000,
+                19727.0,
+                3250.0
+              ],
+              [
+                269035011,
+                45.0,
+                2750.0
+              ],
+              [
+                535554418,
+                23966.0,
+                2875.0
+              ]
+            ],
+            "tracking_first": 4987719,
+            "tracking_last": 1725423385,
+            "tracking_rows": 23290,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1874,
+              2450,
+              3090,
+              3666,
+              4242,
+              4882
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                15048000,
+                4667.0,
+                2500.0
+              ],
+              [
+                281500085,
+                23995.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 17476661,
+            "tracking_last": 1723992909,
+            "tracking_rows": 17736,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1267,
+              1843,
+              2419,
+              3059,
+              3635,
+              4211,
+              4851,
+              5427
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                5016000,
+                573.0,
+                1000.0
+              ]
+            ],
+            "tracking_first": 7440570,
+            "tracking_last": 1725455008,
+            "tracking_rows": 12482,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                5088000,
+                1963.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 7513965,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12483,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                12576000,
+                20824.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 15020818,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12453,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2431,
+              3071,
+              3647,
+              4287,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                29976000,
+                18805.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 32418808,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12378,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1791,
+              2367,
+              3007,
+              3583,
+              4159,
+              4799,
+              5375,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                10008000,
+                9553.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 12441559,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.680000",
+        "config_sha256": "0b1be47d11765ad719f6904d0d81ac3ae51ecf9c6a5ead35c1cb41af0a988c7f",
+        "nmea_sha256": "03b27962e09d03182186ccb0488bf8f572c9f4bb177922b485507fa052c62492",
+        "ephemeris_xml_sha256": "65bb91b4939d40582ad90292f34ee168e68d45b4a4318f6c9367fbacaf6b7101"
+      },
+      "01-gui": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                266560529,
+                23974.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 2512144,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18817,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1218,
+              1794,
+              2370,
+              3010,
+              3586,
+              4162,
+              4802,
+              5378
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                10080000,
+                7291.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 12511286,
+            "tracking_last": 1725460529,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2496,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2544000,
+                19727.0,
+                3250.0
+              ],
+              [
+                269035011,
+                45.0,
+                2750.0
+              ],
+              [
+                535554418,
+                23966.0,
+                2875.0
+              ]
+            ],
+            "tracking_first": 4987719,
+            "tracking_last": 1725423385,
+            "tracking_rows": 23290,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1874,
+              2450,
+              3090,
+              3666,
+              4242,
+              4882
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                15048000,
+                4667.0,
+                2500.0
+              ],
+              [
+                281500085,
+                23995.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 17476661,
+            "tracking_last": 1723992909,
+            "tracking_rows": 17736,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1267,
+              1843,
+              2419,
+              3059,
+              3635,
+              4211,
+              4851,
+              5427
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                5016000,
+                573.0,
+                1000.0
+              ]
+            ],
+            "tracking_first": 7440570,
+            "tracking_last": 1723775009,
+            "tracking_rows": 12475,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                5088000,
+                1963.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 7513965,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12483,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                12576000,
+                20824.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 15020818,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12453,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2431,
+              3071,
+              3647,
+              4287,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                29976000,
+                18805.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 32418808,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12378,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1791,
+              2367,
+              3007,
+              3583,
+              4159,
+              4799,
+              5375,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                10008000,
+                9553.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 12441559,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.680000",
+        "config_sha256": "0b1be47d11765ad719f6904d0d81ac3ae51ecf9c6a5ead35c1cb41af0a988c7f",
+        "nmea_sha256": "03b27962e09d03182186ccb0488bf8f572c9f4bb177922b485507fa052c62492",
+        "ephemeris_xml_sha256": "65bb91b4939d40582ad90292f34ee168e68d45b4a4318f6c9367fbacaf6b7101"
+      },
+      "02-cli": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                266560529,
+                23974.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 2512144,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18817,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1218,
+              1794,
+              2370,
+              3010,
+              3586,
+              4162,
+              4802,
+              5378
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                10080000,
+                7291.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 12511286,
+            "tracking_last": 1725460529,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2496,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2544000,
+                19727.0,
+                3250.0
+              ],
+              [
+                269035011,
+                45.0,
+                2750.0
+              ],
+              [
+                535554418,
+                23966.0,
+                2875.0
+              ]
+            ],
+            "tracking_first": 4987719,
+            "tracking_last": 1725423385,
+            "tracking_rows": 23290,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1874,
+              2450,
+              3090,
+              3666,
+              4242,
+              4882
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                15048000,
+                4667.0,
+                2500.0
+              ],
+              [
+                281500085,
+                23995.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 17476661,
+            "tracking_last": 1723752910,
+            "tracking_rows": 17735,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1267,
+              1843,
+              2419,
+              3059,
+              3635,
+              4211,
+              4851,
+              5427
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                5016000,
+                573.0,
+                1000.0
+              ]
+            ],
+            "tracking_first": 7440570,
+            "tracking_last": 1724015009,
+            "tracking_rows": 12476,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                5088000,
+                1963.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 7513965,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12483,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                12576000,
+                20824.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 15020818,
+            "tracking_last": 1724945179,
+            "tracking_rows": 12451,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2431,
+              3071,
+              3647,
+              4287,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                29976000,
+                18805.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 32418808,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12378,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1791,
+              2367,
+              3007,
+              3583,
+              4159,
+              4799,
+              5375,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                10008000,
+                9553.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 12441559,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.680000",
+        "config_sha256": "0b1be47d11765ad719f6904d0d81ac3ae51ecf9c6a5ead35c1cb41af0a988c7f",
+        "nmea_sha256": "03b27962e09d03182186ccb0488bf8f572c9f4bb177922b485507fa052c62492",
+        "ephemeris_xml_sha256": "65bb91b4939d40582ad90292f34ee168e68d45b4a4318f6c9367fbacaf6b7101"
+      },
+      "02-gui": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                266560529,
+                23974.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 2512144,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18817,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1218,
+              1794,
+              2370,
+              3010,
+              3586,
+              4162,
+              4802,
+              5378
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                10080000,
+                7291.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 12511286,
+            "tracking_last": 1725460529,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2496,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2544000,
+                19727.0,
+                3250.0
+              ],
+              [
+                269035011,
+                45.0,
+                2750.0
+              ],
+              [
+                535554418,
+                23966.0,
+                2875.0
+              ]
+            ],
+            "tracking_first": 4987719,
+            "tracking_last": 1725423385,
+            "tracking_rows": 23290,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1874,
+              2450,
+              3090,
+              3666,
+              4242,
+              4882
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                15048000,
+                4667.0,
+                2500.0
+              ],
+              [
+                281500085,
+                23995.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 17476661,
+            "tracking_last": 1723992909,
+            "tracking_rows": 17736,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1267,
+              1843,
+              2419,
+              3059,
+              3635,
+              4211,
+              4851,
+              5427
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                5016000,
+                573.0,
+                1000.0
+              ]
+            ],
+            "tracking_first": 7440570,
+            "tracking_last": 1725455008,
+            "tracking_rows": 12482,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                5088000,
+                1963.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 7513965,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12483,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                12576000,
+                20824.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 15020818,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12453,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2431,
+              3071,
+              3647,
+              4287,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                29976000,
+                18805.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 32418808,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12378,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1791,
+              2367,
+              3007,
+              3583,
+              4159,
+              4799,
+              5375,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                10008000,
+                9553.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 12441559,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.680000",
+        "config_sha256": "0b1be47d11765ad719f6904d0d81ac3ae51ecf9c6a5ead35c1cb41af0a988c7f",
+        "nmea_sha256": "03b27962e09d03182186ccb0488bf8f572c9f4bb177922b485507fa052c62492",
+        "ephemeris_xml_sha256": "65bb91b4939d40582ad90292f34ee168e68d45b4a4318f6c9367fbacaf6b7101"
+      },
+      "03-cli": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                266560529,
+                23974.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 2512144,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18817,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1218,
+              1794,
+              2370,
+              3010,
+              3586,
+              4162,
+              4802,
+              5378
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                10080000,
+                7291.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 12511286,
+            "tracking_last": 1725460529,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2496,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2544000,
+                19727.0,
+                3250.0
+              ],
+              [
+                269035011,
+                45.0,
+                2750.0
+              ],
+              [
+                535554418,
+                23966.0,
+                2875.0
+              ]
+            ],
+            "tracking_first": 4987719,
+            "tracking_last": 1725423385,
+            "tracking_rows": 23290,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1874,
+              2450,
+              3090,
+              3666,
+              4242,
+              4882
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                15048000,
+                4667.0,
+                2500.0
+              ],
+              [
+                281500085,
+                23995.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 17476661,
+            "tracking_last": 1724472908,
+            "tracking_rows": 17738,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1267,
+              1843,
+              2419,
+              3059,
+              3635,
+              4211,
+              4851,
+              5427
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                5016000,
+                573.0,
+                1000.0
+              ]
+            ],
+            "tracking_first": 7440570,
+            "tracking_last": 1724255009,
+            "tracking_rows": 12477,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                5088000,
+                1963.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 7513965,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12483,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                12576000,
+                20824.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 15020818,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12453,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2431,
+              3071,
+              3647,
+              4287,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                29976000,
+                18805.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 32418808,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12378,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1791,
+              2367,
+              3007,
+              3583,
+              4159,
+              4799,
+              5375,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                10008000,
+                9553.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 12441559,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.680000",
+        "config_sha256": "0b1be47d11765ad719f6904d0d81ac3ae51ecf9c6a5ead35c1cb41af0a988c7f",
+        "nmea_sha256": "03b27962e09d03182186ccb0488bf8f572c9f4bb177922b485507fa052c62492",
+        "ephemeris_xml_sha256": "65bb91b4939d40582ad90292f34ee168e68d45b4a4318f6c9367fbacaf6b7101"
+      },
+      "03-gui": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                266560529,
+                23974.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 2512144,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18817,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1218,
+              1794,
+              2370,
+              3010,
+              3586,
+              4162,
+              4802,
+              5378
+            ],
+            "ephemeris": true
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                10080000,
+                7291.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 12511286,
+            "tracking_last": 1724980530,
+            "tracking_rows": 12458,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2496,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2544000,
+                19727.0,
+                3250.0
+              ],
+              [
+                269035011,
+                45.0,
+                2750.0
+              ],
+              [
+                535554418,
+                23966.0,
+                2875.0
+              ]
+            ],
+            "tracking_first": 4987719,
+            "tracking_last": 1723983389,
+            "tracking_rows": 23284,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1874,
+              2450,
+              3090,
+              3666,
+              4242,
+              4882
+            ],
+            "ephemeris": true
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                15048000,
+                4667.0,
+                2500.0
+              ],
+              [
+                281500085,
+                23995.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 17476661,
+            "tracking_last": 1725432906,
+            "tracking_rows": 17742,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1267,
+              1843,
+              2419,
+              3059,
+              3635,
+              4211,
+              4851,
+              5427
+            ],
+            "ephemeris": true
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                5016000,
+                573.0,
+                1000.0
+              ]
+            ],
+            "tracking_first": 7440570,
+            "tracking_last": 1724975008,
+            "tracking_rows": 12480,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                5088000,
+                1963.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 7513965,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12483,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                12576000,
+                20824.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 15020818,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12453,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2431,
+              3071,
+              3647,
+              4287,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                29976000,
+                18805.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 32418808,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12378,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1791,
+              2367,
+              3007,
+              3583,
+              4159,
+              4799,
+              5375,
+              6015
+            ],
+            "ephemeris": true
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                10008000,
+                9553.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 12441559,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12460,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.680000",
+        "config_sha256": "0b1be47d11765ad719f6904d0d81ac3ae51ecf9c6a5ead35c1cb41af0a988c7f",
+        "nmea_sha256": "03b27962e09d03182186ccb0488bf8f572c9f4bb177922b485507fa052c62492",
+        "ephemeris_xml_sha256": "65bb91b4939d40582ad90292f34ee168e68d45b4a4318f6c9367fbacaf6b7101"
+      }
+    },
+    "tracking_prefixes": {
+      "3": {
+        "common_region_equal": true,
+        "rows_by_run": {
+          "01-cli": 18817,
+          "01-gui": 18817,
+          "02-cli": 18817,
+          "02-gui": 18817,
+          "03-cli": 18817,
+          "03-gui": 18817
+        }
+      },
+      "4": {
+        "common_region_equal": true,
+        "rows_by_run": {
+          "01-cli": 12460,
+          "01-gui": 12460,
+          "02-cli": 12460,
+          "02-gui": 12460,
+          "03-cli": 12460,
+          "03-gui": 12458
+        }
+      },
+      "8": {
+        "common_region_equal": true,
+        "rows_by_run": {
+          "01-cli": 23290,
+          "01-gui": 23290,
+          "02-cli": 23290,
+          "02-gui": 23290,
+          "03-cli": 23290,
+          "03-gui": 23284
+        }
+      },
+      "9": {
+        "common_region_equal": true,
+        "rows_by_run": {
+          "01-cli": 17736,
+          "01-gui": 17736,
+          "02-cli": 17735,
+          "02-gui": 17736,
+          "03-cli": 17738,
+          "03-gui": 17742
+        }
+      },
+      "18": {
+        "common_region_equal": true,
+        "rows_by_run": {
+          "01-cli": 12482,
+          "01-gui": 12475,
+          "02-cli": 12476,
+          "02-gui": 12482,
+          "03-cli": 12477,
+          "03-gui": 12480
+        }
+      },
+      "26": {
+        "common_region_equal": true,
+        "rows_by_run": {
+          "01-cli": 12483,
+          "01-gui": 12483,
+          "02-cli": 12483,
+          "02-gui": 12483,
+          "03-cli": 12483,
+          "03-gui": 12483
+        }
+      },
+      "27": {
+        "common_region_equal": true,
+        "rows_by_run": {
+          "01-cli": 12453,
+          "01-gui": 12453,
+          "02-cli": 12451,
+          "02-gui": 12453,
+          "03-cli": 12453,
+          "03-gui": 12453
+        }
+      },
+      "28": {
+        "common_region_equal": true,
+        "rows_by_run": {
+          "01-cli": 12378,
+          "01-gui": 12378,
+          "02-cli": 12378,
+          "02-gui": 12378,
+          "03-cli": 12378,
+          "03-gui": 12378
+        }
+      },
+      "32": {
+        "common_region_equal": true,
+        "rows_by_run": {
+          "01-cli": 12460,
+          "01-gui": 12460,
+          "02-cli": 12460,
+          "02-gui": 12460,
+          "03-cli": 12460,
+          "03-gui": 12460
+        }
+      }
+    }
+  },
+  "pages": {
+    "digests": {
+      "iq": "77633b90d01ea09b044bb9837759073173a302d46ed5d6f904275598ca615fe6",
+      "config": "81bf2042e9304901681a771356cc1beb24b118dcd0a0f727e4ed35f7455fae86",
+      "receiver": "8ba27d312112a09615da226d3877822a788ce0b32ce1635cc242b1a6e117cf1c"
+    },
+    "runs": {
+      "01-cli": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                277074857,
+                21660.0,
+                -1500.0
+              ],
+              [
+                543642155,
+                22726.0,
+                -1500.0
+              ],
+              [
+                810557714,
+                11532.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1000141,
+            "tracking_last": 1725378499,
+            "tracking_rows": 28926,
+            "valid_symbol": true,
+            "loss_of_lock": 3,
+            "secondary_locks": 4,
+            "frame_decoder_symbol_counters": [
+              2422,
+              2998,
+              3574,
+              4214
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                12425364,
+                13923.0,
+                2000.0
+              ],
+              [
+                282514273,
+                20577.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 13375284,
+            "tracking_last": 1725220529,
+            "tracking_rows": 17861,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1266,
+              1842,
+              2418,
+              3058,
+              3634,
+              4210,
+              4850,
+              5426
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2070248,
+                13480.0,
+                2875.0
+              ],
+              [
+                272037437,
+                21611.0,
+                3125.0
+              ],
+              [
+                544600599,
+                1763.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 3043725,
+            "tracking_last": 1725423385,
+            "tracking_rows": 23960,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1753,
+              2393,
+              2969,
+              3545,
+              4185,
+              4761
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                2742567,
+                22127.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 3028692,
+            "tracking_last": 1725432906,
+            "tracking_rows": 12584,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              703,
+              1279,
+              1919,
+              2495,
+              3071,
+              3711,
+              4287,
+              4927,
+              5503,
+              6079
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280830,
+                10
+              ],
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                3070247,
+                2328.0,
+                1000.0
+              ],
+              [
+                274469850,
+                18476.0,
+                1000.0
+              ],
+              [
+                539726444,
+                9640.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 3984573,
+            "tracking_last": 1724495009,
+            "tracking_rows": 23284,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1892,
+              2468,
+              3044,
+              3684,
+              4260,
+              4836
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                8763029,
+                22937.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 9721967,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12526,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                9533066,
+                15765.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 10484828,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12525,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2496,
+              3072,
+              3648,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                42424103,
+                2716.0,
+                -1250.0
+              ],
+              [
+                306959167,
+                19954.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 43362820,
+            "tracking_last": 1725236747,
+            "tracking_rows": 17762,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1714,
+              2354,
+              2930,
+              3506,
+              4146,
+              4722,
+              5362
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                11474534,
+                7023.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 12465559,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12513,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3647,
+              4287,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.240000",
+        "config_sha256": "81bf2042e9304901681a771356cc1beb24b118dcd0a0f727e4ed35f7455fae86",
+        "nmea_sha256": "33268d542ec2db39b26033b6d238a9375f2060321f38350b58bb295c57b28e14",
+        "ephemeris_xml_sha256": "0a0331054e43d62b4271a00e3a75cad899dd4b2c6298010bedfb2d39774ff520"
+      },
+      "01-gui": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                264787109,
+                21392.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1048141,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18489,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1269,
+              1845,
+              2421,
+              3061,
+              3637,
+              4277,
+              4853,
+              5429
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                12424776,
+                14511.0,
+                2000.0
+              ],
+              [
+                278959787,
+                23069.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 13423284,
+            "tracking_last": 1725220529,
+            "tracking_rows": 17870,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1267,
+              1843,
+              2419,
+              3059,
+              3635,
+              4275,
+              4851,
+              5427
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2538333,
+                1394.0,
+                3250.0
+              ],
+              [
+                267753168,
+                9891.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 3499723,
+            "tracking_last": 1725423385,
+            "tracking_rows": 18491,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1203,
+              1843,
+              2419,
+              3059,
+              3635,
+              4211,
+              4851,
+              5427
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                17201797,
+                10865.0,
+                2500.0
+              ],
+              [
+                282416201,
+                19877.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 17692660,
+            "tracking_last": 1725432906,
+            "tracking_rows": 17902,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1265,
+              1841,
+              2417,
+              3057,
+              3633,
+              4209,
+              4849,
+              5425
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                4995337,
+                21236.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 5928571,
+            "tracking_last": 1724495009,
+            "tracking_rows": 12541,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                26744207,
+                17774.0,
+                -1125.0
+              ],
+              [
+                297628671,
+                21541.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 27673982,
+            "tracking_last": 1725339439,
+            "tracking_rows": 17895,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1768,
+              2344,
+              2984,
+              3560,
+              4136,
+              4776,
+              5352
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                6453491,
+                23346.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 6956835,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12555,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3711,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                14857768,
+                17020.0,
+                -1500.0
+              ],
+              [
+                279934056,
+                21034.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 15786789,
+            "tracking_last": 1725476748,
+            "tracking_rows": 18351,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1214,
+              1790,
+              2366,
+              3006,
+              3582,
+              4222,
+              4798,
+              5374
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                7542428,
+                3119.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 8505549,
+            "tracking_last": 1725397637,
+            "tracking_rows": 12534,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3711,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:43.280000",
+        "config_sha256": "81bf2042e9304901681a771356cc1beb24b118dcd0a0f727e4ed35f7455fae86",
+        "nmea_sha256": "38ab25199de1d9ebb1ba101c2a952c6aef866778d1eb5bea25943b5a50550d58",
+        "ephemeris_xml_sha256": "c69925146489f07364e4b6e020b6d2c15b9381f811b7dd602cb5a348b404207f"
+      },
+      "02-cli": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                264975914,
+                587.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1024141,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18139,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1307,
+              1883,
+              2459,
+              3099,
+              3675,
+              4315,
+              4891,
+              5467
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                8599138,
+                155.0,
+                2000.0
+              ],
+              [
+                275108784,
+                10078.0,
+                1750.0
+              ],
+              [
+                541495707,
+                22725.0,
+                2000.0
+              ],
+              [
+                807825001,
+                21001.0,
+                2125.0
+              ],
+              [
+                1078807048,
+                22518.0,
+                1750.0
+              ],
+              [
+                1347414072,
+                23063.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 9535290,
+            "tracking_last": 1725220529,
+            "tracking_rows": 40611,
+            "valid_symbol": true,
+            "loss_of_lock": 5,
+            "secondary_locks": 6,
+            "frame_decoder_symbol_counters": [],
+            "ephemeris": false,
+            "pages": []
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                1087210,
+                12521.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 2011728,
+            "tracking_last": 1725423385,
+            "tracking_rows": 12563,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              704,
+              1280,
+              1920,
+              2496,
+              3136,
+              3712,
+              4288,
+              4928,
+              5504,
+              6080
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280830,
+                10
+              ],
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                26473834,
+                2808.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 27388639,
+            "tracking_last": 1725432906,
+            "tracking_rows": 12451,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1791,
+              2431,
+              3007,
+              3583,
+              4223,
+              4799,
+              5375,
+              6015
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                4036280,
+                20294.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 4992572,
+            "tracking_last": 1724495009,
+            "tracking_rows": 12544,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4928,
+              5504,
+              6080
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                16349216,
+                20756.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 17257973,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12500,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1215,
+              1855,
+              2431,
+              3071,
+              3647,
+              4223,
+              4863,
+              5439,
+              6015
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                17323476,
+                1338.0,
+                2625.0
+              ],
+              [
+                284800425,
+                3818.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 18308811,
+            "tracking_last": 1725425178,
+            "tracking_rows": 17848,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1202,
+              1842,
+              2418,
+              2994,
+              3634,
+              4210,
+              4850,
+              5426
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                6665856,
+                922.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 7602779,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12539,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                7591540,
+                2007.0,
+                -2875.0
+              ],
+              [
+                276108192,
+                21994.0,
+                -2750.0
+              ],
+              [
+                542502747,
+                4073.0,
+                -3000.0
+              ],
+              [
+                817090023,
+                1451.0,
+                -2875.0
+              ],
+              [
+                1081640861,
+                3243.0,
+                -2875.0
+              ],
+              [
+                1348429287,
+                23452.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 8529549,
+            "tracking_last": 1725397637,
+            "tracking_rows": 40298,
+            "valid_symbol": true,
+            "loss_of_lock": 5,
+            "secondary_locks": 6,
+            "frame_decoder_symbol_counters": [],
+            "ephemeris": false,
+            "pages": []
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.200000",
+        "config_sha256": "81bf2042e9304901681a771356cc1beb24b118dcd0a0f727e4ed35f7455fae86",
+        "nmea_sha256": "e9de89a6f15e06d8ce57a87fb4c4e58a99a6d3f92550484f9fda72ed77668e8e",
+        "ephemeris_xml_sha256": "54fed78fd455df9f879f58672cfa14d1104ce3bbf585780b64a7311798d2e1d6"
+      },
+      "02-gui": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                273911069,
+                17444.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1000141,
+            "tracking_last": 1725138498,
+            "tracking_rows": 18196,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1233,
+              1809,
+              2449,
+              3025,
+              3665,
+              4241,
+              4817,
+              5457
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                8599167,
+                126.0,
+                2000.0
+              ],
+              [
+                281652955,
+                17896.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 9583290,
+            "tracking_last": 1725220529,
+            "tracking_rows": 17868,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1267,
+              1843,
+              2419,
+              3059,
+              3635,
+              4211,
+              4851,
+              5427
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                1816864,
+                2865.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 2779726,
+            "tracking_last": 1725183386,
+            "tracking_rows": 12557,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              703,
+              1279,
+              1919,
+              2495,
+              3135,
+              3711,
+              4287,
+              4927,
+              5503,
+              6079
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280830,
+                10
+              ],
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                2742552,
+                22142.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 3724691,
+            "tracking_last": 1724712908,
+            "tracking_rows": 12552,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              703,
+              1279,
+              1919,
+              2495,
+              3071,
+              3711,
+              4287,
+              4927,
+              5503,
+              6079
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280830,
+                10
+              ],
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                3766537,
+                2037.0,
+                1000.0
+              ],
+              [
+                280727277,
+                1044.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 4680572,
+            "tracking_last": 1725215008,
+            "tracking_rows": 17882,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1265,
+              1841,
+              2417,
+              3057,
+              3633,
+              4273,
+              4849,
+              5425
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                9410160,
+                23806.0,
+                -875.0
+              ],
+              [
+                274919250,
+                2943.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 10345967,
+            "tracking_last": 1725339439,
+            "tracking_rows": 18682,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1179,
+              1755,
+              2395,
+              2971,
+              3547,
+              4187,
+              4763,
+              5403
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                5707436,
+                1403.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 6644836,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12541,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                6674652,
+                16126.0,
+                -1250.0
+              ],
+              [
+                271961401,
+                1680.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 7626779,
+            "tracking_last": 1724516747,
+            "tracking_rows": 17901,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1266,
+              1906,
+              2482,
+              3058,
+              3698,
+              4274,
+              4850,
+              5490
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                14571038,
+                6526.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 15537566,
+            "tracking_last": 1724917636,
+            "tracking_rows": 12500,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2432,
+              3072,
+              3648,
+              4224,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.380000",
+        "config_sha256": "81bf2042e9304901681a771356cc1beb24b118dcd0a0f727e4ed35f7455fae86",
+        "nmea_sha256": "c77c57e3c2b24d2c23bda0d4c8b64ea88b6730b329d3baa057b73ba57b1d685f",
+        "ephemeris_xml_sha256": "ecf972611b507efae00933442f568065db24c1f1fd01766dac53d097aaaf7dc7"
+      },
+      "03-cli": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                267269630,
+                10874.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1024141,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18134,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1307,
+              1883,
+              2459,
+              3099,
+              3675,
+              4251,
+              4891,
+              5467
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                14751292,
+                15991.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 15679281,
+            "tracking_last": 1725220529,
+            "tracking_rows": 12507,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2432,
+              3072,
+              3648,
+              4224,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                15676972,
+                14722.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 16675691,
+            "tracking_last": 1725423385,
+            "tracking_rows": 12501,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2431,
+              3071,
+              3647,
+              4223,
+              4863,
+              5439,
+              6079
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                10827960,
+                716.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 11788673,
+            "tracking_last": 1724952907,
+            "tracking_rows": 12514,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1856,
+              2496,
+              3072,
+              3648,
+              4288,
+              4864,
+              5440,
+              6080
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                4020512,
+                12062.0,
+                1250.0
+              ],
+              [
+                268252670,
+                19662.0,
+                1125.0
+              ]
+            ],
+            "tracking_first": 4968572,
+            "tracking_last": 1724495009,
+            "tracking_rows": 18135,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1242,
+              1882,
+              2458,
+              3098,
+              3674,
+              4250,
+              4890,
+              5466
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                5019344,
+                22619.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 5977964,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12547,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1280,
+              1920,
+              2496,
+              3072,
+              3712,
+              4288,
+              4864,
+              5504,
+              6080
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                5961412,
+                11426.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 6908835,
+            "tracking_last": 1725425178,
+            "tracking_rows": 12539,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1919,
+              2495,
+              3071,
+              3711,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                6977207,
+                1571.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 7914779,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12535,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3711,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                11819176,
+                22381.0,
+                -3000.0
+              ],
+              [
+                281884096,
+                6104.0,
+                -2750.0
+              ],
+              [
+                546608563,
+                2267.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 12753559,
+            "tracking_last": 1725397637,
+            "tracking_rows": 23346,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1817,
+              2393,
+              3033,
+              3609,
+              4249,
+              4825
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:37.220000",
+        "config_sha256": "81bf2042e9304901681a771356cc1beb24b118dcd0a0f727e4ed35f7455fae86",
+        "nmea_sha256": "cc8bde8172cb8aafd5977095cdebda6e55951227f13d8e89457bc6739f90a667",
+        "ephemeris_xml_sha256": "2f58311b592bf9f72ad416e07fb53f12cd07537d5f03c0d3cb242ef2d2cfa2a6"
+      },
+      "03-gui": {
+        "prns": {
+          "3": {
+            "first_or_reacquisition": [
+              [
+                72000,
+                16140.0,
+                -1750.0
+              ],
+              [
+                267261408,
+                19096.0,
+                -1625.0
+              ]
+            ],
+            "tracking_first": 1048141,
+            "tracking_last": 1725378499,
+            "tracking_rows": 18474,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1269,
+              1845,
+              2421,
+              3061,
+              3637,
+              4213,
+              4853,
+              5429
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "4": {
+            "first_or_reacquisition": [
+              [
+                19134572,
+                704.0,
+                2000.0
+              ],
+              [
+                288773376,
+                1464.0,
+                1875.0
+              ]
+            ],
+            "tracking_first": 20071273,
+            "tracking_last": 1725220529,
+            "tracking_rows": 17836,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1202,
+              1778,
+              2418,
+              2994,
+              3634,
+              4210,
+              4786,
+              5426
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "8": {
+            "first_or_reacquisition": [
+              [
+                2602728,
+                8999.0,
+                3750.0
+              ],
+              [
+                267982304,
+                20754.0,
+                2875.0
+              ],
+              [
+                539825332,
+                1041.0,
+                2875.0
+              ],
+              [
+                816191080,
+                18597.0,
+                3000.0
+              ]
+            ],
+            "tracking_first": 3595723,
+            "tracking_last": 1725423385,
+            "tracking_rows": 28606,
+            "valid_symbol": true,
+            "loss_of_lock": 3,
+            "secondary_locks": 4,
+            "frame_decoder_symbol_counters": [
+              2391,
+              3031,
+              3607,
+              4183
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "9": {
+            "first_or_reacquisition": [
+              [
+                4757208,
+                23481.0,
+                2500.0
+              ],
+              [
+                269637069,
+                7037.0,
+                2625.0
+              ]
+            ],
+            "tracking_first": 5740686,
+            "tracking_last": 1725432906,
+            "tracking_rows": 17918,
+            "valid_symbol": true,
+            "loss_of_lock": 1,
+            "secondary_locks": 2,
+            "frame_decoder_symbol_counters": [
+              1266,
+              1906,
+              2482,
+              3058,
+              3698,
+              4274,
+              4914,
+              5490
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "18": {
+            "first_or_reacquisition": [
+              [
+                5191960,
+                16613.0,
+                1000.0
+              ],
+              [
+                279623620,
+                702.0,
+                1000.0
+              ],
+              [
+                545085156,
+                2924.0,
+                1000.0
+              ]
+            ],
+            "tracking_first": 5736572,
+            "tracking_last": 1724495009,
+            "tracking_rows": 23254,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1830,
+              2470,
+              3046,
+              3622,
+              4262,
+              4838
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "26": {
+            "first_or_reacquisition": [
+              [
+                6789384,
+                4580.0,
+                -1000.0
+              ]
+            ],
+            "tracking_first": 7729965,
+            "tracking_last": 1725339439,
+            "tracking_rows": 12537,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1279,
+              1855,
+              2495,
+              3071,
+              3711,
+              4287,
+              4863,
+              5503,
+              6079
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "27": {
+            "first_or_reacquisition": [
+              [
+                15185506,
+                3312.0,
+                2625.0
+              ],
+              [
+                285431661,
+                20580.0,
+                2625.0
+              ],
+              [
+                549959380,
+                20297.0,
+                2500.0
+              ]
+            ],
+            "tracking_first": 16172815,
+            "tracking_last": 1725425178,
+            "tracking_rows": 23304,
+            "valid_symbol": true,
+            "loss_of_lock": 2,
+            "secondary_locks": 3,
+            "frame_decoder_symbol_counters": [
+              1822,
+              2398,
+              3038,
+              3614,
+              4190,
+              4830
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "28": {
+            "first_or_reacquisition": [
+              [
+                18200120,
+                10671.0,
+                -1375.0
+              ]
+            ],
+            "tracking_first": 19170792,
+            "tracking_last": 1725476748,
+            "tracking_rows": 12489,
+            "valid_symbol": true,
+            "loss_of_lock": 0,
+            "secondary_locks": 1,
+            "frame_decoder_symbol_counters": [
+              1216,
+              1856,
+              2432,
+              3008,
+              3648,
+              4224,
+              4864,
+              5440,
+              6016
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280836,
+                11
+              ],
+              [
+                280842,
+                33
+              ],
+              [
+                280848,
+                37
+              ],
+              [
+                280854,
+                10
+              ],
+              [
+                280860,
+                11
+              ],
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          },
+          "32": {
+            "first_or_reacquisition": [
+              [
+                13284988,
+                20573.0,
+                -2625.0
+              ],
+              [
+                283522956,
+                23248.0,
+                -2625.0
+              ],
+              [
+                549000340,
+                10496.0,
+                -2625.0
+              ],
+              [
+                819491852,
+                23628.0,
+                -2750.0
+              ]
+            ],
+            "tracking_first": 14193563,
+            "tracking_last": 1725397637,
+            "tracking_rows": 30030,
+            "valid_symbol": true,
+            "loss_of_lock": 3,
+            "secondary_locks": 4,
+            "frame_decoder_symbol_counters": [
+              2231,
+              2807,
+              3447,
+              4023
+            ],
+            "ephemeris": true,
+            "pages": [
+              [
+                280866,
+                31
+              ],
+              [
+                280872,
+                37
+              ],
+              [
+                280878,
+                10
+              ],
+              [
+                280884,
+                11
+              ]
+            ]
+          }
+        },
+        "first_fix_utc": "2026-Nov-11 06:00:43.020000",
+        "config_sha256": "81bf2042e9304901681a771356cc1beb24b118dcd0a0f727e4ed35f7455fae86",
+        "nmea_sha256": "6016694b185d2935fb4a8564ee47375c66b3d8b63cbc86fbbeaa66f5e3aa91ec",
+        "ephemeris_xml_sha256": "c7162b0225837f29e09f86b364da846491fd4732ae7036ea85e8093843bb7770"
+      }
+    }
+  }
+}

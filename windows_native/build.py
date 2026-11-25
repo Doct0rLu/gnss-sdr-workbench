@@ -102,6 +102,7 @@ def package(args, source, volk):
             raise ValueError('Unverified source files: '+str(sorted(extras)))
     meta = dict(upstream_commit=COMMIT,upstream_archive_sha256=ARCHIVE_SHA,
                 platform_patch_sha256=sha(HERE/'windows-compatibility.patch'),build_type='Release',
+                file_eof_patch_sha256=sha(HERE/'file-eof.patch'),
                 text_sha256=text_section(exe),exe_sha256=sha(exe),
                 runtime_dlls={p.name:sha(p) for p in sorted(bin_dir.glob('*.dll'))})
     (runtime/'WINDOWS-BUILD.json').write_text(json.dumps(meta, indent=2)+'\n',encoding='utf8')
@@ -112,7 +113,8 @@ def extract(archive, destination):
     with tarfile.open(archive) as f:
         f.extractall(destination,filter='data')
     source=destination/('gnss-sdr-'+COMMIT)
-    subprocess.run(['git','apply','--whitespace=nowarn',str(HERE/'windows-compatibility.patch')],cwd=source,check=True)
+    for patch in ('windows-compatibility.patch','file-eof.patch'):
+        subprocess.run(['git','apply','--whitespace=nowarn',str(HERE/patch)],cwd=source,check=True)
     return source
 
 

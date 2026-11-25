@@ -12,7 +12,7 @@ def main():
     def run(args,capture=False):return subprocess.run(args,cwd=ROOT,env=env,check=True,text=True,encoding="utf-8",capture_output=capture)
     run([gh,'auth','status'])
     owner=run([gh,'api','user','--jq','.login'],True).stdout.strip();repo=owner+'/'+a.name
-    files=[ROOT/'release'/name for name in ['GNSS-SDR-Workbench-v0.6.0-win-x64.zip','GNSS-SDR-Workbench-v0.6.0-source.zip','gnss-sdr-upstream-3132713.tar.gz','SHA256SUMS.txt']]
+    files=[ROOT/'release'/name for name in ['GNSS-SDR-Workbench-v0.6.1-win-x64.zip','GNSS-SDR-Workbench-v0.6.1-source.zip','gnss-sdr-upstream-3132713.tar.gz','SHA256SUMS.txt']]
     if not all(p.is_file() for p in files):raise SystemExit('Build and verify all release assets first')
     if run(['git','status','--porcelain'],True).stdout.strip():raise SystemExit('Commit reviewed source changes before publishing')
     # Credentials stay in gh's credential store. Configure only this repository.
@@ -24,6 +24,6 @@ def main():
         origin=run(['git','remote','get-url','origin'],True).stdout.strip()
         if origin not in ('https://github.com/'+repo+'.git','https://github.com/'+repo,'git@github.com:'+repo+'.git'):raise SystemExit('origin differs from the selected repository')
         run(['git','push','origin','HEAD:main'])
-    run([gh,'release','create','v0.6.0',*[str(p) for p in files],'--repo',repo,'--target','main','--title','v0.6.0 — Windows x64 portable workbench','--notes-file','RELEASE-NOTES.md'])
-    print(run([gh,'release','view','v0.6.0','--repo',repo,'--json','url,assets'],True).stdout)
+    run([gh,'release','create','v0.6.1',*[str(p) for p in files],'--repo',repo,'--target','main','--title','v0.6.1 — Windows x64 portable workbench','--notes-file','RELEASE-NOTES.md'])
+    print(run([gh,'release','view','v0.6.1','--repo',repo,'--json','url,assets'],True).stdout)
 if __name__=='__main__':main()

@@ -272,6 +272,7 @@ class Workbench:
             if self.restarting and not restarting:raise ValueError('接收机正在重启')
             if self.active and self.active.proc and self.active.proc.poll() is None: raise ValueError('已有接收机正在运行')
             exe, iq, duration, fs = self.validate(data)
+            identity = native_receiver.identity(exe,HERE)
             capture_channel=int(data.get('capture_channel',0))
             original = data.get('config_mode') == 'original'
             if original:
@@ -317,7 +318,8 @@ class Workbench:
                              'PVT.output_path':'.','PVT.nmea_dump_filename':'./solution.nmea'}
                 for index,item in enumerate(inputs):
                     src=Path(item['path']);role=item['role']
-                    samples=signal_input.source_count(item['layout'],duration,item['fs'],src.stat().st_size)
+                    samples=signal_input.source_count(item['layout'],duration,item['fs'],src.stat().st_size,
+                                                      full_int16_eof=identity.get('full_int16_eof',False))
                     previous=int(overrides.get(role+'.samples',samples))
                     overrides.update({item['filename_key']:src.as_posix(),role+'.samples':str(min(previous,samples)),
                                       role+'.repeat':'false'})
@@ -336,10 +338,10 @@ class Workbench:
             env = native_receiver.environment(exe, self.settings.get('dll_dirs', []))
             command = native_receiver.command(exe,path)
             meta = dict(id=run_id,status='starting',started=time.time(),exe=str(exe),iq=str(iq),duration=duration,fs=fs,
-                        **native_receiver.identity(exe,HERE), config_mode='original' if original else 'guided',
+                        **identity, config_mode='original' if original else 'guided',
                         config_sha256=hashlib.sha256((path/'receiver.conf').read_bytes()).hexdigest(),iq_bytes=iq.stat().st_size,
                         iq_mtime_ns=iq.stat().st_mtime_ns,output=str(path),command=command,input_format=fmt['item_type'],input_label=fmt['label'],source=str(data.get('source_label','本地信号 / 独立接收机进程'))[:120],
-                        monitor='TrackingMonitor / UDP Protobuf',version='0.6.0',tracking_port=native_receiver.reported_port(sock,options,'Tracking',1236,original),acquisition_port=native_receiver.reported_port(acq_sock,options,'Acquisition',1235,original),capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label=' + '.join(dict.fromkeys(r['label'] for r in channel_map)),signals=list(dict.fromkeys(r['signal'] for r in channel_map)),channel_map=channel_map,inputs=[{k:v for k,v in item.items() if k not in ('layout','options')} for item in inputs])
+                        monitor='TrackingMonitor / UDP Protobuf',version='0.6.1',tracking_port=native_receiver.reported_port(sock,options,'Tracking',1236,original),acquisition_port=native_receiver.reported_port(acq_sock,options,'Acquisition',1235,original),capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label=' + '.join(dict.fromkeys(r['label'] for r in channel_map)),signals=list(dict.fromkeys(r['signal'] for r in channel_map)),channel_map=channel_map,inputs=[{k:v for k,v in item.items() if k not in ('layout','options')} for item in inputs])
             if original:
                 meta['original_config_sha256'] = hashlib.sha256(original_bytes).hexdigest()
             run = Run(path,meta); run.sock = sock; self.active = run

@@ -133,4 +133,5 @@ def identity(exe, root):
         if build.get('upstream_commit') != COMMIT or build.get('exe_sha256') != digest:
             raise ValueError('随包接收机与构建记录不一致，请重新解压便携包')
         result['upstream_commit'] = COMMIT
+        result['full_int16_eof'] = bool(build.get('file_eof_patch_sha256'))
     return result

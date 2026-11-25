@@ -1,0 +1,68 @@
+--- a/src/algorithms/signal_source/libs/gnss_sdr_valve.h
++++ b/src/algorithms/signal_source/libs/gnss_sdr_valve.h
+@@ -64,6 +64,8 @@
+ public:
+     void open_valve();
+ 
++    void forecast(int noutput_items, gr_vector_int& ninput_items_required) override;
++
+     int work(int noutput_items,
+         gr_vector_const_void_star& input_items,
+         gr_vector_void_star& output_items);
+--- a/src/algorithms/signal_source/libs/gnss_sdr_valve.cc
++++ b/src/algorithms/signal_source/libs/gnss_sdr_valve.cc
+@@ -75,6 +75,19 @@
+ }
+ 
+ 
++void Gnss_Sdr_Valve::forecast(int noutput_items, gr_vector_int& ninput_items_required)
++{
++    // The terminal work call posts STOP and consumes no input. At physical EOF
++    // the scheduler has no further input item with which to schedule that call.
++    if (d_stop_flowgraph && !d_open_valve && d_ncopied_items == d_nitems)
++        {
++            std::fill(ninput_items_required.begin(), ninput_items_required.end(), 0);
++            return;
++        }
++    gr::sync_block::forecast(noutput_items, ninput_items_required);
++}
++
++
+ int Gnss_Sdr_Valve::work(int noutput_items,
+     gr_vector_const_void_star& input_items,
+     gr_vector_void_star& output_items)
+--- a/src/algorithms/signal_source/adapters/file_source_base.cc
++++ b/src/algorithms/signal_source/adapters/file_source_base.cc
+@@ -33,6 +33,7 @@
+ #include <algorithm>  // for std::max
+ #include <cmath>      // for ceil, floor
+ #include <iostream>   // for std::cout, std:cerr
++#include <stdexcept>
+ #include <utility>    // for std::move
+ 
+ #if USE_GLOG_AND_GFLAGS
+@@ -137,7 +138,23 @@
+     create_file_source();
+ 
+     // At this point, we know that the file exists
+-    samples_ = computeSamplesInFile();
++    if (implementation() == "File_Signal_Source" && item_type() == "short" && !repeat())
++        {
++            // File size is in bytes; the skip and the valve limit are in int16 items.
++            const uint64_t complete_items = fs::file_size(filename()) / item_size();
++            const uint64_t skip = samplesToSkip();
++            if (skip >= complete_items)
++                {
++                    throw std::invalid_argument("No complete int16 samples remain after the input offset");
++                }
++            const uint64_t available = complete_items - skip;
++            samples_ = samples_ == 0 ? available : std::min(samples_, available);
++            std::cout << "Processing " << samples_ << " samples from file " << filename() << '\n';
++        }
++    else
++        {
++            samples_ = computeSamplesInFile();
++        }
+     auto signal_duration_s = 1.0 * samples_ / sampling_frequency_;
+ 
+     if (is_complex())

@@ -47,6 +47,14 @@ class InputTests(unittest.TestCase):
             self.assertEqual(signal_input.source_count(fmt,3,1000,3000*fmt['sample_bytes']),2900*fmt['source_items'])
             self.assertEqual(signal_input.source_count(fmt,2,1000,3000*fmt['sample_bytes']),2000*fmt['source_items'])
 
+    def test_native_short_end_includes_last_whole_sample(self):
+        fmt=signal_input.layout({'SignalSource.item_type':'short'})
+        self.assertEqual(signal_input.source_count(fmt,3,1000,6001,full_int16_eof=True),3000)
+        self.assertEqual(signal_input.source_count(fmt,2,1000,6001,full_int16_eof=True),2000)
+        self.assertEqual(signal_input.source_count(fmt,3,1000,6001),2900)
+        iq=signal_input.layout({'SignalSource.item_type':'ishort'})
+        self.assertEqual(signal_input.source_count(iq,3,1000,12000,full_int16_eof=True),5800)
+
     def test_download_offsets_keep_original_bytes(self):
         import threading, urllib.request
         from unittest.mock import patch

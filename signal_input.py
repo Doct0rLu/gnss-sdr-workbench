@@ -27,10 +27,12 @@ def validate_chain(options, fmt):
     if fmt['adapter']=='Pass_Through' and options.get('DataTypeAdapter.item_type','gr_complex').strip()!=fmt['filter_type']:
         raise ValueError(f'DataTypeAdapter.item_type 应为 {fmt["filter_type"]}')
 
-def source_count(fmt, duration, fs, file_bytes):
+def source_count(fmt, duration, fs, file_bytes, *, full_int16_eof=False):
     # Match FileSourceBase's 100 ms tail so DSP blocks can finish before EOF.
     # Its byte-based limit only handles int8 correctly; apply it in sample units.
     available=file_bytes//fmt['sample_bytes']
+    if full_int16_eof and fmt['item_type']=='short':
+        return min(int(duration*fs),available)
     samples=min(int(duration*fs),max(1,available-math.ceil(.1*fs)))
     return samples*fmt['source_items']
 

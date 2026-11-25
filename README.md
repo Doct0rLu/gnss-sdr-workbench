@@ -1,16 +1,18 @@
-# GNSS-SDR Workbench v0.6.0
+# GNSS-SDR Workbench v0.6.1
 
-Windows x64 的 GNSS-SDR 配置、监测与回放界面。本版直接启动随包的 Windows 接收机进程。接收机基于提交 `3132713`，构建时应用 Windows 平台适配，保留上游捕获统计量、跟踪环路、电文解码和定位计算。[上游源码](https://github.com/gnss-sdr/gnss-sdr/tree/3132713b88a1b5b2ee8291bff8076574749349de) · [运行对照](NATIVE-REGRESSION.md)
+Windows x64 的 GNSS-SDR 配置、监测与回放界面。本版直接启动随包的 Windows 接收机进程。接收机基于提交 `3132713`，构建时应用 Windows 平台适配及有限文件 EOF 修复，保留上游捕获统计量、跟踪环路、电文解码和定位计算。[上游源码](https://github.com/gnss-sdr/gnss-sdr/tree/3132713b88a1b5b2ee8291bff8076574749349de) · [运行对照](NATIVE-REGRESSION.md)
+
+同一份 M1 L5 录制在常规调度和上游确定性调度下的逐星捕获、跟踪及星历复验见[L5 重复实验](L5-REPEAT.md)。
 
 ## 下载使用
 
-完整解压 win-x64 便携包到可写目录，双击 `Start-Workbench.cmd`。接收机、GNU Radio DLL 和界面所需运行库都在包内。[下载 v0.6.0](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/tag/v0.6.0) · [操作说明](PORTABLE.md)
+完整解压 win-x64 便携包到可写目录，双击 `Start-Workbench.cmd`。接收机、GNU Radio DLL 和界面所需运行库都在包内。[下载 v0.6.1](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/tag/v0.6.1) · [操作说明](PORTABLE.md)
 
 “使用原始 GNSS-SDR 配置”支持本机 .conf 和随包的上游示例。相对或已迁移的录制路径会解析到实际文件，实验目录同时保留原文和传给内核的配置。“工作台实验”提供多频、实数和 IQ 预设，并配置监测端口、转储与时长。
 
 ## 从源码启动
 
-使用 Python 3.11 或更高版本执行 `python -m pip install -r requirements.txt`。把 v0.6.0 便携包的 `receiver` 目录放在 `server.py` 旁，双击 `start.cmd`。也可执行 `python server.py --port 8767 --open`。
+使用 Python 3.11 或更高版本执行 `python -m pip install -r requirements.txt`。把 v0.6.1 便携包的 `receiver` 目录放在 `server.py` 旁，双击 `start.cmd`。也可执行 `python server.py --port 8767 --open`。
 
 ## 输入格式
 
@@ -78,7 +80,7 @@ POST /api/restart
 
 ## 当前适配与后续方向
 
-v0.4 系列 Windows 接收机曾验证 17 类信号处理链运行、同频混合与双 RF 链路；实际定位回归包括 GPS L1 C/A 和北斗 B3I。GPS L1 C/A 录制使用 18 MS/s signed int8 I/Q、+20 kHz IF、抽取至 3 MS/s。文件输入支持实数 int8/byte、int16/short、float32/float，以及 IQ int8/ibyte、int16/ishort、float32/gr_complex；多字节格式为小端序。工作台按格式计算文件长度、接收机样本数与切片字节偏移；处理接近文件尾部时预留 100 ms 供滤波和跟踪结束。实数输入使用 Pass_Through 适配器与 Freq_Xlating_Fir_Filter 完成滤波、下变频和抽取，填写实际录制中频；IQ 整数输入使用对应的 Ibyte/Ishort_To_Complex。捕获网格使用内核已有 dump_channel，每次实验选择一个通道；成功捕获消息覆盖各通道。跟踪二进制解析适配当前构建的 112 字节记录。
+v0.4 系列 Windows 接收机曾验证 17 类信号处理链运行、同频混合与双 RF 链路；实际定位回归包括 GPS L1 C/A 和北斗 B3I。GPS L1 C/A 录制使用 18 MS/s signed int8 I/Q、+20 kHz IF、抽取至 3 MS/s。文件输入支持实数 int8/byte、int16/short、float32/float，以及 IQ int8/ibyte、int16/ishort、float32/gr_complex；多字节格式为小端序。工作台按格式计算文件长度、接收机样本数与切片字节偏移；随包接收机支持将实数 int16 读到最后一个完整样本，其他格式的工作台时长计算保留原有的 100 ms 尾部余量。实数输入使用 Pass_Through 适配器与 Freq_Xlating_Fir_Filter 完成滤波、下变频和抽取，填写实际录制中频；IQ 整数输入使用对应的 Ibyte/Ishort_To_Complex。捕获网格使用内核已有 dump_channel，每次实验选择一个通道；成功捕获消息覆盖各通道。跟踪二进制解析适配当前构建的 112 字节记录。
 
 天空图按 GGA 历元合并各星座的 GSV，拖动时间轴时使用游标处最近定位解的 UTC。定位面板收录原生首次定位和周期位置，事件的时间精度取决于接收机对应的输出。输入工作区可查看原始采样。
 
@@ -114,4 +116,4 @@ python -m venv .build-venv
 .build-venv/Scripts/python.exe build_release.py --receiver D:/gnss-build/receiver
 ```
 
-构建脚本核对上游归档、Windows 平台补丁、PE 机器码和递归 DLL 导入。ZIP、源码与校验和输出到 `release`。便携目录中的 `receiver/windows_native` 包含对应的构建配方。[组件许可](THIRD-PARTY.md)
+构建脚本核对上游归档、Windows 平台和文件 EOF 补丁、PE 机器码和递归 DLL 导入。ZIP、源码与校验和输出到 `release`。便携目录中的 `receiver/windows_native` 包含对应的构建配方。[组件许可](THIRD-PARTY.md)
