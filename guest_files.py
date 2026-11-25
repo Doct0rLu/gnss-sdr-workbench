@@ -58,7 +58,7 @@ class RunFiles(paramiko.SFTPServerInterface):
         p = self.output.joinpath(*parts[2:]).resolve()
         if not p.is_relative_to(self.output):
             raise PermissionError(errno.EACCES, path)
-        if write and (p == self.output or p.name in ('manifest.json', 'snapshot.json', 'receiver.conf', 'receiver.log') or p.suffix == '.jsonl'):
+        if write and (p == self.output or p.name.casefold() in ('manifest.json', 'snapshot.json', 'receiver.conf', 'receiver.log') or p.suffix.casefold() == '.jsonl'):
             raise PermissionError(errno.EACCES, path)
         return p
 
@@ -97,7 +97,27 @@ class RunFiles(paramiko.SFTPServerInterface):
         handle = paramiko.SFTPHandle(flags)
         handle.readfile = handle.writefile = f
         handle.stat = lambda: paramiko.SFTPAttributes.from_stat(os.fstat(f.fileno()))
+        @sftp_errors
+        def change_attributes(attrs):
+            if not writing:
+                raise PermissionError(errno.EACCES, path)
+            if attrs.st_size is not None:
+                f.truncate(attrs.st_size)
+            if attrs.st_atime is not None and attrs.st_mtime is not None:
+                os.utime(p,(attrs.st_atime,attrs.st_mtime))
+            return paramiko.SFTP_OK
+        handle.chattr = change_attributes
         return handle
+
+    @sftp_errors
+    def chattr(self, path, attrs):
+        p = self.resolve(path,True)
+        if attrs.st_size is not None:
+            with p.open('r+b') as f:
+                f.truncate(attrs.st_size)
+        if attrs.st_atime is not None and attrs.st_mtime is not None:
+            os.utime(p,(attrs.st_atime,attrs.st_mtime))
+        return paramiko.SFTP_OK
 
     @sftp_errors
     def remove(self, path):

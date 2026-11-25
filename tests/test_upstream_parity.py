@@ -1,10 +1,13 @@
 from pathlib import Path
+import os
 import tempfile
 import unittest
 
 import diagnostics
 import linux_receiver
 import server
+from guest_files import RunFiles
+import paramiko
 
 
 def sentence(body):
@@ -52,3 +55,20 @@ class UpstreamParityTests(unittest.TestCase):
             self.assertTrue(src.samefile(row['path']))
             self.assertEqual(row['byte_offset'],12)
             self.assertEqual(src.read_bytes(),bytes(range(32)))
+
+    def test_capture_dump_can_be_extended_by_handle_or_name(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src=Path(tmp)/'input.iq'
+            src.write_bytes(b'1234')
+            share=RunFiles(None,tmp,[src])
+            f=share.open('/out/capture.mat',os.O_RDWR|os.O_CREAT,None)
+            attrs=paramiko.SFTPAttributes()
+            attrs.st_size=8192
+            self.assertEqual(f.chattr(attrs),paramiko.SFTP_OK)
+            self.assertEqual(f.stat().st_size,8192)
+            f.close()
+            attrs.st_size=128
+            self.assertEqual(share.chattr('/out/capture.mat',attrs),paramiko.SFTP_OK)
+            self.assertEqual((Path(tmp)/'capture.mat').stat().st_size,128)
+            self.assertNotEqual(share.chattr('/input/0',attrs),paramiko.SFTP_OK)
+            self.assertEqual(src.read_bytes(),b'1234')
