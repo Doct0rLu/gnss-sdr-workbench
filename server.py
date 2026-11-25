@@ -2,7 +2,7 @@
 from __future__ import annotations
 import argparse, collections, hashlib, json, math, os, re, socket, struct, subprocess, threading, time, uuid, sys
 import diagnostics
-import linux_receiver
+import native_receiver
 import signal_input
 import signals
 import picker
@@ -84,7 +84,7 @@ class Run:
         self.progress = {}
         for row in self.identities.values():
             stats = self.progress.setdefault(row['signal'], dict(label=row['label'], channels=0,
-                                             acquired=set(), tracking=set(), decoded=set()))
+                                             acquired=set(), tracking=set(), valid_tracking=set(), decoded=set()))
             stats['channels'] += 1
 
     def record_stage(self, channel, prn, stage):
@@ -125,9 +125,6 @@ class Run:
         text = re.sub(r'\x1b\[[0-9;]*m','',text)
         level, module, ch = classify(text)
         with LOCK:
-            if self.meta.get('backend')=='upstream-linux':
-                marker=re.fullmatch(r'WORKBENCH_(QEMU|RECEIVER)_PID=(\d+)',text)
-                if marker:self.meta[marker[1].lower()+'_pid']=int(marker[2])
             tick=re.search(r'Current receiver time: (?:(\d+) min )?(\d+) s',text)
             if tick:self.log_signal_time=int(tick[1] or 0)*60+int(tick[2])
             event_time=self.log_signal_time
@@ -162,6 +159,7 @@ class Run:
         ch = row['channel']; t = row['t']
         if ch < 0 or ch > 127 or t is None: return
         if row.get('valid'):
+            self.record_stage(ch, row['prn'], 'valid_tracking')
             self.record_stage(ch, row['prn'], 'tracking')
         if row.get('word'):
             self.record_stage(ch, row['prn'], 'decoded')
@@ -199,33 +197,29 @@ class Workbench:
         self.restarting=False
         self.settings = json.loads((HERE/'local.json').read_text(encoding='utf-8')) if (HERE/'local.json').exists() else {}
     def defaults(self):
-        linux = linux_receiver.runtime(HERE)
         bundled=HERE/'receiver/bin/gnss-sdr.exe'
         exe=self.settings.get('executable','')
-        if not Path(exe).is_file() and bundled.is_file():exe=str(bundled)
-        examples = linux/'linux/conf' if linux else None
-        return dict(executable=linux_receiver.LABEL if linux else exe, upstream=bool(linux),
+        if bundled.is_file() and (self.settings.get('use_bundled', True) or not Path(exe).is_file()):exe=str(bundled)
+        examples = HERE/'receiver/conf'
+        return dict(executable=exe, upstream=True,
                     upstream_examples=[dict(label=p.relative_to(examples).as_posix(),path=str(p))
                                        for p in sorted(examples.rglob('*.conf'))] if examples else [],
                     original_config=self.settings.get('original_config', ''),
-                    config_mode=self.settings.get('config_mode','original' if linux and not self.settings else 'guided'),
+                    config_mode=self.settings.get('config_mode','original' if not self.settings else 'guided'),
                     iq=self.settings.get('iq',''), duration=self.settings.get('duration',20),inputs=self.settings.get('inputs',[]),capture_channel=self.settings.get('capture_channel',0),
                     config=self.settings.get('config',(RESOURCES/'templates/gps-l1.conf').read_text(encoding='utf-8')))
     def validate(self, data):
         exe = Path(data.get('executable','')); iq = Path(data.get('iq',''))
-        linux = linux_receiver.runtime(HERE)
-        if linux:
-            exe = linux / 'qemu/qemu-system-x86_64.exe'
+        if not data.get('executable'):
+            exe = HERE/'receiver/bin/gnss-sdr.exe'
+        if not exe.is_file() or exe.suffix.lower() != '.exe': raise ValueError('请选择存在的接收机 .exe 文件')
         if data.get('config_mode') == 'original':
-            if not linux:
-                raise ValueError('原始配置模式需要随包 Linux 接收机')
             conf = Path(data.get('original_config',''))
             if not conf.is_file():raise ValueError('请选择原始 .conf 配置文件')
             options = signals.parse(conf.read_bytes().decode('utf-8-sig'))
-            entries = linux_receiver.raw_inputs(options,conf.parent,data.get('inputs',[]),data.get('iq',''))
+            entries = native_receiver.raw_inputs(options,conf.parent,data.get('inputs',[]),data.get('iq',''))
             first = next((entry['path'] for entry in entries if entry['path']),None)
             return exe.resolve(), Path(first) if first else conf.resolve(), 0., float(options.get('GNSS-SDR.internal_fs_sps',0))
-        if not exe.is_file() or exe.suffix.lower() != '.exe': raise ValueError('请选择存在的接收机 .exe 文件')
         duration = float(data.get('duration',20))
         if not math.isfinite(duration) or duration <= 0 or duration > 3600: raise ValueError('信号时长需在 0 到 3600 秒之间')
         config = data.get('config','')
@@ -278,13 +272,12 @@ class Workbench:
             if self.active and self.active.proc and self.active.proc.poll() is None: raise ValueError('已有接收机正在运行')
             exe, iq, duration, fs = self.validate(data)
             capture_channel=int(data.get('capture_channel',0))
-            linux = linux_receiver.runtime(HERE)
             original = data.get('config_mode') == 'original'
             if original:
                 conf = Path(data['original_config'])
                 original_bytes = conf.read_bytes()
                 options = signals.parse(original_bytes.decode('utf-8-sig'))
-                inputs = linux_receiver.raw_inputs(options, conf.parent, data.get('inputs',[]), data.get('iq',''))
+                inputs = native_receiver.raw_inputs(options, conf.parent, data.get('inputs',[]), data.get('iq',''))
                 try:
                     channel_map = signals.channels(options) if any(k.startswith('Channels_') for k in options) else []
                 except ValueError:
@@ -302,15 +295,19 @@ class Workbench:
                 inputs=signal_input.sources(options,data);channel_map=signals.channels(options)
                 fmt=inputs[0]['layout']
                 if not 0<=capture_channel<configured_channels:raise ValueError('捕获通道编号超出配置范围')
-            sock, trk_relay = linux_receiver.monitor_endpoint(options,'Tracking',1236,original)
-            acq_sock, acq_relay = linux_receiver.monitor_endpoint(options,'Acquisition',1235,original)
+            sock = native_receiver.monitor_socket(options,'Tracking',1236,original)
+            try:
+                acq_sock = native_receiver.monitor_socket(options,'Acquisition',1235,original)
+            except Exception:
+                sock.close()
+                raise
             sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,4*1024*1024)
             run_id = time.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:6]
             path = RUNS/run_id; path.mkdir(parents=True)
             if original:
-                (path/'receiver.conf').write_bytes(original_bytes)
+                native_receiver.prepare_config(original_bytes,inputs,path)
             else:
-                monitor_host = '10.0.2.2' if linux else '127.0.0.1'
+                monitor_host = '127.0.0.1'
                 overrides = {'TrackingMonitor.enable_monitor':'true',
                              'TrackingMonitor.enable_protobuf':'true','TrackingMonitor.client_addresses':monitor_host,
                              'TrackingMonitor.udp_port':str(sock.getsockname()[1]),'TrackingMonitor.decimation_factor':'10',
@@ -321,7 +318,7 @@ class Workbench:
                     src=Path(item['path']);role=item['role']
                     samples=signal_input.source_count(item['layout'],duration,item['fs'],src.stat().st_size)
                     previous=int(overrides.get(role+'.samples',samples))
-                    overrides.update({item['filename_key']:f'/mnt/host/input/{index}' if linux else src.as_posix(),role+'.samples':str(min(previous,samples)),
+                    overrides.update({item['filename_key']:src.as_posix(),role+'.samples':str(min(previous,samples)),
                                       role+'.repeat':'false'})
                 for row in channel_map:
                     sid=row['signal'];ch=row['channel']
@@ -335,42 +332,24 @@ class Workbench:
                     config = re.sub(r'^\s*'+re.escape(k)+r'\s*=.*(?:\n|$)','',config,flags=re.M)
                     config += '\n'+k+'='+v
                 (path/'receiver.conf').write_text(config+'\n',encoding='utf-8')
-            env = dict(os.environ)
-            system = Path(env.get('SystemRoot','C:/Windows'))
-            dll_dirs = self.settings.get('dll_dirs',[])
-            env['PATH'] = os.pathsep.join([str(exe.parent),*dll_dirs,str(system/'System32'),str(system)])
-            command = [str(exe),'--config_file='+str(path/'receiver.conf'),'--log_dir='+str(path),'--keyboard=true']
-            with exe.open('rb') as binary:
-                executable_hash = hashlib.file_digest(binary,'sha256').hexdigest()
+            env = native_receiver.environment(exe, self.settings.get('dll_dirs', []))
+            command = native_receiver.command(exe,path)
             meta = dict(id=run_id,status='starting',started=time.time(),exe=str(exe),iq=str(iq),duration=duration,fs=fs,
-                        exe_sha256=executable_hash,
+                        **native_receiver.identity(exe,HERE), config_mode='original' if original else 'guided',
                         config_sha256=hashlib.sha256((path/'receiver.conf').read_bytes()).hexdigest(),iq_bytes=iq.stat().st_size,
                         iq_mtime_ns=iq.stat().st_mtime_ns,output=str(path),command=command,input_format=fmt['item_type'],input_label=fmt['label'],source=str(data.get('source_label','本地信号 / 独立接收机进程'))[:120],
-                        monitor='TrackingMonitor / UDP Protobuf',version='0.4.3',tracking_port=sock.getsockname()[1],acquisition_port=acq_sock.getsockname()[1],capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label=' + '.join(dict.fromkeys(r['label'] for r in channel_map)),signals=list(dict.fromkeys(r['signal'] for r in channel_map)),channel_map=channel_map,inputs=[{k:v for k,v in item.items() if k not in ('layout','options')} for item in inputs])
-            if linux:
-                command = [sys.executable] + ([] if getattr(sys, 'frozen', False) else [str(RESOURCES/'server.py')])
-                command += ['--guest-run', str(linux), str(path)]
-                env = dict(os.environ)
-                meta.update(command=command, backend='upstream-linux', upstream_commit=linux_receiver.COMMIT,
-                            exe='/usr/bin/gnss-sdr', qemu_sha256=executable_hash, config_mode='original' if original else 'guided',
-                            exe_sha256=(linux/'linux/receiver.sha256').read_text(encoding='ascii').split()[0],
-                            version='0.5.0')
-                write_json(path/'guest-job.json', dict(inputs=meta['inputs'],original=original,
-                           relays=[r for r in (trk_relay,acq_relay) if r]))
+                        monitor='TrackingMonitor / UDP Protobuf',version='0.6.0',tracking_port=native_receiver.reported_port(sock,options,'Tracking',1236,original),acquisition_port=native_receiver.reported_port(acq_sock,options,'Acquisition',1235,original),capture_channel=capture_channel,configured_channels=configured_channels,signal=signal,signal_label=' + '.join(dict.fromkeys(r['label'] for r in channel_map)),signals=list(dict.fromkeys(r['signal'] for r in channel_map)),channel_map=channel_map,inputs=[{k:v for k,v in item.items() if k not in ('layout','options')} for item in inputs])
+            if original:
+                meta['original_config_sha256'] = hashlib.sha256(original_bytes).hexdigest()
             run = Run(path,meta); run.sock = sock; self.active = run
             if options.get('Workbench.replay_profile') == 'm1':
                 satellites = [options.get(f"Channel{row['channel']}.satellite",'').strip() for row in channel_map]
                 assigned = sum(value.isdecimal() and value.strip('0') != '' for value in satellites)
                 meta['profile_label'] = 'M1 实验 · ' + (f'{assigned} 个指定 PRN 通道' if assigned else '盲搜')
             try:
-                if getattr(sys,'frozen',False):
-                    import ctypes
-                    ctypes.windll.kernel32.SetDllDirectoryW(None)
-                try:
+                with native_receiver.native_dll_search():
                     run.proc = subprocess.Popen(command,cwd=path,env=env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,
                                                 stderr=subprocess.STDOUT,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
-                finally:
-                    if getattr(sys,'frozen',False):ctypes.windll.kernel32.SetDllDirectoryW(str(sys._MEIPASS))
                 meta.update(status='running',pid=run.proc.pid)
             except Exception as exc:
                 sock.close();acq_sock.close(); meta.update(status='failed',error=str(exc),ended=time.time()); write_json(path/'manifest.json',meta); raise ValueError(str(exc))
@@ -584,7 +563,10 @@ class Handler(BaseHTTPRequestHandler):
                     value['config']=p.read_text(encoding='utf-8-sig')
                 return self.send(value)
             if self.path=='/api/settings':
-                APP.validate(data);APP.settings.update(data);write_json(HERE/'local.json',APP.settings);return self.send({'saved':True})
+                exe,*_ = APP.validate(data)
+                bundled=HERE/'receiver/bin/gnss-sdr.exe'
+                APP.settings.update(data,use_bundled=bundled.is_file() and exe.samefile(bundled))
+                write_json(HERE/'local.json',APP.settings);return self.send({'saved':True})
             if self.path=='/api/start': return self.send(APP.start(data))
             if self.path=='/api/restart': return self.send(APP.restart(data))
             if self.path=='/api/validate':
@@ -595,8 +577,6 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError,OSError,KeyError,TypeError) as exc: self.send({'error':str(exc)},400)
 
 def main():
-    if len(sys.argv)==4 and sys.argv[1]=='--guest-run':
-        raise SystemExit(linux_receiver.launch(sys.argv[2], sys.argv[3]))
     if len(sys.argv)==3 and sys.argv[1]=='--pick-file':
         print(json.dumps(picker.choose_file(sys.argv[2]),ensure_ascii=True));return
     parser=argparse.ArgumentParser()
@@ -608,18 +588,18 @@ def main():
     args=parser.parse_args()
     if args.receiver_config:
         if not sys.stdout.isatty():sys.stdout.reconfigure(encoding='utf-8')
-        base=linux_receiver.runtime(HERE)
-        if not base:parser.error('此命令需要便携 Linux 接收机')
+        exe=HERE/'receiver/bin/gnss-sdr.exe'
+        native_receiver.identity(exe,HERE)
         source=args.receiver_config.resolve()
         contents=source.read_bytes()
         options=signals.parse(contents.decode('utf-8-sig'))
-        inputs=linux_receiver.raw_inputs(options,source.parent,[dict(path=str(p)) for p in args.input],'')
+        inputs=native_receiver.raw_inputs(options,source.parent,[dict(path=str(p)) for p in args.input],'')
         path=(args.output or (RUNS/('cli-'+time.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:6]))).resolve()
         path.mkdir(parents=True,exist_ok=False)
-        (path/'receiver.conf').write_bytes(contents)
-        write_json(path/'guest-job.json',dict(inputs=inputs,original=True))
-        print('GNSS-SDR '+linux_receiver.COMMIT[:7]+' · '+str(path),flush=True)
-        raise SystemExit(linux_receiver.launch(base,path))
+        native_receiver.prepare_config(contents,inputs,path)
+        with native_receiver.native_dll_search():
+            proc=subprocess.Popen(native_receiver.command(exe,path),cwd=path,env=native_receiver.environment(exe))
+        raise SystemExit(proc.wait())
     RUNS.mkdir(exist_ok=True)
     server=LocalServer(('127.0.0.1',args.port),Handler)
     print(f'GNSS-SDR Workbench http://127.0.0.1:{args.port}',flush=True)

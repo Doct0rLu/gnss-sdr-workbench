@@ -8,4 +8,4 @@
 *.cmd text eol=crlf
 *.sh text eol=lf
 *.yml text eol=lf
-portable_linux/init text eol=lf
+*.patch text eol=lf -whitespace

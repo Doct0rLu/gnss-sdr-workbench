@@ -1,16 +1,16 @@
-# GNSS-SDR Workbench v0.5.0
+# GNSS-SDR Workbench v0.6.0
 
-Windows x64 的 GNSS-SDR 配置、监测与回放界面。便携版在随包 Linux 环境中运行原始上游提交 `3132713` 编译的接收机。界面从 Protobuf、接收机日志、NMEA 和数据转储读取结果。[上游源码](https://github.com/gnss-sdr/gnss-sdr/tree/3132713b88a1b5b2ee8291bff8076574749349de)
+Windows x64 的 GNSS-SDR 配置、监测与回放界面。本版直接启动随包的 Windows 接收机进程。接收机基于提交 `3132713`，构建时应用 Windows 平台适配，保留上游捕获统计量、跟踪环路、电文解码和定位计算。[上游源码](https://github.com/gnss-sdr/gnss-sdr/tree/3132713b88a1b5b2ee8291bff8076574749349de) · [运行对照](NATIVE-REGRESSION.md)
 
 ## 下载使用
 
-完整解压 v0.5.0 的 win-x64 便携包到可写目录，双击 `Start-Workbench.cmd`。包内含 Python、QEMU 和 Linux 接收机，可在未安装 WSL、Docker 和 GNU Radio 的 Windows 计算机上运行。录制文件由用户选择。[下载便携版](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/tag/v0.5.0) · [操作说明](PORTABLE.md)
+完整解压 win-x64 便携包到可写目录，双击 `Start-Workbench.cmd`。接收机、GNU Radio DLL 和界面所需运行库都在包内。[下载 v0.6.0](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/tag/v0.6.0) · [操作说明](PORTABLE.md)
 
-首次配置可选择“原样运行 GNSS-SDR 配置”，直接打开自己的 .conf，或从随包上游示例中选择。文件内容按原字节传给接收机。选择“工作台实验”可使用多频、实数和 IQ 录制预设，并由工作台配置监测端口、转储与时长。软件模拟的处理耗时随通道数、采样率与宿主 CPU 而变。
+“使用原始 GNSS-SDR 配置”支持本机 .conf 和随包的上游示例。相对或已迁移的录制路径会解析到实际文件，实验目录同时保留原文和传给内核的配置。“工作台实验”提供多频、实数和 IQ 预设，并配置监测端口、转储与时长。
 
 ## 从源码启动
 
-使用 Python 3.11 或更高版本执行 `python -m pip install -r requirements.txt`。把 v0.5.0 便携包的 `receiver` 目录放在 `server.py` 旁，双击 `start.cmd`。也可执行 `python server.py --port 8767 --open`。
+使用 Python 3.11 或更高版本执行 `python -m pip install -r requirements.txt`。把 v0.6.0 便携包的 `receiver` 目录放在 `server.py` 旁，双击 `start.cmd`。也可执行 `python server.py --port 8767 --open`。
 
 ## 输入格式
 
@@ -48,7 +48,7 @@ Windows x64 的 GNSS-SDR 配置、监测与回放界面。便携版在随包 Lin
 | 卫星星座 | 最近完整 NMEA GSV 组的天空图、方位角、仰角和 C/N₀ |
 | 事件 / 切片 | 捕获、跟踪启动、符号输出变化、周跳、失锁、运行停止等已观测事件；点击联动前后 2 秒环路与日志 |
 | 数据文件 | 浏览本次目录内的原始日志、dump、MAT、配置、NMEA、定位输出，逐文件下载 |
-| 调试接口 | Linux 与 QEMU 进程、接收机和配置的 SHA-256、监测端口、数据 API |
+| 调试接口 | Windows 原生接收机进程、接收机和配置的 SHA-256、监测端口、数据 API |
 
 暂停查看只冻结显示；停止与重启控制接收机进程。时间游标与切片不改变接收机闭环计算位置。
 
@@ -105,14 +105,13 @@ M1 单频录制的指定 PRN 与盲搜结果见 [M1 回归记录](M1-REGRESSION.
 
 ## 构建便携包
 
-使用 Python 3.12 x64 的独立虚拟环境：
+在装有 MSYS2 UCRT64 开发依赖的构建机上使用固定提交的上游源码归档。所需包包括 GCC、CMake、Ninja、GNU Radio、VOLK、Boost、Armadillo、OpenBLAS、Abseil、gflags、glog、matio、pugixml、protobuf、OpenSSL、GnuTLS 和 python-mako。发布包的依赖版本见 `receiver/THIRD-PARTY.json`。以下命令在 PowerShell 中运行。
 
 ```powershell
 python -m venv .build-venv
 .build-venv/Scripts/python.exe -m pip install -r requirements-build.txt
-.build-venv/Scripts/python.exe build_release.py --receiver C:/path/to/staged-linux-runtime
+.build-venv/Scripts/python.exe windows_native/build.py --archive D:/source/gnss-sdr-upstream.tar.gz --work D:/gnss-build
+.build-venv/Scripts/python.exe build_release.py --receiver D:/gnss-build/receiver
 ```
 
-输出到 release/。构建脚本只收集 EXE、资源、依赖与许可材料，排除本机 local.json、runs、test-inputs 和验收记录。构建输入包括 linux 和 qemu 两个子目录。上游源码归档、客户机镜像与 Linux 内核按 portable_linux/receiver-lock.json 校验。
-
-许可证：GPL-3.0-or-later。组件说明见 THIRD-PARTY.md。
+构建脚本核对上游归档、Windows 平台补丁、PE 机器码和递归 DLL 导入。ZIP、源码与校验和输出到 `release`。便携目录中的 `receiver/windows_native` 包含对应的构建配方。[组件许可](THIRD-PARTY.md)

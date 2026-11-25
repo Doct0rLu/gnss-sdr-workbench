@@ -1,0 +1,1155 @@
+--- a/src/algorithms/PVT/gnuradio_blocks/rtklib_pvt_gs.cc
++++ b/src/algorithms/PVT/gnuradio_blocks/rtklib_pvt_gs.cc
+@@ -388,7 +388,7 @@
+                 {
+                     d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
+                 }
+-            dump_ls_pvt_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
++            dump_ls_pvt_filename = dump_path + static_cast<char>(fs::path::preferred_separator) + d_dump_filename;
+             dump_ls_pvt_filename.append(".dat");
+             // create directory
+             if (!gnss_sdr_create_directory(dump_path))
+@@ -563,7 +563,7 @@
+                                             d_xml_base_path = full_path.string();
+                                         }
+                                 }
+-                            new_folder += fs::path::preferred_separator;
++                            new_folder += static_cast<char>(fs::path::preferred_separator);
+                         }
+                 }
+             else
+@@ -575,7 +575,7 @@
+                     std::cout << "XML files will be stored at " << d_xml_base_path << '\n';
+                 }
+ 
+-            d_xml_base_path = d_xml_base_path + fs::path::preferred_separator;
++            d_xml_base_path = d_xml_base_path + static_cast<char>(fs::path::preferred_separator);
+         }
+ 
+     const Signal_Enabled_Flags signal_enabled_flags(d_signal_enabled_flags);
+--- a/src/algorithms/PVT/libs/an_packet_printer.cc
++++ b/src/algorithms/PVT/libs/an_packet_printer.cc
+@@ -19,13 +19,16 @@
+ 
+ 
+ #include "an_packet_printer.h"
++#include "MATH_CONSTANTS.h"
+ #include "rtklib_solver.h"  // for Rtklib_Solver
+-#include <cmath>            // for M_PI
++#include <cmath>            // for GNSS_PI
+ #include <cstring>          // for memcpy
+ #include <fcntl.h>          // for fcntl
+ #include <iostream>         // for std::cerr
+ #include <limits>           // std::numeric_limits
++#ifndef _WIN32
+ #include <termios.h>        // values for termios
++#endif
+ #include <unistd.h>         // for write(), read(), close()
+ 
+ #if USE_GLOG_AND_GFLAGS
+@@ -176,8 +179,8 @@
+     _packet->gps_satellites = num_gps_sats;
+     _packet->galileo_satellites = num_gal_sats;
+     _packet->microseconds = static_cast<uint32_t>(elapsed_seconds.count() * 1.0e6);
+-    _packet->latitude = pvt->get_latitude() * (M_PI / 180.0);
+-    _packet->longitude = pvt->get_longitude() * (M_PI / 180.0);
++    _packet->latitude = pvt->get_latitude() * (GNSS_PI / 180.0);
++    _packet->longitude = pvt->get_longitude() * (GNSS_PI / 180.0);
+     _packet->height = pvt->get_height();
+     _packet->velocity[0] = static_cast<float>(pvt->get_rx_vel()[1]);
+     _packet->velocity[1] = static_cast<float>(pvt->get_rx_vel()[0]);
+@@ -329,6 +332,10 @@
+  */
+ int An_Packet_Printer::init_serial(const std::string& serial_device)
+ {
++#ifdef _WIN32
++    (void)serial_device;
++    return -1;  // POSIX serial output is unavailable in the Windows file-input profile.
++#else
+     int fd = 0;
+     // clang-format off
+     struct termios options{};
+@@ -361,4 +368,6 @@
+     // set the new port options
+     tcsetattr(fd, TCSANOW, &options);
+     return fd;
+-}
++
++#endif
++}
+--- a/src/algorithms/PVT/libs/geojson_printer.cc
++++ b/src/algorithms/PVT/libs/geojson_printer.cc
+@@ -53,7 +53,7 @@
+                                     geojson_base_path = full_path.string();
+                                 }
+                         }
+-                    new_folder += fs::path::preferred_separator;
++                    new_folder += static_cast<char>(fs::path::preferred_separator);
+                 }
+         }
+     else
+@@ -65,7 +65,7 @@
+             std::cout << "GeoJSON files will be stored at " << geojson_base_path << '\n';
+         }
+ 
+-    geojson_base_path = geojson_base_path + fs::path::preferred_separator;
++    geojson_base_path = geojson_base_path + static_cast<char>(fs::path::preferred_separator);
+ }
+ 
+ 
+--- a/src/algorithms/PVT/libs/gpx_printer.cc
++++ b/src/algorithms/PVT/libs/gpx_printer.cc
+@@ -53,7 +53,7 @@
+                                     gpx_base_path = full_path.string();
+                                 }
+                         }
+-                    new_folder += fs::path::preferred_separator;
++                    new_folder += static_cast<char>(fs::path::preferred_separator);
+                 }
+         }
+     else
+@@ -65,7 +65,7 @@
+             std::cout << "GPX files will be stored at " << gpx_base_path << '\n';
+         }
+ 
+-    gpx_base_path = gpx_base_path + fs::path::preferred_separator;
++    gpx_base_path = gpx_base_path + static_cast<char>(fs::path::preferred_separator);
+ }
+ 
+ 
+--- a/src/algorithms/PVT/libs/has_simple_printer.cc
++++ b/src/algorithms/PVT/libs/has_simple_printer.cc
+@@ -63,7 +63,7 @@
+                                     d_has_base_path = full_path.string();
+                                 }
+                         }
+-                    new_folder += fs::path::preferred_separator;
++                    new_folder += static_cast<char>(fs::path::preferred_separator);
+                 }
+         }
+     else
+@@ -75,7 +75,7 @@
+             std::cout << "HAS Message file will be stored at " << d_has_base_path << '\n';
+         }
+ 
+-    d_has_base_path = d_has_base_path + fs::path::preferred_separator;
++    d_has_base_path = d_has_base_path + static_cast<char>(fs::path::preferred_separator);
+ 
+     const boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
+     const tm timeinfo = boost::posix_time::to_tm(pt);
+--- a/src/algorithms/PVT/libs/kml_printer.cc
++++ b/src/algorithms/PVT/libs/kml_printer.cc
+@@ -17,6 +17,7 @@
+  */
+ 
+ #include "kml_printer.h"
++#include <vector>
+ #include "gnss_sdr_filesystem.h"
+ #include "pvt_solution.h"
+ #include <boost/date_time/posix_time/posix_time.hpp>
+@@ -56,7 +57,7 @@
+                                     kml_base_path = full_path.string();
+                                 }
+                         }
+-                    new_folder += fs::path::preferred_separator;
++                    new_folder += static_cast<char>(fs::path::preferred_separator);
+                 }
+         }
+     else
+@@ -68,11 +69,13 @@
+             std::cout << "KML files will be stored at " << kml_base_path << '\n';
+         }
+ 
+-    kml_base_path = kml_base_path + fs::path::preferred_separator;
+-
+-    char tmp_filename_[] = "/tmp/file.XXXXXX";
++    kml_base_path = kml_base_path + static_cast<char>(fs::path::preferred_separator);
++
++    const std::string temporary_template = (fs::temp_directory_path() / "gnss-kml.XXXXXX").string();
++    std::vector<char> tmp_filename_(temporary_template.begin(), temporary_template.end());
++    tmp_filename_.push_back('\0');
+     mode_t mask = umask(S_IXUSR | S_IRWXG | S_IRWXO);
+-    int fd = mkstemp(tmp_filename_);
++    int fd = mkstemp(tmp_filename_.data());
+     if (fd == -1)
+         {
+             std::cerr << "Error in KML printer: failed to create temporary file\n";
+@@ -82,7 +85,7 @@
+             close(fd);
+         }
+     umask(mask);
+-    fs::path tmp_filename = fs::path(tmp_filename_);
++    fs::path tmp_filename = fs::path(tmp_filename_.data());
+ 
+     tmp_file_str = tmp_filename.string();
+ 
+--- a/src/algorithms/PVT/libs/nmea_printer.cc
++++ b/src/algorithms/PVT/libs/nmea_printer.cc
+@@ -28,7 +28,9 @@
+ #include <exception>
+ #include <fcntl.h>
+ #include <iostream>  // for cout, cerr
++#ifndef _WIN32
+ #include <termios.h>
++#endif
+ #include <utility>
+ 
+ #if USE_GLOG_AND_GFLAGS
+@@ -64,7 +66,7 @@
+                                             nmea_base_path = full_path.string();
+                                         }
+                                 }
+-                            new_folder += fs::path::preferred_separator;
++                            new_folder += static_cast<char>(fs::path::preferred_separator);
+                         }
+                 }
+             else
+@@ -77,11 +79,13 @@
+                     std::cout << "NMEA files will be stored at " << nmea_base_path << std::endl;
+                 }
+ 
+-            nmea_base_path = nmea_base_path + fs::path::preferred_separator;
++            nmea_base_path = nmea_base_path + static_cast<char>(fs::path::preferred_separator);
+ 
+             nmea_filename = nmea_base_path + filename;
+ 
+-            nmea_file_descriptor.open(nmea_filename.c_str(), std::ios::out);
++            // Sentences already contain CRLF. Binary mode prevents Windows
++            // text translation from producing CRCRLF on disk.
++            nmea_file_descriptor.open(nmea_filename.c_str(), std::ios::out | std::ios::binary);
+             if (nmea_file_descriptor.is_open())
+                 {
+                     DLOG(INFO) << "NMEA printer writing on " << nmea_filename.c_str();
+@@ -162,6 +166,10 @@
+ 
+ int Nmea_Printer::init_serial(const std::string& serial_device)
+ {
++#ifdef _WIN32
++    (void)serial_device;
++    return -1;  // POSIX serial output is unavailable in the Windows file-input profile.
++#else
+     /*!
+      * Opens the serial device and sets the default baud rate for a NMEA transmission (9600,8,N,1)
+      */
+@@ -195,6 +203,8 @@
+     // set the new port options
+     tcsetattr(fd, TCSANOW, &options);
+     return fd;
++
++#endif
+ }
+ 
+ 
+--- a/src/algorithms/PVT/libs/ntrip_rtcm_client.cc
++++ b/src/algorithms/PVT/libs/ntrip_rtcm_client.cc
+@@ -20,7 +20,11 @@
+ #include "rtklib_rtkcmn.h"
+ #include "rtklib_stream.h"
+ #include <algorithm>
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <arpa/inet.h>
++#endif
+ #include <array>
+ #include <atomic>
+ #include <cctype>
+@@ -32,10 +36,18 @@
+ #include <iostream>
+ #include <limits>
+ #include <mutex>
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <netdb.h>
++#endif
+ #include <sstream>
+ #include <string>
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <sys/socket.h>
++#endif
+ #include <thread>
+ #include <utility>
+ #include <vector>
+--- a/src/algorithms/PVT/libs/ntrip_rtcm_client.h
++++ b/src/algorithms/PVT/libs/ntrip_rtcm_client.h
+@@ -92,6 +92,13 @@
+ Ntrip_Rtcm_Client_Config make_ntrip_rtcm_client_config(const Pvt_Conf& conf);
+ 
+ 
++// Windows defines ERROR as a macro; the public state name is a C++ enumerator.
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#ifdef ERROR
++#undef ERROR
++#endif
++#endif
+ enum class Ntrip_Rtcm_Client_State
+ {
+     DISABLED,
+--- a/src/algorithms/PVT/libs/rinex_printer.cc
++++ b/src/algorithms/PVT/libs/rinex_printer.cc
+@@ -542,7 +542,7 @@
+                                     base_rinex_path = full_path.string();
+                                 }
+                         }
+-                    new_folder += fs::path::preferred_separator;
++                    new_folder += static_cast<char>(fs::path::preferred_separator);
+                 }
+         }
+     else
+@@ -671,7 +671,7 @@
+ 
+ std::string getFilePath(const std::string& type, const std::string& base_name, const std::string& base_rinex_path)
+ {
+-    return base_rinex_path + fs::path::preferred_separator + createFilename(type, base_name);
++    return base_rinex_path + static_cast<char>(fs::path::preferred_separator) + createFilename(type, base_name);
+ }
+ 
+ 
+@@ -704,7 +704,7 @@
+             type = "RINEX_FILE_TYPE_MIXED_NAV";
+         }
+ 
+-    return base_rinex_path + fs::path::preferred_separator + createFilename(type, base_name);
++    return base_rinex_path + static_cast<char>(fs::path::preferred_separator) + createFilename(type, base_name);
+ }
+ 
+ 
+@@ -1210,6 +1210,9 @@
+     std::string username;
+ #if ANDROID
+     username = "ANDROID USER";
++#elif defined(_WIN32)
++    const char* user = std::getenv("USERNAME");
++    username = user ? user : "UNKNOWN USER";
+ #else
+     std::array<char, 20> c_username{};
+     const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+@@ -1300,6 +1303,9 @@
+     std::string username;
+ #if ANDROID
+     username = "ANDROID USER";
++#elif defined(_WIN32)
++    const char* user = std::getenv("USERNAME");
++    username = user ? user : "UNKNOWN USER";
+ #else
+     std::array<char, 20> c_username{};
+     const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+--- a/src/algorithms/PVT/libs/rtcm_printer.cc
++++ b/src/algorithms/PVT/libs/rtcm_printer.cc
+@@ -36,7 +36,9 @@
+ #include <iostream>   // for cout, cerr
+ #include <iterator>   // for next
+ #include <set>        // for set
++#ifndef _WIN32
+ #include <termios.h>  // for tcgetattr
++#endif
+ #include <unistd.h>   // for close, write
+ #include <utility>    // for make_pair, move
+ #include <vector>     // for std::vector
+@@ -230,7 +232,7 @@
+                                             rtcm_base_path = full_path.string();
+                                         }
+                                 }
+-                            new_folder += fs::path::preferred_separator;
++                            new_folder += static_cast<char>(fs::path::preferred_separator);
+                         }
+                 }
+             else
+@@ -242,7 +244,7 @@
+                     std::cout << "RTCM binary file will be stored at " << rtcm_base_path << '\n';
+                 }
+ 
+-            rtcm_base_path = rtcm_base_path + fs::path::preferred_separator;
++            rtcm_base_path = rtcm_base_path + static_cast<char>(fs::path::preferred_separator);
+         }
+ 
+     if (time_tag_name)
+@@ -955,6 +957,10 @@
+ 
+ int Rtcm_Printer::init_serial(const std::string& serial_device)
+ {
++#ifdef _WIN32
++    (void)serial_device;
++    return -1;  // POSIX serial output is unavailable in the Windows file-input profile.
++#else
+     /*
+      * Opens the serial device and sets the default baud rate for a RTCM transmission (9600,8,N,1)
+      */
+@@ -988,6 +994,8 @@
+     // set the new port options
+     tcsetattr(fd, TCSANOW, &options);
+     return fd;
++
++#endif
+ }
+ 
+ 
+--- a/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition.cc
++++ b/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition.cc
+@@ -90,7 +90,7 @@
+             return {};
+         }
+ 
+-    return dump_path + fs::path::preferred_separator + dump_filename;
++    return dump_path + static_cast<char>(fs::path::preferred_separator) + dump_filename;
+ }
+ 
+ template <typename T>
+--- a/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_fine_doppler_cc.cc
++++ b/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_fine_doppler_cc.cc
+@@ -111,7 +111,7 @@
+                 {
+                     d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
+                 }
+-            d_dump_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
++            d_dump_filename = dump_path + static_cast<char>(fs::path::preferred_separator) + d_dump_filename;
+             // create directory
+             if (!gnss_sdr_create_directory(dump_path))
+                 {
+--- a/src/algorithms/libs/gnss_sdr_create_directory.cc
++++ b/src/algorithms/libs/gnss_sdr_create_directory.cc
+@@ -39,7 +39,7 @@
+                             return false;
+                         }
+                 }
+-            new_folder += fs::path::preferred_separator;
++            new_folder += static_cast<char>(fs::path::preferred_separator);
+         }
+ 
+     // Check if we have writing permissions
+--- a/src/algorithms/libs/rtklib/rtklib.h
++++ b/src/algorithms/libs/rtklib/rtklib.h
+@@ -41,7 +41,11 @@
+ #include <cstdarg>
+ #include <cstdint>
+ #include <cstdlib>
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <netinet/in.h>
++#endif
+ #include <pthread.h>
+ #include <string>
+ 
+@@ -55,8 +59,12 @@
+ /* macros --------------------------------------------------------------------*/
+ 
+ #define dev_t int
++#ifdef _WIN32
++#define socket_t SOCKET
++#else
+ #define socket_t int
+ #define closesocket close
++#endif
+ #define lock_t pthread_mutex_t
+ #define initlock(f) pthread_mutex_init(f, NULL)
+ #define rtk_lock(f) pthread_mutex_lock(f)
+--- a/src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
++++ b/src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
+@@ -1838,7 +1838,9 @@
+     struct timeval tv{};
+     struct tm *tt;
+ 
+-    if (!gettimeofday(&tv, nullptr) && (tt = gmtime(&tv.tv_sec)))
++    const bool got_time = gettimeofday(&tv, nullptr) == 0;
++    const time_t seconds = static_cast<time_t>(tv.tv_sec);
++    if (got_time && (tt = gmtime(&seconds)))
+         {
+             ep[0] = tt->tm_year + 1900;
+             ep[1] = tt->tm_mon + 1;
+--- a/src/algorithms/libs/rtklib/rtklib_stream.cc
++++ b/src/algorithms/libs/rtklib/rtklib_stream.cc
+@@ -37,7 +37,11 @@
+ #include "rtklib_solution.h"
+ #include "rtklib_tls.h"
+ #include <algorithm>
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <arpa/inet.h>
++#endif
+ #include <cctype>
+ #include <cerrno>
+ #include <cinttypes>
+@@ -48,14 +52,28 @@
+ #include <fcntl.h>
+ #include <limits>
+ #include <memory>
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <netdb.h>
++#endif
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <netinet/tcp.h>
++#endif
+ #include <sstream>
+ #include <string>
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <sys/socket.h>
++#endif
+ #include <sys/stat.h>
+ #include <sys/time.h>
++#ifndef _WIN32
+ #include <termios.h>
++#endif
+ #include <unistd.h>
+ #include <vector>
+ 
+@@ -75,6 +93,17 @@
+ 
+ 
+ /* open serial ---------------------------------------------------------------*/
++#ifdef _WIN32
++serial_t *openserial(const char *, int, char *msg)
++{
++    std::snprintf(msg, MAXSTRMSG, "Serial input unavailable in Windows file-input profile");
++    return nullptr;
++}
++void closeserial(serial_t *) {}
++int readserial(serial_t *, unsigned char *, int, char *) { return 0; }
++int writeserial(serial_t *, unsigned char *, int, char *) { return 0; }
++int stateserial(serial_t *) { return -1; }
++#else
+ serial_t *openserial(const char *path, int mode, char *msg)
+ {
+     const int br[] = {
+@@ -235,6 +264,8 @@
+ }
+ 
+ 
++#endif
++
+ /* open file -----------------------------------------------------------------*/
+ int openfile_(file_t *file, gtime_t time, char *msg)
+ {
+@@ -862,7 +893,21 @@
+ 
+ 
+ /* get socket error ----------------------------------------------------------*/
+-int errsock() { return errno; }
++int errsock()
++{
++#ifdef _WIN32
++    switch (const int error = WSAGetLastError())
++        {
++        case WSAEWOULDBLOCK: return EWOULDBLOCK;
++        case WSAEINPROGRESS: return EINPROGRESS;
++        case WSAEALREADY: return EALREADY;
++        case WSAEISCONN: return EISCONN;
++        default: return error;
++        }
++#else
++    return errno;
++#endif
++}
+ 
+ 
+ /* set socket option ---------------------------------------------------------*/
+@@ -870,7 +915,11 @@
+ {
+     int bs = buffsize;
+     int mode = 1;
++#ifdef _WIN32
++    DWORD tv = 0;
++#else
+     struct timeval tv = {0, 0};
++#endif
+ 
+     tracet(3, "setsock: sock=%d\n", sock);
+ 
+@@ -927,11 +976,16 @@
+     int err;
+     int flag;
+ 
++#ifdef _WIN32
++    u_long nonblocking = 1;
++    if (ioctlsocket(sock, FIONBIO, &nonblocking) != 0) return -1;
++#else
+     flag = fcntl(sock, F_GETFL, 0);
+     if (fcntl(sock, F_SETFL, flag | O_NONBLOCK) == -1)
+         {
+             trace(1, "fcntl error");
+         }
++    #endif
+     if (connect(sock, addr, len) == -1)
+         {
+             err = errsock();
+@@ -3122,18 +3176,18 @@
+         { /* ftp */
+             auto opt_str = "--ftp-user="s + std::string(ftp->user) + " --ftp-password="s + std::string(ftp->passwd) +
+                            " --glob=off --passive-ftp "s + proxyopt + "s-t 1 -T "s + std::to_string(FTP_TIMEOUT) +
+-                           R"( -O ")" + local.native() + R"(")"s;
++                           R"( -O ")" + local.string() + R"(")"s;
+ 
+             // TODO: this uses shell syntax; consider escaping paths
+             cmd_str = env + std::string(FTP_CMD) + " "s + opt_str + " "s +
+-                      R"("ftp://)"s + std::string(ftp->addr) + "/"s + remotePath.native() + R"(" 2> ")"s + errfile.native() + "\"\n"s;
++                      R"("ftp://)"s + std::string(ftp->addr) + "/"s + remotePath.string() + R"(" 2> ")"s + errfile.string() + "\"\n"s;
+         }
+     else
+         { /* http */
+-            auto opt_str = proxyopt + " -t 1 -T "s + std::to_string(FTP_TIMEOUT) + " -O \""s + local.native() + "\""s;
++            auto opt_str = proxyopt + " -t 1 -T "s + std::to_string(FTP_TIMEOUT) + " -O \""s + local.string() + "\""s;
+ 
+             cmd_str = env + std::string(FTP_CMD) + " "s + opt_str + " "s +
+-                      R"("http://)"s + std::string(ftp->addr) + "/"s + remotePath.native() + R"(" 2> ")"s + errfile.native() + "\"\n";
++                      R"("http://)"s + std::string(ftp->addr) + "/"s + remotePath.string() + R"(" 2> ")"s + errfile.string() + "\"\n";
+         }
+     /* execute download command */
+     errorlib::error_code ec;  // prevent exceptions
+@@ -3142,7 +3196,7 @@
+         {
+             if (fs::remove(local, ec) == false)
+                 {
+-                    trace(1, "Error removing file %s", local.c_str());
++                    trace(1, "Error removing file %s", local.string().c_str());
+                 }
+             tracet(1, "execcmd error: cmd=%s ret=%d\n", cmd_str.data(), ret);
+             ftp->error = ret;
+@@ -3160,18 +3214,18 @@
+             if (local.extension() == ext)
+                 {
+                     char tmpfile_arg[1024];
+-                    ret = rtk_uncompress(local.c_str(), tmpfile_arg);
++                    ret = rtk_uncompress(local.string().c_str(), tmpfile_arg);
+                     if (ret != 0)  // success
+                         {
+                             if (fs::remove(local, ec) == false)
+                                 {
+-                                    trace(1, "Error removing file %s", local.c_str());
++                                    trace(1, "Error removing file %s", local.string().c_str());
+                                 }
+                             local = tmpfile_arg;
+                         }
+                     else
+                         {
+-                            tracet(1, "file uncompact error: %s\n", local.c_str());
++                            tracet(1, "file uncompact error: %s\n", local.string().c_str());
+                             ftp->error = 12;
+                             ftp->state = 3;
+                             return nullptr;
+@@ -3179,7 +3233,7 @@
+                     break;
+                 }
+         }
+-    int ret2 = std::snprintf(ftp->local, 1024, "%s", local.c_str());  // NOLINT(runtime/printf)
++    int ret2 = std::snprintf(ftp->local, 1024, "%s", local.string().c_str());  // NOLINT(runtime/printf)
+     if (ret2 < 0 || ret2 >= 1024)
+         {
+             tracet(3, "Error reading ftp local\n");
+--- a/src/algorithms/libs/rtklib/rtklib_tls.cc
++++ b/src/algorithms/libs/rtklib/rtklib_tls.cc
+@@ -15,7 +15,11 @@
+  */
+ 
+ #include "rtklib_tls.h"
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <arpa/inet.h>
++#endif
+ #include <cerrno>
+ #include <csignal>
+ #include <cstdint>
+@@ -41,6 +45,14 @@
+ // MSG_NOSIGNAL. Block SIGPIPE only in the calling thread while TLS performs
+ // I/O, consume only a signal raised by that operation, and leave the process-
+ // wide signal disposition untouched.
++#ifdef _WIN32
++// Winsock reports I/O errors directly and never delivers POSIX SIGPIPE.
++class Tls_Sigpipe_Guard
++{
++public:
++    bool ready() const noexcept { return true; }
++};
++#else
+ class Tls_Sigpipe_Guard
+ {
+ public:
+@@ -106,6 +118,8 @@
+     bool d_restore_mask = false;
+     bool d_ready = false;
+ };
++
++#endif
+ 
+ 
+ bool is_numeric_address(const std::string &hostname)
+--- a/src/algorithms/observables/gnuradio_blocks/hybrid_observables_gs.cc
++++ b/src/algorithms/observables/gnuradio_blocks/hybrid_observables_gs.cc
+@@ -162,7 +162,7 @@
+                     d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
+                 }
+             d_dump_filename.append(".dat");
+-            d_dump_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
++            d_dump_filename = dump_path + static_cast<char>(fs::path::preferred_separator) + d_dump_filename;
+             // create directory
+             if (!gnss_sdr_create_directory(dump_path))
+                 {
+--- a/src/algorithms/resampler/adapters/CMakeLists.txt
++++ b/src/algorithms/resampler/adapters/CMakeLists.txt
+@@ -39,6 +39,7 @@
+         resampler_gr_blocks
+     PRIVATE
+         Volk::volk
++        Gnuradio::filter
+ )
+ 
+ if(ENABLE_GLOG_AND_GFLAGS)
+--- a/src/algorithms/signal_source/adapters/uhd_signal_source.cc
++++ b/src/algorithms/signal_source/adapters/uhd_signal_source.cc
+@@ -94,7 +94,7 @@
+             dump_filename_.push_back(dump_source_filename);
+             if (dump_source)
+                 {
+-                    std::string::size_type pos = dump_source_filename.find_last_of(fs::path::preferred_separator);
++                    std::string::size_type pos = dump_source_filename.find_last_of(static_cast<char>(fs::path::preferred_separator));
+                     if (pos != std::string::npos)
+                         {
+                             if (!gnss_sdr_create_directory(dump_source_filename.substr(0, pos)))
+@@ -122,7 +122,7 @@
+                     dump_filename_.push_back(dump_source_filename);
+                     if (dump_source)
+                         {
+-                            std::string::size_type pos = dump_source_filename.find_last_of(fs::path::preferred_separator);
++                            std::string::size_type pos = dump_source_filename.find_last_of(static_cast<char>(fs::path::preferred_separator));
+                             if (pos != std::string::npos)
+                                 {
+                                     if (!gnss_sdr_create_directory(dump_source_filename.substr(0, pos)))
+--- a/src/algorithms/signal_source/libs/fpga_buffer_monitor.cc
++++ b/src/algorithms/signal_source/libs/fpga_buffer_monitor.cc
+@@ -112,7 +112,7 @@
+                 {
+                     d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
+                 }
+-            d_dump_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
++            d_dump_filename = dump_path + static_cast<char>(fs::path::preferred_separator) + d_dump_filename;
+             // create directory
+             if (!gnss_sdr_create_directory(dump_path))
+                 {
+--- a/src/algorithms/signal_source/libs/ppstcprx.h
++++ b/src/algorithms/signal_source/libs/ppstcprx.h
+@@ -17,11 +17,23 @@
+ #define SRC_LIBS_PPSTCPRX_H_
+ #include "concurrent_queue.h"
+ #include "pps_samplestamp.h"
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <arpa/inet.h>
++#endif
+ #include <memory>
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <netinet/in.h>
++#endif
+ #include <string>
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <sys/socket.h>
++#endif
+ #include <sys/types.h>
+ 
+ class pps_tcp_rx
+--- a/src/algorithms/telemetry_decoder/libs/tlm_crc_stats.cc
++++ b/src/algorithms/telemetry_decoder/libs/tlm_crc_stats.cc
+@@ -63,7 +63,7 @@
+     d_dump_crc_stats_filename.append("_ch");
+     d_dump_crc_stats_filename.append(std::to_string(d_channel));
+     d_dump_crc_stats_filename.append(".txt");
+-    d_dump_crc_stats_filename = dump_path + fs::path::preferred_separator + d_dump_crc_stats_filename;
++    d_dump_crc_stats_filename = dump_path + static_cast<char>(fs::path::preferred_separator) + d_dump_crc_stats_filename;
+ 
+     // create directory
+     if (!gnss_sdr_create_directory(dump_path))
+--- a/src/algorithms/tracking/gnuradio_blocks/dll_pll_veml_tracking.cc
++++ b/src/algorithms/tracking/gnuradio_blocks/dll_pll_veml_tracking.cc
+@@ -872,7 +872,7 @@
+                     d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
+                 }
+ 
+-            d_dump_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
++            d_dump_filename = dump_path + static_cast<char>(fs::path::preferred_separator) + d_dump_filename;
+             // create directory
+             if (!gnss_sdr_create_directory(dump_path))
+                 {
+--- a/src/algorithms/tracking/gnuradio_blocks/dll_pll_veml_tracking_fpga.cc
++++ b/src/algorithms/tracking/gnuradio_blocks/dll_pll_veml_tracking_fpga.cc
+@@ -497,7 +497,7 @@
+                     d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
+                 }
+ 
+-            d_dump_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
++            d_dump_filename = dump_path + static_cast<char>(fs::path::preferred_separator) + d_dump_filename;
+             // create directory
+             if (!gnss_sdr_create_directory(dump_path))
+                 {
+--- a/src/algorithms/tracking/gnuradio_blocks/kf_tracking.cc
++++ b/src/algorithms/tracking/gnuradio_blocks/kf_tracking.cc
+@@ -612,7 +612,7 @@
+                     d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
+                 }
+ 
+-            d_dump_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
++            d_dump_filename = dump_path + static_cast<char>(fs::path::preferred_separator) + d_dump_filename;
+             // create directory
+             if (!gnss_sdr_create_directory(dump_path))
+                 {
+--- /dev/null
++++ b/src/core/interfaces/gnss_sdr_time_parse.h
+@@ -0,0 +1,27 @@
++#ifndef GNSS_SDR_TIME_PARSE_H
++#define GNSS_SDR_TIME_PARSE_H
++#include <ctime>
++#include <cstring>
++#include <iomanip>
++#include <sstream>
++inline char* gnss_sdr_strptime(const char* text, const char* format, std::tm* value)
++{
++#ifdef _WIN32
++    std::istringstream input(text);
++    input >> std::get_time(value, format);
++    if (input.fail()) return nullptr;
++    const auto consumed = input.tellg();
++    return const_cast<char*>(text + (consumed < 0 ? std::strlen(text) : static_cast<std::size_t>(consumed)));
++#else
++    return strptime(text, format, value);
++#endif
++}
++inline std::time_t gnss_sdr_timegm(std::tm* value)
++{
++#ifdef _WIN32
++    return _mkgmtime(value);
++#else
++    return timegm(value);
++#endif
++}
++#endif
+--- /dev/null
++++ b/src/core/interfaces/gnss_sdr_windows_network.h
+@@ -0,0 +1,27 @@
++#ifndef GNSS_SDR_WINDOWS_NETWORK_H
++#define GNSS_SDR_WINDOWS_NETWORK_H
++#ifdef _WIN32
++#ifndef WIN32_LEAN_AND_MEAN
++#define WIN32_LEAN_AND_MEAN
++#endif
++#include <winsock2.h>
++#include <ws2tcpip.h>
++#include <windows.h>
++#include <errno.h>
++// Winsock is held for the process lifetime; no cleanup while worker threads run.
++static BOOL CALLBACK gnss_wsa_init(PINIT_ONCE once, PVOID parameter, PVOID *context)
++{
++    WSADATA data;
++    (void)once; (void)parameter; (void)context;
++    return WSAStartup(MAKEWORD(2, 2), &data) == 0;
++}
++static inline int gnss_wsa_startup(void)
++{
++    static INIT_ONCE once = INIT_ONCE_STATIC_INIT;
++    return InitOnceExecuteOnce(&once, gnss_wsa_init, NULL, NULL) ? 0 : -1;
++}
++#ifdef __cplusplus
++inline const int gnss_wsa_process_init = gnss_wsa_startup();
++#endif
++#endif
++#endif
+--- a/src/core/libs/supl/asn-supl/GeneralizedTime.c
++++ b/src/core/libs/supl/asn-supl/GeneralizedTime.c
+@@ -8,6 +8,11 @@
+ #endif
+ #include <GeneralizedTime.h>
+ #include <asn_internal.h>
++#ifdef _WIN32
++#define setenv(name, value, overwrite) _putenv_s(name, value)
++#define unsetenv(name) _putenv_s(name, "")
++#endif
++
+ #include <errno.h>
+ 
+ #ifdef __CYGWIN__
+--- a/src/core/libs/supl/supl.c
++++ b/src/core/libs/supl/supl.c
+@@ -15,13 +15,25 @@
+  */
+ 
+ #include "supl.h"
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <arpa/inet.h>
++#endif
+ #include <errno.h>
+ #include <fcntl.h>
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <netdb.h>
++#endif
+ #include <stdint.h>
+ #include <stdio.h>
++#ifdef _WIN32
++#include "gnss_sdr_windows_network.h"
++#else
+ #include <sys/socket.h>
++#endif
+ #include <sys/time.h>
+ #include <sys/types.h>
+ #include <time.h>
+--- a/src/core/libs/supl/supl.h
++++ b/src/core/libs/supl/supl.h
+@@ -16,6 +16,7 @@
+ 
+ 
+ #ifndef GNSS_SDR_SUPL_H
++#include <stdint.h>
+ #define GNSS_SDR_SUPL_H
+ 
+ #ifdef USE_EXPORT
+@@ -90,28 +91,28 @@
+ 
+ struct supl_acquis_s
+ {
+-    u_int8_t prn;
+-    u_int8_t parts;
++    uint8_t prn;
++    uint8_t parts;
+     int16_t doppler0;
+     int8_t doppler1;
+-    u_int8_t d_win;
+-    u_int16_t code_ph;
+-    u_int8_t code_ph_int;
+-    u_int8_t bit_num;
+-    u_int16_t code_ph_win;
+-    u_int8_t az;
+-    u_int8_t el;
+-    u_int8_t fill[2];
++    uint8_t d_win;
++    uint16_t code_ph;
++    uint8_t code_ph_int;
++    uint8_t bit_num;
++    uint16_t code_ph_win;
++    uint8_t az;
++    uint8_t el;
++    uint8_t fill[2];
+ };
+ 
+ struct supl_almanac_s
+ {
+-    u_int8_t prn;
+-    u_int16_t e;
+-    u_int8_t toa;
++    uint8_t prn;
++    uint16_t e;
++    uint8_t toa;
+     int16_t Ksii;
+     int16_t OMEGA_dot;
+-    u_int32_t A_sqrt;
++    uint32_t A_sqrt;
+     int32_t OMEGA_0;
+     int32_t w;
+     int32_t M0;
+@@ -122,12 +123,12 @@
+ 
+ struct supl_ephemeris_s
+ {
+-    u_int8_t prn;
+-    u_int8_t fill1;
+-    u_int16_t delta_n;
++    uint8_t prn;
++    uint8_t fill1;
++    uint16_t delta_n;
+     int32_t M0;
+-    u_int32_t e;
+-    u_int32_t A_sqrt;
++    uint32_t e;
++    uint32_t A_sqrt;
+     int32_t OMEGA_0;
+     int32_t i0;
+     int32_t w;
+@@ -139,21 +140,21 @@
+     int16_t Crs;
+     int16_t Cic;
+     int16_t Cis;
+-    u_int16_t toe;
+-    u_int16_t IODC;
+-    u_int16_t toc;
++    uint16_t toe;
++    uint16_t IODC;
++    uint16_t toc;
+     int32_t AF0;
+     int16_t AF1;
+     int8_t AF2;
+-    u_int8_t nav_model;
++    uint8_t nav_model;
+ 
+     /* nav model */
+-    u_int8_t bits;
+-    u_int8_t ura;
+-    u_int8_t health;
++    uint8_t bits;
++    uint8_t ura;
++    uint8_t health;
+     char reserved[11];
+     int8_t tgd;
+-    u_int8_t AODA;
++    uint8_t AODA;
+ };
+ 
+ struct supl_ionospheric_s
+@@ -166,12 +167,12 @@
+     int32_t a0;
+     int32_t a1;
+     int8_t delta_tls;
+-    u_int8_t tot;
+-    u_int8_t wnt;
+-    u_int8_t wnlsf;
+-    u_int8_t dn;
+-    u_int8_t delta_tlsf;
+-    u_int8_t fill[8];
++    uint8_t tot;
++    uint8_t wnt;
++    uint8_t wnlsf;
++    uint8_t dn;
++    uint8_t delta_tlsf;
++    uint8_t fill[8];
+ };
+ 
+ typedef struct supl_rrlp_ctx_s
+--- a/src/core/libs/supl/types/asn_system.h
++++ b/src/core/libs/supl/types/asn_system.h
+@@ -23,8 +23,10 @@
+ #ifdef WIN32
+ 
+ #include <malloc.h>
++#if defined(_MSC_VER) && _MSC_VER < 1900
+ #define snprintf _snprintf
+ #define vsnprintf _vsnprintf
++#endif
+ 
+ /* To avoid linking with ws2_32.lib, here's the definition of ntohl() */
+ #define sys_ntohl(l)                                         \
+--- a/src/core/receiver/control_thread.cc
++++ b/src/core/receiver/control_thread.cc
+@@ -96,7 +96,9 @@
+     /* the class will handle signals */
+     signal(SIGINT, ControlThread::handle_signal);
+     signal(SIGTERM, ControlThread::handle_signal);
++#ifdef SIGHUP
+     signal(SIGHUP, ControlThread::handle_signal);
++#endif
+ #if USE_GLOG_AND_GFLAGS
+     if (FLAGS_c == "-")
+         {
+@@ -248,7 +250,11 @@
+ void ControlThread::handle_signal(int sig)
+ {
+     LOG(INFO) << "GNSS-SDR received " << sig << " OS signal";
+-    if (sig == SIGINT || sig == SIGTERM || sig == SIGHUP)
++    if (sig == SIGINT || sig == SIGTERM
++#ifdef SIGHUP
++        || sig == SIGHUP
++#endif
++    )
+         {
+             ControlThread::me->control_queue_->push(pmt::make_any(command_event_make(200, 0)));
+             ControlThread::me->stop_ = true;
+@@ -259,11 +265,13 @@
+                     signal(SIGINT, SIG_DFL);
+                 }
+         }
++#ifdef SIGCHLD
+     else if (sig == SIGCHLD)
+         {
+             LOG(INFO) << "Received SIGCHLD signal";
+             // todo
+         }
++#endif
+ }
+ 
+ 
+--- a/src/core/receiver/tcp_cmd_interface.cc
++++ b/src/core/receiver/tcp_cmd_interface.cc
+@@ -16,6 +16,7 @@
+  */
+ 
+ #include "tcp_cmd_interface.h"
++#include "gnss_sdr_time_parse.h"
+ #include "command_event.h"
+ #include "pvt_interface.h"
+ #include <boost/asio.hpp>
+@@ -179,12 +180,12 @@
+             // Read commandline time parameter
+             struct tm tm{};
+             const std::string tmp_str = commandLine.at(1) + commandLine.at(2);
+-            if (strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
++            if (gnss_sdr_strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
+                 {
+                     response = "ERROR: time parameter malformed\n";
+                     return response;
+                 }
+-            receiver_utc_time_ = timegm(&tm);
++            receiver_utc_time_ = gnss_sdr_timegm(&tm);
+ 
+             // Read latitude, longitude, and height
+             rx_latitude_ = std::stof(commandLine.at(3).c_str());
+@@ -225,12 +226,12 @@
+             // Read commandline time parameter
+             struct tm tm{};
+             const std::string tmp_str = commandLine.at(1) + commandLine.at(2);
+-            if (strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
++            if (gnss_sdr_strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
+                 {
+                     response = "ERROR: time parameter malformed\n";
+                     return response;
+                 }
+-            receiver_utc_time_ = timegm(&tm);
++            receiver_utc_time_ = gnss_sdr_timegm(&tm);
+ 
+             // Read latitude, longitude, and height
+             rx_latitude_ = std::stof(commandLine.at(3).c_str());
+--- a/src/core/system_parameters/agnss_ref_time.h
++++ b/src/core/system_parameters/agnss_ref_time.h
+@@ -20,6 +20,8 @@
+ 
+ #include <boost/serialization/nvp.hpp>
+ #include <ctime>
++#include <iomanip>
++#include <sstream>
+ #include <string>
+ 
+ /** \addtogroup Core
+@@ -91,9 +93,20 @@
+             return result;
+         }
+     struct tm tm{};
+-    if (strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) != nullptr)
++#ifdef _WIN32
++    std::istringstream input(ref_time_str);
++    input >> std::get_time(&tm, "%d/%m/%Y %H:%M:%S");
++    const bool parsed_format = !input.fail();
++#else
++    const bool parsed_format = strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) != nullptr;
++#endif
++    if (parsed_format)
+         {
++#ifdef _WIN32
++            const time_t parsed = _mkgmtime(&tm);
++#else
+             const time_t parsed = timegm(&tm);
++#endif
+             if (parsed > 0)
+                 {
+                     result.seconds = static_cast<double>(parsed);

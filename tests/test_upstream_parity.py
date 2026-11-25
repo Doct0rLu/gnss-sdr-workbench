@@ -1,13 +1,12 @@
 from pathlib import Path
-import os
+import socket
 import tempfile
 import unittest
 
 import diagnostics
-import linux_receiver
+import native_receiver
 import server
-from guest_files import RunFiles
-import paramiko
+
 
 
 def sentence(body):
@@ -45,30 +44,35 @@ class UpstreamParityTests(unittest.TestCase):
     def test_native_input_mapping_keeps_file_bytes_and_sample_offsets(self):
         with tempfile.TemporaryDirectory() as tmp:
             base=Path(tmp)
-            src=base/'采样.iq'
+            src=base/'閲囨牱.iq'
             src.write_bytes(bytes(range(32)))
             options={'SignalSource.filename':'/recordings/input.iq','SignalSource.implementation':'File_Signal_Source',
                      'SignalSource.item_type':'ishort','SignalSource.sampling_frequency':'4',
                      'SignalSource.header_size':'2','SignalSource.seconds_to_skip':'0.5'}
-            row=linux_receiver.raw_inputs(options,base,[dict(path=str(src))],'')[0]
-            self.assertEqual(row['guest_name'],'/recordings/input.iq')
+            row=native_receiver.raw_inputs(options,base,[dict(path=str(src))],'')[0]
+            self.assertEqual(row['configured_name'],'/recordings/input.iq')
             self.assertTrue(src.samefile(row['path']))
             self.assertEqual(row['byte_offset'],12)
             self.assertEqual(src.read_bytes(),bytes(range(32)))
 
-    def test_capture_dump_can_be_extended_by_handle_or_name(self):
+    def test_raw_config_only_rewrites_input_value(self):
         with tempfile.TemporaryDirectory() as tmp:
-            src=Path(tmp)/'input.iq'
-            src.write_bytes(b'1234')
-            share=RunFiles(None,tmp,[src])
-            f=share.open('/out/capture.mat',os.O_RDWR|os.O_CREAT,None)
-            attrs=paramiko.SFTPAttributes()
-            attrs.st_size=8192
-            self.assertEqual(f.chattr(attrs),paramiko.SFTP_OK)
-            self.assertEqual(f.stat().st_size,8192)
-            f.close()
-            attrs.st_size=128
-            self.assertEqual(share.chattr('/out/capture.mat',attrs),paramiko.SFTP_OK)
-            self.assertEqual((Path(tmp)/'capture.mat').stat().st_size,128)
-            self.assertNotEqual(share.chattr('/input/0',attrs),paramiko.SFTP_OK)
-            self.assertEqual(src.read_bytes(),b'1234')
+            base = Path(tmp)
+            src = base/'采样.iq'
+            src.touch()
+            conf = b'\xef\xbb\xbf[GNSS-SDR]\r\nSignalSource.filename = data.iq  ; label\r\nTracking_1C.pll_bw_hz=12\r\n'
+            entry = dict(path=str(src), configured_name='data.iq', filename_key='SignalSource.filename')
+            native_receiver.prepare_config(conf, [entry], base)
+            self.assertEqual((base/'original.conf').read_bytes(), conf)
+            self.assertEqual((base/'receiver.conf').read_bytes(), conf.replace(b'data.iq', src.as_posix().encode()))
+
+    def test_monitor_uses_free_member_of_original_port_list(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as occupied:
+            occupied.setsockopt(socket.SOL_SOCKET,socket.SO_EXCLUSIVEADDRUSE if hasattr(socket,'SO_EXCLUSIVEADDRUSE') else socket.SO_REUSEADDR,1)
+            occupied.bind(('127.0.0.1',0))
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as available:
+                available.bind(('127.0.0.1',0))
+                port=available.getsockname()[1]
+            opts={'TrackingMonitor.enable_monitor':'true','TrackingMonitor.udp_port':f'{occupied.getsockname()[1]}_{port}'}
+            with native_receiver.monitor_socket(opts,'Tracking',1236,True) as sock:
+                self.assertEqual(native_receiver.reported_port(sock,opts,'Tracking',1236,True),port)

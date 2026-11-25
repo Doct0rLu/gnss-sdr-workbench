@@ -1,7 +1,7 @@
 # Windows x64 便携工作台
 
 1. 完整解压 ZIP 到可写目录，双击 `Start-Workbench.cmd`。
-2. 打开“实验配置”。选择“原样运行 GNSS-SDR 配置”，在上游示例中选取配置，或浏览本机 .conf 文件。相对录制路径以 .conf 所在目录解析。跨电脑移动数据后，可在“录制文件映射”中按文件顺序选择录制。
+2. 打开“实验配置”。选择“使用原始 GNSS-SDR 配置”，在上游示例中选取配置，或浏览本机 .conf 文件。相对录制路径以 .conf 所在目录解析。跨电脑移动数据后，可在“录制文件映射”中按文件顺序选择录制。
 3. 保存并启动。在原始模式下，接收机按 .conf 中的通道、环路、时长、监测与输出设置运行。每次运行保存原始配置和二进制摘要。
 4. 需要按通道查看捕获和跟踪时，可选择“工作台实验”，填写输入格式、采样率、频点与时长。工作台为这次实验写入监测端口和转储路径，实际配置保存在实验目录的 `receiver.conf`。
 5. 修改参数后点“保存并重启”。原始文件、定位输出和监测结果分别通过录制文件映射与实验目录访问。
@@ -14,7 +14,13 @@
 .\GNSS-SDR-Workbench.exe --receiver-config .\test.conf --input D:\recordings\test.iq --output .\comparison-01
 ```
 
-Linux 接收机、构建信息、上游配置与源码归档在 `receiver/linux`。Windows 使用随附的 QEMU 运行 Linux。检测到已启用的 Windows Hypervisor Platform 时优先尝试 WHPX，其余环境使用软件模拟。处理速率取决于计算机和接收参数。文件回放使用本机录制，硬件输入还涉及客户机设备连接。关闭工作台前先停止接收机。
+也可在单独的空输出目录直接调用随包接收机。以下示例假设配置中的录制文件为绝对路径。
+
+```powershell
+& 'D:\GNSS-SDR-Workbench\receiver\bin\gnss-sdr.exe' --config_file=D:/experiment/test.conf --log_dir=.
+```
+
+工作台和这个命令使用同一个 Windows 可执行文件。构建记录在 `receiver/WINDOWS-BUILD.json`，上游示例在 `receiver/conf`。文件输入的相对路径由工作台换为本机路径，`original.conf` 与 `receiver.conf` 分别保存原文与有效配置。其余相对路径以实验输出目录为基准。使用辅助星历等外部文件时可在配置中指定绝对路径。
 
 ## 实验数据
 

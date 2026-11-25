@@ -1,0 +1,18 @@
+# Build-only compatibility for upstream's Unix-style imported shared targets.
+# MinGW links the .dll.a import library, which needs IMPORTED_IMPLIB on Windows.
+if(WIN32 AND CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    include_directories("${CMAKE_SOURCE_DIR}/src/core/interfaces")
+    add_compile_definitions(WIN32_LEAN_AND_MEAN NOMINMAX)
+    link_libraries(ws2_32 mswsock)
+    function(gnss_windows_import_libraries)
+        foreach(target IN ITEMS Armadillo::armadillo Iio::iio Volkgnsssdr::volkgnsssdr)
+            if(TARGET ${target})
+                get_target_property(location ${target} IMPORTED_LOCATION)
+                if(location MATCHES "\\.dll\\.a$")
+                    set_property(TARGET ${target} PROPERTY IMPORTED_IMPLIB "${location}")
+                endif()
+            endif()
+        endforeach()
+    endfunction()
+    cmake_language(DEFER CALL gnss_windows_import_libraries)
+endif()

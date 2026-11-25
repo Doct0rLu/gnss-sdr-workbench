@@ -1,10 +1,8 @@
-# v0.5.0 · 随包运行原始 GNSS-SDR
+# v0.6.0 · 独立 Windows x64 便携版
 
-Windows x64 用户下载 `GNSS-SDR-Workbench-v0.5.0-win-x64.zip`，完整解压到可写目录并双击 `Start-Workbench.cmd`。首次打开“实验配置”，即可选择上游示例或自己的 .conf。便携包内含 Linux、QEMU、GNSS-SDR 和 Python。
+下载 `GNSS-SDR-Workbench-v0.6.0-win-x64.zip`，完整解压到可写目录，双击 `Start-Workbench.cmd`。工作台与接收机都是本机 Windows 进程。包内包含接收机、103 个原生 DLL、84 个上游配置示例及界面运行库，启动和处理录制均可离线使用。
 
-- 接收机来自上游提交 `3132713b88a1b5b2ee8291bff8076574749349de`。以完整 Git 树校验基线，两次独立 Linux 构建得到相同的接收机 SHA-256，值为 `2e9769b9857895bc277d82e8d4b8910ff12416107867c021a4366a1f3f89f26e`。[上游源码](https://github.com/gnss-sdr/gnss-sdr/tree/3132713b88a1b5b2ee8291bff8076574749349de) · [构建记录](https://github.com/Doct0rLu/gnss-sdr-workbench/actions/runs/45528437081)
-- “原样运行 GNSS-SDR 配置”保留 .conf 的字节和接收参数，支持原始路径映射。实验模式另行配置多频分支、监测端口、转储和回放时长。命令行 `--receiver-config` 可独立执行同一份配置。
-- 修正天空图被最后一组 GSV 覆盖的问题，并支持按选定解的 UTC 回看。定位面板收录原生日志中的首解。调试页显示 Linux 接收机及 QEMU 的进程标识和接收机摘要。
-- 30 秒 GPS L1 C/A 录制在 Windows 软件模拟环境中得到了导航电文和定位，界面后端收到 894 个跟踪监测数据包。另用同一录制的短片段验证了捕获 MAT 写入、峰形读取和逐通道转储。该次运行耗时约 12 分 28 秒。各频点历史实验的接收机版本和条件见 [M1 记录](M1-REGRESSION.md)。
-
-工作台源码归档、对应的未修改接收机源码和 SHA-256 校验文件随 Release 分别提供。
+- 上游基线为 GNSS-SDR `3132713`。Windows 构建应用路径、时间、网络及链接的移植补丁，沿用上游捕获、跟踪、电文和定位算法。完整平台差异和源归档随包提供。
+- 在同一台 i5-13400 上，原 30 秒 GPS L1 录制从 v0.5.0 工作台的 748 秒降到约 6.4 至 6.7 秒。解压后的程序和直接命令行均跑完整段并定位。
+- 用现有 M1 录制比较 GPS L1 C/A、L2C、L5 和北斗 B1I、B1C、B2a、B3I。每对入口使用同一个 Windows 接收机和相同配置字节。各用例是否定位的结论一致，部分 PRN、星历、首解和位置数值有差异。逐项证据见包内 `NATIVE-REGRESSION.md` 与 `regression/native-0.6.0.json`。
+- 使用原始配置时，输入相对路径或录制文件映射解析为 Windows 本地文件，实验目录保留原文、有效配置和散列。工作台实验保留实时监测、事件切片、可拖动时间轴与接收机重启。

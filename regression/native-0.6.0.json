@@ -1,0 +1,1526 @@
+{
+  "upstream": "3132713b88a1b5b2ee8291bff8076574749349de",
+  "executable_sha256": "8ba27d312112a09615da226d3877822a788ce0b32ce1635cc242b1a6e117cf1c",
+  "cases": [
+    {
+      "case": "L1-30s",
+      "signal": "1C",
+      "requested_seconds": 30.0,
+      "capture_sha256": "6e16f2e6f37d72d22da1700f0e2139f54ce0f4a946238054ed984da806defe9b",
+      "config_sha256": "2a424a2f85e6f2f610a13a735c0654aa272cecee90d1809cef6668a9c342545e",
+      "differing_satellite_sets": [
+        "acquired",
+        "valid_tracking",
+        "frame_evidence",
+        "ephemeris",
+        "last_pvt_satellites"
+      ],
+      "common_periodic_epochs": 3,
+      "max_horizontal_difference_m": 1.976,
+      "max_height_difference_m": 2.38,
+      "workbench": {
+        "elapsed_s": 6.732,
+        "last_tick_s": 30,
+        "acquired": [
+          "G01",
+          "G06",
+          "G13",
+          "G14",
+          "G17",
+          "G19",
+          "G24",
+          "G28",
+          "G30"
+        ],
+        "valid_tracking": [
+          "G01",
+          "G06",
+          "G13",
+          "G14",
+          "G17",
+          "G19",
+          "G28",
+          "G30"
+        ],
+        "frame_evidence": [
+          "G01",
+          "G06",
+          "G13",
+          "G14",
+          "G17",
+          "G19",
+          "G28",
+          "G30"
+        ],
+        "ephemeris": {
+          "gps_ephemeris.xml": [
+            1,
+            6,
+            13,
+            14,
+            17,
+            19,
+            28,
+            30
+          ]
+        },
+        "first_fix": [
+          "2021-Dec-15 03:06:00.120000",
+          "40.01",
+          "-105.244",
+          "1619.08"
+        ],
+        "last_pvt_satellites": [
+          "G01",
+          "G06",
+          "G13",
+          "G14",
+          "G17",
+          "G19",
+          "G30"
+        ],
+        "periodic_fixes": 3
+      },
+      "command_line": {
+        "elapsed_s": 5.867,
+        "last_tick_s": 30,
+        "acquired": [
+          "G01",
+          "G06",
+          "G13",
+          "G14",
+          "G17",
+          "G19",
+          "G21",
+          "G24",
+          "G28",
+          "G30"
+        ],
+        "valid_tracking": [
+          "G01",
+          "G06",
+          "G13",
+          "G14",
+          "G17",
+          "G19",
+          "G21",
+          "G24",
+          "G28",
+          "G30"
+        ],
+        "frame_evidence": [
+          "G01",
+          "G06",
+          "G13",
+          "G14",
+          "G17",
+          "G19",
+          "G21",
+          "G24",
+          "G28",
+          "G30"
+        ],
+        "ephemeris": {
+          "gps_ephemeris.xml": [
+            1,
+            6,
+            14,
+            17,
+            19,
+            21,
+            24,
+            28,
+            30
+          ]
+        },
+        "first_fix": [
+          "2021-Dec-15 03:06:00.120000",
+          "40.01",
+          "-105.244",
+          "1622.81"
+        ],
+        "last_pvt_satellites": [
+          "G01",
+          "G06",
+          "G14",
+          "G17",
+          "G19",
+          "G24",
+          "G30"
+        ],
+        "periodic_fixes": 3
+      }
+    },
+    {
+      "case": "L1CA",
+      "signal": "1C",
+      "requested_seconds": 56.9,
+      "capture_sha256": "33a12d38c569950805d425bef5525a6101322a6210d80ffa6526439e64ffeeda",
+      "config_sha256": "dc713c33134da9289cb8e3eb53f13c5f756ca0d750a899cca289c89e6e7c3c7d",
+      "differing_satellite_sets": [],
+      "common_periodic_epochs": 26,
+      "max_horizontal_difference_m": 0.111,
+      "max_height_difference_m": 0.02,
+      "workbench": {
+        "elapsed_s": 15.114,
+        "last_tick_s": 57,
+        "acquired": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "valid_tracking": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "frame_evidence": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "ephemeris": {
+          "gps_ephemeris.xml": [
+            3,
+            4,
+            8,
+            9,
+            18,
+            26,
+            27,
+            28,
+            32
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:30.100000",
+          "31.2",
+          "121.5",
+          "50.6597"
+        ],
+        "last_pvt_satellites": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "periodic_fixes": 26
+      },
+      "command_line": {
+        "elapsed_s": 14.864,
+        "last_tick_s": 57,
+        "acquired": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "valid_tracking": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "frame_evidence": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "ephemeris": {
+          "gps_ephemeris.xml": [
+            3,
+            4,
+            8,
+            9,
+            18,
+            26,
+            27,
+            28,
+            32
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:30.100000",
+          "31.2",
+          "121.5",
+          "50.6737"
+        ],
+        "last_pvt_satellites": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "periodic_fixes": 26
+      }
+    },
+    {
+      "case": "L2C",
+      "signal": "2S",
+      "requested_seconds": 67.9,
+      "capture_sha256": "108e58e5592aaf56f8ec4b6e35ad56feff2ee50aee7754f83ab42dc18efbf11f",
+      "config_sha256": "76a3b181d68a10f16edb56058865303cc9431691e2a5e4b70c390a3a5608e0e3",
+      "differing_satellite_sets": [],
+      "common_periodic_epochs": 12,
+      "max_horizontal_difference_m": 1.202,
+      "max_height_difference_m": 3.5,
+      "workbench": {
+        "elapsed_s": 20.641,
+        "last_tick_s": 68,
+        "acquired": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G16",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G29",
+          "G31",
+          "G32"
+        ],
+        "valid_tracking": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G16",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G29",
+          "G31",
+          "G32"
+        ],
+        "frame_evidence": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G16",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G29",
+          "G31",
+          "G32"
+        ],
+        "ephemeris": {
+          "gps_cnav_ephemeris.xml": [
+            3,
+            4,
+            8,
+            9,
+            16,
+            18,
+            26,
+            27,
+            28,
+            29,
+            32
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:55.800000",
+          "31.2",
+          "121.5",
+          "52.6243"
+        ],
+        "last_pvt_satellites": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G16",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G29",
+          "G32"
+        ],
+        "periodic_fixes": 12
+      },
+      "command_line": {
+        "elapsed_s": 20.728,
+        "last_tick_s": 68,
+        "acquired": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G16",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G29",
+          "G31",
+          "G32"
+        ],
+        "valid_tracking": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G16",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G29",
+          "G31",
+          "G32"
+        ],
+        "frame_evidence": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G16",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G29",
+          "G31",
+          "G32"
+        ],
+        "ephemeris": {
+          "gps_cnav_ephemeris.xml": [
+            3,
+            4,
+            8,
+            9,
+            16,
+            18,
+            26,
+            27,
+            28,
+            29,
+            32
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:55.760000",
+          "31.2001",
+          "121.5",
+          "51.329"
+        ],
+        "last_pvt_satellites": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G16",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G29",
+          "G32"
+        ],
+        "periodic_fixes": 12
+      }
+    },
+    {
+      "case": "L5",
+      "signal": "L5",
+      "requested_seconds": 71.9,
+      "capture_sha256": "77633b90d01ea09b044bb9837759073173a302d46ed5d6f904275598ca615fe6",
+      "config_sha256": "20f6d11d7b6912ade7ff4b18e0a5bac5e9f9b1014bd4e8321467948cdfff32e6",
+      "differing_satellite_sets": [
+        "ephemeris",
+        "last_pvt_satellites"
+      ],
+      "common_periodic_epochs": 29,
+      "max_horizontal_difference_m": 3.602,
+      "max_height_difference_m": 17.32,
+      "workbench": {
+        "elapsed_s": 20.412,
+        "last_tick_s": 72,
+        "acquired": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "valid_tracking": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "frame_evidence": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "ephemeris": {
+          "gps_cnav_ephemeris.xml": [
+            3,
+            4,
+            8,
+            9,
+            18,
+            26,
+            27,
+            28,
+            32
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:42.940000",
+          "31.2",
+          "121.5",
+          "51.3846"
+        ],
+        "last_pvt_satellites": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "periodic_fixes": 29
+      },
+      "command_line": {
+        "elapsed_s": 26.964,
+        "last_tick_s": 72,
+        "acquired": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "valid_tracking": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "frame_evidence": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28",
+          "G32"
+        ],
+        "ephemeris": {
+          "gps_cnav_ephemeris.xml": [
+            3,
+            4,
+            8,
+            9,
+            18,
+            26,
+            27,
+            28
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:42.860000",
+          "31.2",
+          "121.5",
+          "55.8606"
+        ],
+        "last_pvt_satellites": [
+          "G03",
+          "G04",
+          "G08",
+          "G09",
+          "G18",
+          "G26",
+          "G27",
+          "G28"
+        ],
+        "periodic_fixes": 29
+      }
+    },
+    {
+      "case": "B1I",
+      "signal": "B1",
+      "requested_seconds": 47.9,
+      "capture_sha256": "6dc531983c245dc5adbefd061f9623ca41e791f580d626f1659e0ec40f75a208",
+      "config_sha256": "6bca2d0099cbd4dcc9e0ffacb6a1cb104d9490904367c3802977a2a1587bc7fd",
+      "differing_satellite_sets": [
+        "acquired",
+        "valid_tracking",
+        "frame_evidence",
+        "ephemeris",
+        "last_pvt_satellites"
+      ],
+      "common_periodic_epochs": 4,
+      "max_horizontal_difference_m": 4.466,
+      "max_height_difference_m": 14.75,
+      "workbench": {
+        "elapsed_s": 9.862,
+        "last_tick_s": 48,
+        "acquired": [
+          "C03",
+          "C04",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C26",
+          "C31"
+        ],
+        "valid_tracking": [
+          "C03",
+          "C04",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C26",
+          "C31"
+        ],
+        "frame_evidence": [
+          "C03",
+          "C04",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C26",
+          "C31"
+        ],
+        "ephemeris": {
+          "bds_dnav_ephemeris.xml": [
+            8,
+            9,
+            10,
+            24,
+            26,
+            31
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:43.960000",
+          "31.2",
+          "121.5",
+          "27.6554"
+        ],
+        "last_pvt_satellites": [
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C26",
+          "C31"
+        ],
+        "periodic_fixes": 4
+      },
+      "command_line": {
+        "elapsed_s": 9.02,
+        "last_tick_s": 48,
+        "acquired": [
+          "C01",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25",
+          "C35",
+          "C42"
+        ],
+        "valid_tracking": [
+          "C01",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25",
+          "C35",
+          "C42"
+        ],
+        "frame_evidence": [
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25",
+          "C35",
+          "C42"
+        ],
+        "ephemeris": {
+          "bds_dnav_ephemeris.xml": [
+            8,
+            9,
+            10,
+            24,
+            25,
+            35,
+            42
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:43.960000",
+          "31.2",
+          "121.5",
+          "39.0724"
+        ],
+        "last_pvt_satellites": [
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25"
+        ],
+        "periodic_fixes": 4
+      }
+    },
+    {
+      "case": "B1C",
+      "signal": "1D",
+      "requested_seconds": 56.9,
+      "capture_sha256": "c8cf591c49c13f08dbc75fd0f8098ee98458ae00c3f96cfe166aa521b3a5fcf5",
+      "config_sha256": "4a24295f86c32da609565e485171e67721b6b1f7eec58d76a4c1c25076898772",
+      "differing_satellite_sets": [],
+      "common_periodic_epochs": 7,
+      "max_horizontal_difference_m": 0.0,
+      "max_height_difference_m": 0.0,
+      "workbench": {
+        "elapsed_s": 18.633,
+        "last_tick_s": 57,
+        "acquired": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "valid_tracking": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "frame_evidence": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "ephemeris": {
+          "bds_cnav1_ephemeris.xml": [
+            24,
+            25,
+            26,
+            31,
+            33,
+            34,
+            35,
+            41,
+            42
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:50",
+          "31.2",
+          "121.5",
+          "31.9963"
+        ],
+        "last_pvt_satellites": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "periodic_fixes": 7
+      },
+      "command_line": {
+        "elapsed_s": 17.477,
+        "last_tick_s": 57,
+        "acquired": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "valid_tracking": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "frame_evidence": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "ephemeris": {
+          "bds_cnav1_ephemeris.xml": [
+            24,
+            25,
+            26,
+            31,
+            33,
+            34,
+            35,
+            41,
+            42
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:50",
+          "31.2",
+          "121.5",
+          "31.9963"
+        ],
+        "last_pvt_satellites": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "periodic_fixes": 7
+      }
+    },
+    {
+      "case": "B2a",
+      "signal": "5D",
+      "requested_seconds": 49.9,
+      "capture_sha256": "c0e5863e55ac342b4ae9af13141d4e93c941e63d5228a30a30c2cb3922915b59",
+      "config_sha256": "a6adab8ceb02c59d54f6557782a12ed4f78fe58fa92f8e8afc58abea7f944684",
+      "differing_satellite_sets": [],
+      "common_periodic_epochs": 36,
+      "max_horizontal_difference_m": 7.543,
+      "max_height_difference_m": 32.4,
+      "workbench": {
+        "elapsed_s": 16.896,
+        "last_tick_s": 50,
+        "acquired": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "valid_tracking": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "frame_evidence": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "ephemeris": {
+          "bds_cnav2_ephemeris.xml": [
+            24,
+            25,
+            26,
+            31,
+            33,
+            34,
+            35,
+            41,
+            42
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:13.760000",
+          "31.2",
+          "121.5",
+          "50.7419"
+        ],
+        "last_pvt_satellites": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "periodic_fixes": 36
+      },
+      "command_line": {
+        "elapsed_s": 16.319,
+        "last_tick_s": 50,
+        "acquired": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "valid_tracking": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "frame_evidence": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "ephemeris": {
+          "bds_cnav2_ephemeris.xml": [
+            24,
+            25,
+            26,
+            31,
+            33,
+            34,
+            35,
+            41,
+            42
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:13.780000",
+          "31.2",
+          "121.5",
+          "40.8569"
+        ],
+        "last_pvt_satellites": [
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "periodic_fixes": 36
+      }
+    },
+    {
+      "case": "B3I",
+      "signal": "B3",
+      "requested_seconds": 47.9,
+      "capture_sha256": "2dfdc14de4edb51a706f761ad0b96bce6871dc2791e8ec408c8158447aacc90e",
+      "config_sha256": "32d4575829bb1de31e53ddc49abb98ff57d71877b4bdb8afc97721c0808e147f",
+      "differing_satellite_sets": [
+        "acquired",
+        "valid_tracking",
+        "frame_evidence",
+        "ephemeris"
+      ],
+      "common_periodic_epochs": 0,
+      "max_horizontal_difference_m": null,
+      "max_height_difference_m": null,
+      "workbench": {
+        "elapsed_s": 13.618,
+        "last_tick_s": 48,
+        "acquired": [
+          "C01",
+          "C02",
+          "C03",
+          "C04",
+          "C08",
+          "C09",
+          "C10",
+          "C25",
+          "C33"
+        ],
+        "valid_tracking": [
+          "C01",
+          "C02",
+          "C03",
+          "C04",
+          "C09",
+          "C10",
+          "C25",
+          "C33"
+        ],
+        "frame_evidence": [
+          "C02",
+          "C04",
+          "C09",
+          "C10",
+          "C25",
+          "C33"
+        ],
+        "ephemeris": {
+          "bds_dnav_ephemeris.xml": [
+            9,
+            25,
+            33
+          ]
+        },
+        "first_fix": null,
+        "last_pvt_satellites": null,
+        "periodic_fixes": 0
+      },
+      "command_line": {
+        "elapsed_s": 13.091,
+        "last_tick_s": 48,
+        "acquired": [
+          "C01",
+          "C02",
+          "C04",
+          "C08",
+          "C09",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41"
+        ],
+        "valid_tracking": [
+          "C01",
+          "C02",
+          "C04",
+          "C09",
+          "C33",
+          "C34",
+          "C35",
+          "C41"
+        ],
+        "frame_evidence": [
+          "C01",
+          "C04",
+          "C09",
+          "C33",
+          "C34",
+          "C35",
+          "C41"
+        ],
+        "ephemeris": {
+          "bds_dnav_ephemeris.xml": [
+            9,
+            34,
+            41
+          ]
+        },
+        "first_fix": null,
+        "last_pvt_satellites": null,
+        "periodic_fixes": 0
+      }
+    },
+    {
+      "case": "B3I-motion",
+      "signal": "B3",
+      "requested_seconds": 47.9,
+      "capture_sha256": "4e2fb484d8e5d5f30ff355ad35c19b52be1aeb7700094dc1b2a9ccc3ad747dda",
+      "config_sha256": "8e248a7cc8af9e13f35a684cf5bf52477935c6ea606f1f2e54e14711c549855a",
+      "differing_satellite_sets": [
+        "ephemeris",
+        "last_pvt_satellites"
+      ],
+      "common_periodic_epochs": 4,
+      "max_horizontal_difference_m": 0.111,
+      "max_height_difference_m": 0.35,
+      "workbench": {
+        "elapsed_s": 15.404,
+        "last_tick_s": 48,
+        "acquired": [
+          "C06",
+          "C08",
+          "C09",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "valid_tracking": [
+          "C06",
+          "C08",
+          "C09",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "frame_evidence": [
+          "C06",
+          "C08",
+          "C09",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "ephemeris": {
+          "bds_dnav_ephemeris.xml": [
+            6,
+            8,
+            9,
+            24,
+            25,
+            26,
+            31,
+            33,
+            34,
+            41,
+            42
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:43.960000",
+          "31.204",
+          "121.5",
+          "19.9731"
+        ],
+        "last_pvt_satellites": [
+          "C06",
+          "C08",
+          "C09",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C41",
+          "C42"
+        ],
+        "periodic_fixes": 4
+      },
+      "command_line": {
+        "elapsed_s": 13.974,
+        "last_tick_s": 48,
+        "acquired": [
+          "C06",
+          "C08",
+          "C09",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "valid_tracking": [
+          "C06",
+          "C08",
+          "C09",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "frame_evidence": [
+          "C06",
+          "C08",
+          "C09",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "ephemeris": {
+          "bds_dnav_ephemeris.xml": [
+            6,
+            8,
+            9,
+            24,
+            25,
+            26,
+            31,
+            33,
+            34,
+            35,
+            41,
+            42
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:43.960000",
+          "31.204",
+          "121.5",
+          "19.616"
+        ],
+        "last_pvt_satellites": [
+          "C06",
+          "C08",
+          "C09",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "periodic_fixes": 4
+      }
+    },
+    {
+      "case": "B3I-60s",
+      "signal": "B3",
+      "requested_seconds": 59.9,
+      "capture_sha256": "03bd6f9fc18be85ff9f1be5cb20866c5a0ad7aac7ba8b3fe240bd2fd0794a305",
+      "config_sha256": "02a566cc375ea88d3ce207ec8d0eb9fec9c2d7357357175cf8e0a5775abc2487",
+      "differing_satellite_sets": [],
+      "common_periodic_epochs": 16,
+      "max_horizontal_difference_m": 0.0,
+      "max_height_difference_m": 0.01,
+      "workbench": {
+        "elapsed_s": 20.212,
+        "last_tick_s": 60,
+        "acquired": [
+          "C06",
+          "C07",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "valid_tracking": [
+          "C06",
+          "C07",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "frame_evidence": [
+          "C06",
+          "C07",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "ephemeris": {
+          "bds_dnav_ephemeris.xml": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            24,
+            25,
+            26,
+            31,
+            33,
+            34,
+            35,
+            41,
+            42
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:43.960000",
+          "31.2",
+          "121.5",
+          "20.3179"
+        ],
+        "last_pvt_satellites": [
+          "C06",
+          "C07",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35"
+        ],
+        "periodic_fixes": 16
+      },
+      "command_line": {
+        "elapsed_s": 18.669,
+        "last_tick_s": 60,
+        "acquired": [
+          "C06",
+          "C07",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "valid_tracking": [
+          "C06",
+          "C07",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "frame_evidence": [
+          "C06",
+          "C07",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35",
+          "C41",
+          "C42"
+        ],
+        "ephemeris": {
+          "bds_dnav_ephemeris.xml": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            24,
+            25,
+            26,
+            31,
+            33,
+            34,
+            35,
+            41,
+            42
+          ]
+        },
+        "first_fix": [
+          "2026-Nov-11 06:00:43.960000",
+          "31.2",
+          "121.5",
+          "20.0236"
+        ],
+        "last_pvt_satellites": [
+          "C06",
+          "C07",
+          "C08",
+          "C09",
+          "C10",
+          "C24",
+          "C25",
+          "C26",
+          "C31",
+          "C33",
+          "C34",
+          "C35"
+        ],
+        "periodic_fixes": 16
+      }
+    }
+  ]
+}

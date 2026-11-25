@@ -1,5 +1,5 @@
 {
-  "executable": "C:/gnss-sdr-portable/bin/gnss-sdr.exe",
-  "iq": "D:/data/L1_IF20KHz_FS18MHz.bin",
+  "use_bundled": true,
+  "iq": "",
   "dll_dirs": []
 }

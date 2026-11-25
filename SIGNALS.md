@@ -1,6 +1,6 @@
 # 信号与频点能力
 
-v0.5.0 的能力基线为 GNSS-SDR 3132713 中的 `gnss_block_factory.cc` 和 `gnss_flowgraph.cc`。信号顺序与 [GNSS-SDR Channels](https://gnss-sdr.org/docs/sp-blocks/channels/) 一致。GPS L1C 在此对应源码及二进制中已包含。
+v0.6.0 的文件接收能力基线为 GNSS-SDR 3132713 中的 `gnss_block_factory.cc` 和 `gnss_flowgraph.cc`。信号顺序与 [GNSS-SDR Channels](https://gnss-sdr.org/docs/sp-blocks/channels/) 一致。GPS L1C 在此对应源码及二进制中已包含。
 
 | 系统与信号 | 标识 | 中心频率 / MHz | 用途 |
 |---|---|---:|---|
@@ -64,3 +64,5 @@ GLONASS 频率栏为 FDMA 基频，各频率槽步长分别为 L1 0.5625 MHz、L
 - 初次统一 24 MS/s 噪声检查中 L2C 超过 35 秒预算；采用信号模板默认 4 MS/s 后正常结束。原始记录保留在本机 verification/all-signals。
 
 射频硬件、专用文件源与 FPGA/GPU 等后端是否可用取决于所选接收机的编译选项；此便携版工作台提供文件实验。
+
+v0.6.0 便携 Windows 文件接收机的 7 类 M1 信号、捕获和跟踪 PRN、星历及定位与直接命令行的对照见[原生回归](NATIVE-REGRESSION.md)。
