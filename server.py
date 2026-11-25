@@ -207,6 +207,7 @@ class Workbench:
                     original_config=self.settings.get('original_config', ''),
                     config_mode=self.settings.get('config_mode','original' if not self.settings else 'guided'),
                     iq=self.settings.get('iq',''), duration=self.settings.get('duration',20),inputs=self.settings.get('inputs',[]),capture_channel=self.settings.get('capture_channel',0),
+                    capture_enabled=self.settings.get('capture_enabled',True),
                     config=self.settings.get('config',(RESOURCES/'templates/gps-l1.conf').read_text(encoding='utf-8')))
     def validate(self, data):
         exe = Path(data.get('executable','')); iq = Path(data.get('iq',''))
