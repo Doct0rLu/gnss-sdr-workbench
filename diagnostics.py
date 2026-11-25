@@ -1,5 +1,5 @@
 """Read-only adapters for native receiver artifacts and bounded input slices."""
-import json, math, re, struct, threading
+import bisect, datetime, json, math, re, struct, threading
 import signal_input
 import signals
 from pathlib import Path
@@ -131,7 +131,7 @@ def timeline(path):
                     if math.isfinite(t):available=max(available,t)
                 except (ValueError,TypeError):pass
     meta=json.loads((path/'manifest.json').read_text(encoding='utf-8'))
-    return dict(available=min(available,meta['duration']),channels=channels,captures=captures)
+    return dict(available=min(available,meta['duration']) if meta['duration'] > 0 else available,channels=channels,captures=captures)
 
 _JSON_INDEX={}
 def time_rows(path,name,start,end,limit=600,tail=False,channel=None):
@@ -174,7 +174,10 @@ def input_source(path,rf=0):
     cfg=settings(path);meta=json.loads((path/'manifest.json').read_text(encoding='utf-8'))
     items=meta.get('inputs') or [dict(path=meta['iq'],fs=meta['fs'],format=cfg.get('SignalSource.item_type','ibyte'))]
     if not 0<=rf<len(items):raise ValueError('RF 输入编号无效')
-    item=items[rf];return item,signal_input.layout({'SignalSource.item_type':item['format']})
+    item=items[rf]
+    if not item.get('path') or not item.get('fs') or item.get('format') not in signal_input.FORMATS:
+        raise ValueError('这个输入没有可预览的样本格式和采样率')
+    return item,signal_input.layout({'SignalSource.item_type':item['format']})
 
 def iq(path,t,rf=0):
     import numpy as np
@@ -182,9 +185,10 @@ def iq(path,t,rf=0):
     width=fmt['sample_bytes'];source=Path(item['path'])
     if not math.isfinite(t) or t<0:raise ValueError('信号时间无效')
     # Clamp to the last complete analysis window; all offsets are in logical samples.
-    total=source.stat().st_size//width
+    begin=item.get('byte_offset',0)
+    total=(source.stat().st_size-begin)//width
     offset=min(max(0,total-8192),int(t*fs))
-    with source.open('rb') as f:f.seek(offset*width);raw=f.read(8192*width)
+    with source.open('rb') as f:f.seek(begin+offset*width);raw=f.read(8192*width)
     raw=raw[:len(raw)//width*width]
     a=np.frombuffer(raw,dtype=fmt['dtype']).reshape(-1,fmt['components']).astype(float)
     if len(a)<16:raise ValueError('该时间位置没有足够的信号数据')
@@ -202,29 +206,106 @@ def iq(path,t,rf=0):
                 spectrum=[float(spec[g].max()) for g in groups],mhz=[float((g.mean()/len(z)-.5)*fs/1e6) for g in groups],
                 rms=float(np.sqrt(np.mean(np.abs(z)**2))),dc_i=float(a[:,0].mean()),dc_q=None if fmt['real'] else float(a[:,1].mean()),clipped=clipped,invalid=invalid)
 
-def sky(path):
-    p=path/'solution.nmea'
-    if not p.exists():return []
-    with p.open('rb') as f:f.seek(max(0,p.stat().st_size-131072));text=f.read().decode('ascii','ignore')
-    sats={}
-    for line in text.splitlines():
-        if not line.startswith('$') or '*' not in line:continue
-        body,checksum=line[1:].split('*',1);check=0
-        for c in body:check^=ord(c)
-        if f'{check:02X}'!=checksum[:2].upper():continue
-        v=body.split(',')
-        if not v[0].endswith('GSV'):continue
-        if v[2]=='1':sats={}
-        for n in range(4,len(v)-3,4):
-            if all(v[n:n+3]):
-                try:sats[v[n]]=dict(system={'GP':'G','BD':'C','GB':'C','GA':'E','GL':'R','GQ':'J','QZ':'J'}.get(v[0][:2],'?'),prn=int(v[n]),elevation=float(v[n+1]),azimuth=float(v[n+2]),cn0=float(v[n+3]) if v[n+3] else None)
+def solution_file(path):
+    expected = path/'solution.nmea'
+    if expected.exists():
+        return expected
+    candidates = list(path.glob('*.nmea'))
+    return candidates[0] if len(candidates) == 1 else expected
+
+
+def nmea_fields(raw):
+    if not raw.endswith(b'\n') or not raw.startswith(b'$'):
+        return []
+    body, mark, checksum = raw.rstrip().partition(b'*')
+    if not mark:
+        return []
+    check = 0
+    for byte in body[1:]:
+        check ^= byte
+    if checksum.upper() != f'{check:02X}'.encode():
+        return []
+    return body[1:].decode('ascii','replace').split(',')
+
+
+_SKY_INDEX = {}
+_SKY_LOCK = threading.Lock()
+
+
+def sky_epoch(p, utc):
+    """Index complete GGA records once, including UTC day rollovers."""
+    with _SKY_LOCK, p.open('rb') as stream:
+        size = p.stat().st_size
+        index = _SKY_INDEX.get(p)
+        if index is None or size < index['read']:
+            if len(_SKY_INDEX) >= 32:_SKY_INDEX.clear()
+            index = _SKY_INDEX[p] = dict(read=0,day=0,clock=None,times=[],offsets=[])
+        stream.seek(index['read'])
+        for raw in stream:
+            if not raw.endswith(b'\n'):break
+            start=index['read']
+            index['read']+=len(raw)
+            if raw[3:6] not in (b'GGA',b'RMC'):continue
+            f=nmea_fields(raw)
+            if not f:continue
+            if f[0].endswith('RMC') and len(f)>9:
+                try:index['day']=datetime.datetime.strptime(f[9],'%d%m%y').date().toordinal();index['clock']=None
                 except ValueError:pass
-    return list(sats.values())
+            elif f[0].endswith('GGA') and len(f)>1:
+                try:clock=int(f[1][:2])*3600+int(f[1][2:4])*60+float(f[1][4:])
+                except ValueError:continue
+                if index['clock'] is not None and clock < index['clock']-43200:index['day']+=1
+                index['clock']=clock
+                index['times'].append(index['day']*86400+clock)
+                index['offsets'].append(start)
+        offsets=index['offsets']
+        if not offsets:return max(0,size-131072),size
+        pos=len(offsets)-1
+        if utc:
+            try:
+                day,clock=utc.split(' ',1)
+                date=datetime.datetime.strptime(day,'%Y-%b-%d').date().toordinal()
+                hour,minute,second=clock.split(':')
+                target=(date if index['day']>366 else index['day'])*86400+int(hour)*3600+int(minute)*60+float(second)
+            except (ValueError,OverflowError):
+                return 0,0
+            pos=bisect.bisect_right(index['times'],target)-1
+            if pos<0:return 0,0
+        return offsets[pos],offsets[pos+1] if pos+1<len(offsets) else index['read']
+
+
+def sky(path, utc=None):
+    """GSV satellites from all talkers in one GGA epoch."""
+    p=solution_file(path)
+    if not p.is_file():return []
+    start,end=sky_epoch(p,utc)
+    satellites={}
+    with p.open('rb') as stream:
+        stream.seek(start)
+        for raw in stream.read(end-start).splitlines(keepends=True):
+            v=nmea_fields(raw)
+            if not v:continue
+            if v[0].endswith('GSV') and len(v) >= 4:
+                talker = v[0][:2]
+                if v[2] == '1':
+                    satellites[talker] = {}
+                rows = satellites.setdefault(talker, {})
+                for i in range(4,len(v)-3,4):
+                    try:
+                        prn = int(v[i])
+                        system = {'GP':'G','BD':'C','GB':'C','GA':'E','GL':'R','GQ':'J','QZ':'J'}.get(talker,'?')
+                        if system=='G' and 33 <= prn <= 64:system,prn='S',prn+87
+                        if system=='R' and 65 <= prn <= 96:prn -= 64
+                        rows[(system,prn)] = dict(system=system,prn=prn,elevation=float(v[i+1]),
+                                                 azimuth=float(v[i+2]),cn0=float(v[i+3]) if v[i+3] else None)
+                    except ValueError:
+                        continue
+    return list({key:row for group in satellites.values() for key,row in group.items()}.values())
 
 def pvt_satellites(path):
     """Satellites reported by the receiver's GSA writers for its latest GGA epoch."""
     try:
-        with (path / 'solution.nmea').open('rb') as stream:
+        with solution_file(path).open('rb') as stream:
             stream.seek(max(0, stream.seek(0, 2) - 8192))
             lines = stream.read().split(b'\n')[:-1]
     except (FileNotFoundError, PermissionError):

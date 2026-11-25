@@ -1,6 +1,6 @@
 # 信号与频点能力
 
-能力基线：随附 Windows 接收机对应源码中的 `gnss_block_factory.cc` 和 `gnss_flowgraph.cc`；信号顺序与 [GNSS-SDR Channels](https://gnss-sdr.org/docs/sp-blocks/channels/) 一致。GPS L1C 在此对应源码及二进制中已包含。
+v0.5.0 的能力基线为 GNSS-SDR 3132713 中的 `gnss_block_factory.cc` 和 `gnss_flowgraph.cc`。信号顺序与 [GNSS-SDR Channels](https://gnss-sdr.org/docs/sp-blocks/channels/) 一致。GPS L1C 在此对应源码及二进制中已包含。
 
 | 系统与信号 | 标识 | 中心频率 / MHz | 用途 |
 |---|---|---:|---|

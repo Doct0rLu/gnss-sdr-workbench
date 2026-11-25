@@ -6,12 +6,33 @@ const fmt=(v,n=1)=>Number.isFinite(v)?v.toFixed(n):'—';
 const labels={starting:'正在启动',running:'正在运行',stopping:'等待优雅收尾',stopped:'已停止',completed:'已完成',failed:'运行失败'};
 async function api(path,data){const r=await fetch(path,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const v=await r.json();if(!r.ok)throw Error(v.error||r.statusText);return v;}
 function notify(message){$('notice').textContent=message;$('notice').hidden=!message;}
-function formData(){if(typeof applyCommonFields==='function')applyCommonFields();return {inputs:typeof collectInputs==='function'?collectInputs():[],capture_channel:Number($('captureChannel').value),executable:$('exe').value,iq:$('iq').value,duration:Number($('duration').value),config:$('config').value};}
-function configure(){presetDirty=false;$('rfFiles').replaceChildren();if(typeof inputPaths!=='undefined')inputPaths=(config.inputs||[]).map(v=>v.path);for(const [key,id] of [['executable','exe'],['iq','iq'],['duration','duration'],['config','config']])$(id).value=config[key]??'';$('captureChannel').value=config.capture_channel??0;$('validation').textContent='';if(typeof loadCommonFields==='function')loadCommonFields();$('configDialog').showModal();}
+$('officialExample').onchange=()=>{if($('officialExample').value)$('originalPath').value=$('officialExample').value;};
+function originalInput(path=''){
+ const wrap=document.createElement('div');wrap.className='file-field';
+ const input=document.createElement('input');input.value=path;input.setAttribute('aria-label','映射到本机录制');
+ const browse=document.createElement('button');browse.type='button';browse.textContent='浏览…';
+ browse.onclick=async()=>{try{const v=await api('/api/browse',{kind:'iq'});if(v.path)input.value=v.path;}catch(e){$('validation').textContent=e.message;}};
+ wrap.append(input,browse);$('originalInputs').append(wrap);
+}
+$('addOriginalInput').onclick=()=>originalInput();
+function syncConfigMode(){
+ const original=Boolean(config?.upstream)&&$('configMode').value==='original';
+ $('originalField').hidden=!original;$('guidedEditor').hidden=original;
+}
+$('configMode').onchange=syncConfigMode;
+$('pickOriginal').onclick=async()=>{try{const value=await api('/api/browse',{kind:'config'});if(value.path)$('originalPath').value=value.path;}catch(e){$('validation').textContent=e.message;}};
+function formData(){
+ const mode=config.upstream?$('configMode').value:'guided';
+ const base={upstream:config.upstream,config_mode:mode,original_config:$('originalPath').value,executable:$('exe').value,config:$('config').value};
+ if(mode==='original')return {...base,iq:'',inputs:[...$('originalInputs').querySelectorAll('input')].map(e=>({path:e.value.trim()}))};
+ if(typeof applyCommonFields==='function')applyCommonFields();
+ return {...base,inputs:typeof collectInputs==='function'?collectInputs():[],capture_channel:Number($('captureChannel').value),iq:$('iq').value,duration:Number($('duration').value)};
+}
+function configure(){$('upstreamSetup').hidden=!config.upstream;$('exe').readOnly=Boolean(config.upstream);document.querySelector('[data-browse="exe"]').hidden=Boolean(config.upstream);$('configMode').value=config.config_mode||'guided';$('originalPath').value=config.original_config||'';$('originalInputs').replaceChildren();if(config.config_mode==='original')(config.inputs||[]).forEach(v=>originalInput(v.path));syncConfigMode();presetDirty=false;$('rfFiles').replaceChildren();if(typeof inputPaths!=='undefined')inputPaths=(config.inputs||[]).map(v=>v.path);for(const [key,id] of [['executable','exe'],['iq','iq'],['duration','duration'],['config','config']])$(id).value=config[key]??'';$('captureChannel').value=config.capture_channel??0;$('validation').textContent='';if(typeof loadCommonFields==='function')loadCommonFields();$('configDialog').showModal();}
 $('configure').onclick=configure;$('settingsNav').onclick=configure;
 $('saveConfig').onclick=async()=>{try{const next=formData();await api('/api/settings',next);config=next;$('configDialog').close();notify('配置已保存');}catch(e){$('validation').textContent=e.message;}};
 $('validate').onclick=async()=>{try{await api('/api/validate',formData());$('validation').textContent='✓ 文件、格式、采样率、时长与输出路径检查通过。';}catch(e){$('validation').textContent=e.message;}};
-$('start').onclick=async()=>{if(!config.executable||(!config.iq&&!config.inputs?.[0]?.path)){configure();return;}$('start').disabled=true;try{const meta=await api('/api/start',config);selectedRun='';lastSeq=0;logRows=[];cursor=null;freeze=false;selected=null;notify('实验已启动');await poll();}catch(e){notify(e.message);$('start').disabled=false;}};
+$('start').onclick=async()=>{if(!config.executable||(config.config_mode==='original'?!config.original_config:(!config.iq&&!config.inputs?.[0]?.path))){configure();return;}$('start').disabled=true;try{const meta=await api('/api/start',config);selectedRun='';lastSeq=0;logRows=[];cursor=null;freeze=false;selected=null;notify('实验已启动');await poll();}catch(e){notify(e.message);$('start').disabled=false;}};
 $('stop').onclick=async()=>{try{await api('/api/stop',{});notify('正在停止接收机并保存结果…');}catch(e){notify(e.message);}};
 $('freeze').onclick=()=>{freeze=!freeze;$('freeze').textContent=freeze?'▶ 恢复查看':'Ⅱ 暂停查看';notify(freeze?'图表和日志已暂停查看，接收机仍继续计算并保存数据。':'');if(!freeze)render();};
 $('logPause').onclick=()=>{logPaused=!logPaused;$('logPause').textContent=logPaused?'恢复日志':'暂停日志';if(!logPaused)renderLogs();if(typeof syncDebug==='function')syncDebug();};
@@ -51,16 +72,16 @@ async function history(){try{const rows=await api('/api/history');$('historyList
 $('historyList').querySelectorAll('[data-open]').forEach(b=>b.onclick=async()=>{selectedRun=b.dataset.open;lastSeq=0;logRows=[];cursor=null;freeze=false;state=null;selected=null;view('live');await poll();notify('');});$('historyList').querySelectorAll('[data-compare]').forEach(b=>b.onchange=async()=>{compareIds=b.checked?[...compareIds,b.dataset.compare].slice(-2):compareIds.filter(x=>x!==b.dataset.compare);if(compareIds.length===2)await compare(rows);else $('comparison').hidden=true;});}catch(e){notify(e.message);}}
 async function compare(rows){const [a,b]=compareIds.map(id=>rows.find(r=>r.id===id));const fetchConfig=async id=>(await fetch('/api/file?run='+id+'&name=receiver.conf')).text();const [ca,cb]=await Promise.all([fetchConfig(a.id),fetchConfig(b.id)]);const parse=s=>Object.fromEntries(s.split('\n').filter(l=>l.includes('=')).map(l=>{const i=l.indexOf('=');return [l.slice(0,i).trim(),l.slice(i+1).trim()];}));const aa=parse(ca),bb=parse(cb),keys=[...new Set([...Object.keys(aa),...Object.keys(bb)])].sort();$('comparison').hidden=false;$('comparison').innerHTML='<h2>实验对比</h2><p>'+esc(a.id)+' → '+esc(b.id)+'</p><p>接收机二进制：'+(a.exe_sha256===b.exe_sha256?'相同':'不同')+' · 主机用时 '+fmt((a.ended||a.started)-a.started)+' s → '+fmt((b.ended||b.started)-b.started)+' s</p><pre>'+keys.filter(k=>aa[k]!==bb[k]).map(k=>esc(k)+'\n  − '+esc(aa[k]??'未设置')+'\n  + '+esc(bb[k]??'未设置')).join('\n')+'</pre><p>包含启动参数与监测端口。</p>';}
 $('refreshHistory').onclick=history;
-api('/api/defaults').then(v=>{config=v;}).catch(e=>notify(e.message));
+api('/api/defaults').then(v=>{config=v;for(const ex of v.upstream_examples||[])$('officialExample').add(new Option(ex.label,ex.path));}).catch(e=>notify(e.message));
 (async function loop(){await poll();setTimeout(loop,1000);})();
 
 function renderSolution(){
  const rows=(state.positions||[]).filter(r=>cursor===null||r.t<=cursor);const c=rows.at(-1);
- $('nmea').href='/api/file?run='+state.meta.id+'&name=solution.nmea';
+ $('nmea').href='/api/file?run='+state.meta.id+'&name='+encodeURIComponent(state.nmea||'solution.nmea');
  if(!c){$('solution').innerHTML='<div class="empty">等待定位解</div>';return;}
  const first=rows[0],xy=rows.map(r=>[(r.lon-first.lon)*111320*Math.cos(first.lat*Math.PI/180),(r.lat-first.lat)*111320]);
  const range=Math.max(1,...xy.flatMap(p=>p.map(Math.abs)));const path=xy.map((p,n)=>(n?'L':'M')+(160+p[0]/range*100).toFixed(1)+' '+(65-p[1]/range*50).toFixed(1)).join('');
- $('solution').innerHTML=`<div class="solution-values"><div><label>纬度 / °</label><b>${fmt(c.lat,6)}</b></div><div><label>经度 / °</label><b>${fmt(c.lon,6)}</b></div><div><label>椭球高 / m</label><b>${fmt(c.height,2)}</b></div><div><label>观测数</label><b>${c.observations}</b></div><p>UTC ${esc(c.utc)} · 共 ${rows.length} 个显示定位解<br>Position 输出 · 最近监测时刻关联</p></div><div class="trajectory"><svg viewBox="0 0 320 130" role="img" aria-label="相对首个定位解的水平轨迹"><path d="M160 5V125M20 65H300" stroke="#e5edef"/><path d="${path}" fill="none" stroke="#0c9583" stroke-width="1.5"/><circle cx="160" cy="65" r="3" fill="#b5cdc7"/><text x="165" y="12" fill="#96a8af" font-size="9">N</text><text x="300" y="60" fill="#96a8af" font-size="9">E</text></svg><p>相对首个解的水平变化 · 半幅 ${fmt(range,1)} m</p></div>`;
+ $('solution').innerHTML=`<div class="solution-values"><div><label>纬度 / °</label><b>${fmt(c.lat,6)}</b></div><div><label>经度 / °</label><b>${fmt(c.lon,6)}</b></div><div><label>椭球高 / m</label><b>${fmt(c.height,2)}</b></div><div><label>观测数</label><b>${c.observations??'—'}</b></div><p>UTC ${esc(c.utc)} · 共 ${rows.length} 个显示定位解<br>Position 输出 · 最近监测时刻关联</p></div><div class="trajectory"><svg viewBox="0 0 320 130" role="img" aria-label="相对首个定位解的水平轨迹"><path d="M160 5V125M20 65H300" stroke="#e5edef"/><path d="${path}" fill="none" stroke="#0c9583" stroke-width="1.5"/><circle cx="160" cy="65" r="3" fill="#b5cdc7"/><text x="165" y="12" fill="#96a8af" font-size="9">N</text><text x="300" y="60" fill="#96a8af" font-size="9">E</text></svg><p>相对首个解的水平变化 · 半幅 ${fmt(range,1)} m</p></div>`;
 }
 
 function renderSignalStages(){

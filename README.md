@@ -1,18 +1,16 @@
-# GNSS-SDR Workbench v0.4.3
+# GNSS-SDR Workbench v0.5.0
 
-Windows 本地接收机调试工作台。浏览器负责交互，Python 管理独立 GNSS-SDR 进程、监测接口和数据访问。前端与内核分开维护。
+Windows x64 的 GNSS-SDR 配置、监测与回放界面。便携版在随包 Linux 环境中运行原始上游提交 `3132713` 编译的接收机。界面从 Protobuf、接收机日志、NMEA 和数据转储读取结果。[上游源码](https://github.com/gnss-sdr/gnss-sdr/tree/3132713b88a1b5b2ee8291bff8076574749349de)
 
-## 下载即用（推荐）
+## 下载使用
 
-Windows 10/11 x64 用户请在 [Releases](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/latest) 下载 win-x64 便携包，完整解压后双击 `Start-Workbench.cmd`。它包含 Python、前端、接收机及运行 DLL，无需安装开发环境。接收机路径自动定位；只需选择自己的信号文件。使用方式见 [PORTABLE.md](PORTABLE.md)。
+完整解压 v0.5.0 的 win-x64 便携包到可写目录，双击 `Start-Workbench.cmd`。包内含 Python、QEMU 和 Linux 接收机，可在未安装 WSL、Docker 和 GNU Radio 的 Windows 计算机上运行。录制文件由用户选择。[下载便携版](https://github.com/Doct0rLu/gnss-sdr-workbench/releases/tag/v0.5.0) · [操作说明](PORTABLE.md)
 
-Code → Download ZIP 仅为源码，适用于开发者。便携包不包含 IQ、开发者本机设置或历史运行结果。
+首次配置可选择“原样运行 GNSS-SDR 配置”，直接打开自己的 .conf，或从随包上游示例中选择。文件内容按原字节传给接收机。选择“工作台实验”可使用多频、实数和 IQ 录制预设，并由工作台配置监测端口、转储与时长。软件模拟的处理耗时随通道数、采样率与宿主 CPU 而变。
 
 ## 从源码启动
 
-需要 Python 3.11+，首次执行 `python -m pip install -r requirements.txt`。本机已具备这些依赖。双击 `start.cmd`，浏览器打开 http://127.0.0.1:8765。保持启动窗口开启。端口已占用时先关闭旧工作台窗口，或运行 `python server.py --port 8767 --open`。
-
-当前工作区的 `local.json` 已配置接收机和真实 IQ 路径。独立复制时可用 `local.example.json` 建立自己的配置，也可以直接在界面选择文件。接收机 EXE 需要完整 DLL 环境，建议使用已收集依赖、支持 UTF-8 中文路径的便携构建；额外 DLL 目录可在 local.json 的 dll_dirs 设置。
+使用 Python 3.11 或更高版本执行 `python -m pip install -r requirements.txt`。把 v0.5.0 便携包的 `receiver` 目录放在 `server.py` 旁，双击 `start.cmd`。也可执行 `python server.py --port 8767 --open`。
 
 ## 输入格式
 
@@ -20,7 +18,7 @@ Code → Download ZIP 仅为源码，适用于开发者。便携包不包含 IQ�
 
 ## 操作顺序
 
-1. 配置实验：展开“信号与频点配置”，勾选信号并生成单频或组合配置；可选择各频点同步录制，或让多个频点复用一份宽带 IQ。在共享模式下填写采集中心、采样率和格式，生成后核对各支路 IF。浏览选择 EXE、信号或 .conf 文件，也可输入路径。设置时长、捕获快照通道、采样率、中频、通道数、环路带宽与搜索参数。高级配置文本可展开编辑。
+1. 配置实验：展开“信号与频点配置”，勾选信号并生成单频或组合配置；可选择各频点同步录制，或让多个频点复用一份宽带 IQ。在共享模式下填写采集中心、采样率和格式，生成后核对各支路 IF。浏览选择信号或 .conf 文件，也可输入路径。设置时长、捕获快照通道、采样率、中频、通道数、环路带宽与搜索参数。高级配置文本可展开编辑。
    M1 的 B1C、GPS L2C、GPS L5 单频录制以及 L1 C/A＋B1C＋B1I 跨频录制可直接选择对应的实验参数预设。输入本次已知 PRN 可定向捕获，留空则盲搜。
 2. 检查输入，保存配置。配置存储在本机 local.json，刷新后仍保留。
 3. 启动实验，或使用“重启接收机”。配置窗口也可以“保存并重启”。重启先向当前进程发送 q，等待正常保存，再创建独立实验，不覆盖原来的输出。30 秒仍未结束时保留停止状态，界面给出提示。
@@ -50,7 +48,7 @@ Code → Download ZIP 仅为源码，适用于开发者。便携包不包含 IQ�
 | 卫星星座 | 最近完整 NMEA GSV 组的天空图、方位角、仰角和 C/N₀ |
 | 事件 / 切片 | 捕获、跟踪启动、符号输出变化、周跳、失锁、运行停止等已观测事件；点击联动前后 2 秒环路与日志 |
 | 数据文件 | 浏览本次目录内的原始日志、dump、MAT、配置、NMEA、定位输出，逐文件下载 |
-| 调试接口 | PID、EXE、真实监测端口、数据 API、GDB 附加命令 |
+| 调试接口 | Linux 与 QEMU 进程、接收机和配置的 SHA-256、监测端口、数据 API |
 
 暂停查看只冻结显示；停止与重启控制接收机进程。时间游标与切片不改变接收机闭环计算位置。
 
@@ -60,7 +58,7 @@ PLL 鉴别器依据当前源代码 atan/TWO_PI 显示为 cycle；DLL 为 chip；
 
 每次实验保存在 `runs/<时间-随机编号>/`。包括有效配置 receiver.conf、manifest.json、原始 receiver.log、按信号时钟记录的 logs.jsonl/events.jsonl、接收机原生内部日志、抽样 telemetry.jsonl、acquisitions.jsonl、positions.jsonl、snapshot.json，以及接收机生成的 tracking_ch_*.dat、acquisition_*.mat、NMEA、RINEX、KML 等。
 
-manifest 记录实际配置与 EXE 的 SHA256、输入大小和修改时间、进程命令、版本及退出状态。整份 IQ 没有自动做哈希。内存趋势最多每通道 2,400 点、日志 3,000 行、事件 300 条；原始文件仍保存在磁盘。UDP 不保证交付，抽样 telemetry.jsonl 不是全部数据包的归档。
+manifest 记录实际配置与接收机的 SHA-256、输入大小和修改时间、进程命令、版本及退出状态。整份 IQ 没有自动做哈希。内存趋势最多每通道 2,400 点、日志 3,000 行、事件 300 条；原始文件仍保存在磁盘。UDP 不保证交付，抽样 telemetry.jsonl 不是全部数据包的归档。
 
 Tracking dump 时间读取使用二分定位，每次最多返回 1,600 点，原始文件可单独下载。结构化日志按 256 行建立增量时间索引，查询前先按时间块筛选，再按通道取最近 600 行；事件接口最多返回最近 2,000 条。捕获快照索引缓存文件时间戳、大小与信号时间，回放时选择相应帧。老版本实验没有结构化日志时使用原有快照中的保留日志与事件，跟踪 dump 与捕获文件仍可按时间读取。实时写盘文件可能尚有未完整记录的尾部，读取时忽略该尾部。捕获网格保留峰附近 161 点剖面，并对全码延迟轴按列内最大值抽取为热图，避免均值采样抹去尖峰。
 
@@ -80,9 +78,9 @@ POST /api/restart
 
 ## 当前适配与后续方向
 
-已验证当前 Windows 便携 EXE、17 类信号处理链运行、同频混合与双 RF 链路；实际定位回归包括 GPS L1 C/A 和北斗 B3I。GPS L1 C/A 录制使用 18 MS/s signed int8 I/Q、+20 kHz IF、抽取至 3 MS/s。文件输入支持实数 int8/byte、int16/short、float32/float，以及 IQ int8/ibyte、int16/ishort、float32/gr_complex；多字节格式为小端序。工作台按格式计算文件长度、接收机样本数与切片字节偏移；处理接近文件尾部时预留 100 ms 供滤波和跟踪结束。实数输入使用 Pass_Through 适配器与 Freq_Xlating_Fir_Filter 完成滤波、下变频和抽取，填写实际录制中频；IQ 整数输入使用对应的 Ibyte/Ishort_To_Complex。捕获网格使用内核已有 dump_channel，每次实验选择一个通道；成功捕获消息覆盖各通道。跟踪二进制解析适配当前构建的 112 字节记录。
+v0.4 系列 Windows 接收机曾验证 17 类信号处理链运行、同频混合与双 RF 链路；实际定位回归包括 GPS L1 C/A 和北斗 B3I。GPS L1 C/A 录制使用 18 MS/s signed int8 I/Q、+20 kHz IF、抽取至 3 MS/s。文件输入支持实数 int8/byte、int16/short、float32/float，以及 IQ int8/ibyte、int16/ishort、float32/gr_complex；多字节格式为小端序。工作台按格式计算文件长度、接收机样本数与切片字节偏移；处理接近文件尾部时预留 100 ms 供滤波和跟踪结束。实数输入使用 Pass_Through 适配器与 Freq_Xlating_Fir_Filter 完成滤波、下变频和抽取，填写实际录制中频；IQ 整数输入使用对应的 Ibyte/Ishort_To_Complex。捕获网格使用内核已有 dump_channel，每次实验选择一个通道；成功捕获消息覆盖各通道。跟踪二进制解析适配当前构建的 112 字节记录。
 
-天空图当前展示最近 GSV，不随历史游标改变；日志时钟精度以接收机输出为准，跟踪启动优先关联捕获样本时刻。定位轨迹以首个定位解为相对原点。GDB 面板展示连接信息，还没有内置源码调试器。输入面板尚未接入抽取后的基带流。后续将继续做各阶段流式抽样接口、多通道捕获网格轮换、历史天空图、参数模板和干净 Windows 系统验收。
+天空图按 GGA 历元合并各星座的 GSV，拖动时间轴时使用游标处最近定位解的 UTC。定位面板收录原生首次定位和周期位置，事件的时间精度取决于接收机对应的输出。输入工作区可查看原始采样。
 
 接收机内核与工作台分开维护，后续内核接口扩展单独提交上游。项目采用 GPL-3.0-or-later；便携版附接收机对应源码和第三方许可信息。local.json、runs、测试 IQ 与私人验收记录不进入公开源码。
 
@@ -90,7 +88,7 @@ POST /api/restart
 
 ### 支持与回归检查
 
-工作台信号目录与随附 GNSS-SDR 的 17 类处理链一致，支持同频多系统及多 RF 文件组合。配置、捕获监测、逐通道跟踪文件与前端卫星标识按原生绝对通道顺序处理。完整清单与验证层级见 [SIGNALS.md](SIGNALS.md)。B3I 配置示例为 `templates/bds-b3i-m1-24m.conf`，需用户自行提供匹配 IQ。正常文件结束显示“结束”，文件尾保护提示显示“文件边界”，不当作失锁事件。32 项 Python 检查、JS 语法和回放状态检查通过。
+工作台信号目录与随附 GNSS-SDR 的 17 类处理链一致，支持同频多系统及多 RF 文件组合。配置、捕获监测、逐通道跟踪文件与前端卫星标识按原生绝对通道顺序处理。完整清单与验证层级见 [SIGNALS.md](SIGNALS.md)。B3I 配置示例为 `templates/bds-b3i-m1-24m.conf`，需用户自行提供匹配 IQ。正常文件结束显示“结束”，文件尾保护提示显示“文件边界”，不当作失锁事件。自动化检查包括输入格式、通道映射、天空图历元、首解、原样配置与回放状态。
 
 ```powershell
 python -m unittest discover -s tests -v
@@ -112,9 +110,9 @@ M1 单频录制的指定 PRN 与盲搜结果见 [M1 回归记录](M1-REGRESSION.
 ```powershell
 python -m venv .build-venv
 .build-venv/Scripts/python.exe -m pip install -r requirements-build.txt
-.build-venv/Scripts/python.exe build_release.py --receiver C:/path/to/receiver-portable --receiver-source C:/path/to/matching-source.zip
+.build-venv/Scripts/python.exe build_release.py --receiver C:/path/to/staged-linux-runtime
 ```
 
-输出到 release/。构建脚本只收集 EXE、资源、依赖与许可材料，排除本机 local.json、runs、test-inputs 和验收记录。接收机运行目录与匹配源码必须显式提供，避免意外捆绑不一致版本。
+输出到 release/。构建脚本只收集 EXE、资源、依赖与许可材料，排除本机 local.json、runs、test-inputs 和验收记录。构建输入包括 linux 和 qemu 两个子目录。上游源码归档、客户机镜像与 Linux 内核按 portable_linux/receiver-lock.json 校验。
 
 许可证：GPL-3.0-or-later。组件说明见 THIRD-PARTY.md。
